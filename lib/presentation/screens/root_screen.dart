@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../config/utils/responsive.dart';
+import '../widgets/widget.dart';
+
 class RootScreen extends StatelessWidget {
 
   final StatefulNavigationShell navigationShell;
@@ -9,10 +12,15 @@ class RootScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
+
+    final isMobile = Responsive.isMobile(context);
+    final isDesktop = Responsive.isDesktop(context);
+
+    return Scaffold(
+      body: const Center(
         child: Text('Root Screen'),
       ),
+      bottomNavigationBar: isMobile ? const Navbar() : const SizedBox(),
     );
   }
 }
