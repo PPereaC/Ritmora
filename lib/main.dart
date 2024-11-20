@@ -2,6 +2,7 @@ import 'package:apolo/presentation/providers/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'config/router/app_router.dart';
 import 'config/theme/app_theme.dart';
 
 void main() {
@@ -18,7 +19,8 @@ class MainApp extends ConsumerWidget {
 
     final appTheme = ref.watch(themeNotifierProvider);
 
-    return MaterialApp(
+    return MaterialApp.router(
+      routerConfig: appRouter,
       debugShowCheckedModeBanner: false,
       theme: AppTheme(selectedColor: appTheme.selectedColor, isDarkmode: appTheme.isDarkmode).getTheme(),
     );
