@@ -14,12 +14,11 @@ class RootScreen extends StatelessWidget {
   Widget build(BuildContext context) {
 
     final isMobile = Responsive.isMobile(context);
+    // ignore: unused_local_variable
     final isDesktop = Responsive.isDesktop(context);
 
     return Scaffold(
-      body: const Center(
-        child: Text('Root Screen'),
-      ),
+      body: navigationShell,
       bottomNavigationBar: isMobile ? const Navbar() : const SizedBox(),
     );
   }

@@ -3,9 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 
-import '../../domain/entities/song.dart';
-import '../delegates/search_songs_delegate.dart';
-import '../providers/search_provider.dart';
 import '../providers/theme/theme_provider.dart';
 
 class Navbar extends ConsumerStatefulWidget {
@@ -28,23 +25,13 @@ class BottomNavBarState extends ConsumerState<Navbar> {
         context.go('/');
         break;
       case 1:
-        final searchedSongs = ref.read(searchSongsProvider);
-        final searchQuery = ref.read(searchQueryProvider);
-        // ignore: unused_local_variable
-        final song = await showSearch<Song?>(
-          query: searchQuery,
-          context: context,
-          delegate: SearchSongsDelegate(
-            initialSongs: searchedSongs,
-            searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery
-          )
-        );
-        break;
-      case 2:
         context.go('/library');
         break;
+      case 2:
+        context.go('/favorites');
+        break;
       case 3:
-        context.go('/favorite-songs');
+        context.go('/settings');
         break;
     }
   }
@@ -86,21 +73,21 @@ class BottomNavBarState extends ConsumerState<Navbar> {
               ),
               NavigationDestination(
                 icon: Icon(
-                  Iconsax.search_normal_1_outline, color: selectedIndex == 1 ? Colors.white : Colors.grey
-                ),
-                label: 'Buscar'
-              ),
-              NavigationDestination(
-                icon: Icon(
-                  Iconsax.music_playlist_outline, color: selectedIndex == 2 ? Colors.white : Colors.grey
+                  Iconsax.music_playlist_outline, color: selectedIndex == 1 ? Colors.white : Colors.grey
                 ),
                 label: 'Biblioteca'
               ),
               NavigationDestination(
                 icon: Icon(
-                  Iconsax.musicnote_outline, color: selectedIndex == 3 ? Colors.white : Colors.grey
+                  Iconsax.heart_outline, color: selectedIndex == 2 ? Colors.white : Colors.grey
                 ),
-                label: 'Canciones'
+                label: 'Favoritos'
+              ),
+              NavigationDestination(
+                icon: Icon(
+                  Iconsax.setting_3_outline, color: selectedIndex == 3 ? Colors.white : Colors.grey
+                ),
+                label: 'Ajustes'
               ),
             ]
           ),
