@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 
+import '../../domain/entities/song.dart';
+import '../delegates/search_songs_delegate.dart';
+import '../providers/search_provider.dart';
 import '../providers/theme/theme_provider.dart';
 
 class Navbar extends ConsumerStatefulWidget {
@@ -15,17 +18,27 @@ class Navbar extends ConsumerStatefulWidget {
 class BottomNavBarState extends ConsumerState<Navbar> {
   int selectedIndex = 0;
 
-  void onItemTapped(int index) {
+  void onItemTapped(int index) async {
     setState(() {
       selectedIndex = index;
     });
 
-    switch (index) {
+    switch (index){
       case 0:
         context.go('/');
         break;
       case 1:
-        context.go('/search');
+        final searchedSongs = ref.read(searchSongsProvider);
+        final searchQuery = ref.read(searchQueryProvider);
+        // ignore: unused_local_variable
+        final song = await showSearch<Song?>(
+          query: searchQuery,
+          context: context,
+          delegate: SearchSongsDelegate(
+            initialSongs: searchedSongs,
+            searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery
+          )
+        );
         break;
       case 2:
         context.go('/library');

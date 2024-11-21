@@ -27,7 +27,7 @@ class SearchedSongsNotifier extends StateNotifier<List<Song>> {
     required this.ref
   }) : super([]);
 
-  Future<List<Song>> searchSongsByQuery(String query, String filter) async {
+  Future<List<Song>> searchSongsByQuery(String query, { String filter = "music_songs" }) async {
 
     final List<Song> songs = await searchSongs(query, filter);
     ref.read(searchQueryProvider.notifier).update((state) => query);

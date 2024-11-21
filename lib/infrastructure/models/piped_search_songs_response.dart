@@ -65,15 +65,15 @@ class Item {
         title: json["title"],
         thumbnail: json["thumbnail"],
         uploaderName: json["uploaderName"],
-        uploaderUrl: json["uploaderUrl"],
-        uploaderAvatar: json["uploaderAvatar"],
-        uploadedDate: json["uploadedDate"],
-        shortDescription: json["shortDescription"],
+        uploaderUrl: json["uploaderUrl"] ?? '',
+        uploaderAvatar: json["uploaderAvatar"] ?? '',
+        uploadedDate: json["uploadedDate"] ?? '',
+        shortDescription: json["shortDescription"] ?? '',
         duration: json["duration"],
-        views: json["views"],
-        uploaded: json["uploaded"],
-        uploaderVerified: json["uploaderVerified"],
-        isShort: json["isShort"],
+        views: json["views"] ?? '',
+        uploaded: json["uploaded"] ?? '',
+        uploaderVerified: json["uploaderVerified"] ?? '',
+        isShort: json["isShort"] ?? '',
     );
 
     Map<String, dynamic> toJson() => {

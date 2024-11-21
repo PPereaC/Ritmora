@@ -28,6 +28,14 @@ class YoutubeSongsDatasource extends SongsDatasource {
   @override
   Future<List<Song>> searchSongs(String query, String filter) async {
     
+    // Cancelar la solicitud anterior
+    _cancelToken?.cancel();
+
+    // Comprobar que la query no esté vacía
+    if (query.isEmpty) {
+      return [];
+    }
+
     // Realiza la solicitud a la API de búsqueda
     final response = await dioSearch.get(
       '$instance/search',
