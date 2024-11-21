@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
 
+import '../../config/utils/background_tasks.dart';
 import '../../domain/entities/song.dart';
+import '../providers/song_player_provider.dart';
 import '../providers/theme/theme_provider.dart';
 
 
@@ -53,9 +55,18 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
             itemCount: songs.length,
             itemBuilder: (context, index) => _SongItem(
               song: songs[index],
-              onSongSelected: (context, movie) {
-                clearStreams();
-                close(context, movie);
+              onSongSelected: (context, song) async {
+
+                // Obtener el stream url de la canción en segundo plano
+                await getStreamUrlInBackground(song.songId).then((streamUrl) {
+                  song.streamUrl = streamUrl;
+                  clearStreams();
+                  close(context, song);
+                });
+
+                // Reproducir la canción
+                context.read(songPlayerProvider).playSong(song);
+
               },
             )
           );
