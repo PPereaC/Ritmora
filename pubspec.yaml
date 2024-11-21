@@ -9,7 +9,6 @@ environment:
 
 dependencies:
   animate_do: ^3.3.4
-  audioplayers: ^6.1.0
   dio: ^5.7.0
   flutter:
     sdk: flutter
@@ -22,6 +21,7 @@ dependencies:
   isar_flutter_libs:
     version: 3.1.8
     hosted: https://pub.isar-community.dev/
+  just_audio: ^0.9.42
 
 dev_dependencies:
   build_runner: any
