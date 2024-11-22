@@ -20,12 +20,39 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
   StreamController<List<Song>> debouncesSongs = StreamController.broadcast();
   Timer? _debounceTimer;
 
-  SearchSongsDelegate({
-    required this.searchSongs,
-    required this.initialSongs
-  }): super(
-    searchFieldLabel: 'Buscar canciones o videos'
-  );
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    return ThemeData(
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.grey[800], // Color de fondo
+        iconTheme: const IconThemeData(color: Colors.white), // Color de los iconos
+        toolbarHeight: 60,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        hintStyle: const TextStyle(color: Colors.grey),
+        border: InputBorder.none,
+        filled: true,
+        fillColor: Colors.grey[800],
+      ),
+      textTheme: const TextTheme(
+        titleLarge: TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+        ),
+      ),
+    );
+  }
+
+    SearchSongsDelegate({
+      required this.searchSongs,
+      required this.initialSongs
+    }): super(
+      searchFieldLabel: 'Buscar canciones o videos',
+      searchFieldStyle: const TextStyle(
+        color: Colors.white,
+        fontSize: 20,
+      ),
+    );
 
   void clearStreams() {
     debouncesSongs.close();
@@ -45,33 +72,36 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
   Widget buildResultsAndSuggestions (BuildContext context) {
     return Container(
       color: Theme.of(context).colorScheme.surfaceContainerLowest,
-      child: StreamBuilder(
-        initialData: initialSongs,
-        stream: debouncesSongs.stream,
-        builder: (context, snapshot) {
-
-          final songs = snapshot.data ?? [];
-          return ListView.builder(
-            itemCount: songs.length,
-            itemBuilder: (context, index) => _SongItem(
-              song: songs[index],
-              onSongSelected: (context, song) async {
-
-                // Obtener el stream url de la canción en segundo plano
-                await getStreamUrlInBackground(song.songId).then((streamUrl) {
-                  song.streamUrl = streamUrl;
-                  clearStreams();
-                  close(context, song);
-                });
-
-                // Reproducir la canción
-                context.read(songPlayerProvider).playSong(song);
-
-              },
-            )
-          );
-
-        },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: StreamBuilder(
+          initialData: initialSongs,
+          stream: debouncesSongs.stream,
+          builder: (context, snapshot) {
+        
+            final songs = snapshot.data ?? [];
+            return ListView.builder(
+              itemCount: songs.length,
+              itemBuilder: (context, index) => _SongItem(
+                song: songs[index],
+                onSongSelected: (context, song) async {
+        
+                  // Obtener el stream url de la canción en segundo plano
+                  await getStreamUrlInBackground(song.songId).then((streamUrl) {
+                    song.streamUrl = streamUrl;
+                    clearStreams();
+                    close(context, song);
+                  });
+        
+                  // Reproducir la canción
+                  context.read(songPlayerProvider).playSong(song);
+        
+                },
+              )
+            );
+        
+          },
+        ),
       ),
     );
   }
@@ -122,7 +152,6 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
 }
 
 class _SongItem extends ConsumerWidget {
-
   final Song song;
   final Function onSongSelected;
 
@@ -130,99 +159,55 @@ class _SongItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    
     final isDarkMode = ref.watch(themeNotifierProvider).isDarkmode;
     final textStyles = Theme.of(context).textTheme;
     final size = MediaQuery.of(context).size;
 
-      return GestureDetector(
-        onTap: () {
-          onSongSelected(context, song);
-        },
-        child: Column(
-          children: [
-
-            // Información de la canción
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              child: Row(
-                children: [
-            
-                  // Imagen de la canción
-                  SizedBox(
-                    width: size.width * 0.14,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.network(
-                        song.thumbnailUrl,
-                        loadingBuilder: (context, child, loadingProgress) => FadeIn(child: child),
-                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
-                      ),
-                    ),
-                  ),
-            
-                  const SizedBox(width: 5),
-            
-                  // Detalles de la canción
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Título de la canción
-                          Text(
-                            song.title,
-                            style: textStyles.titleMedium!.copyWith(
-                              color: isDarkMode ? Colors.white : Colors.black
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis
-                          ),
-            
-                          // Autor de la canción
-                          Text(
-                            'Canción · ${song.author}',
-                            style: textStyles.bodyLarge!.copyWith(
-                              color: Colors.grey
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-            
-                          const SizedBox(height: 5),
-            
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Icono de ajustes de la canción
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Iconsax.more_square_outline,
-                      size: 23,
-                    ),
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-
-                ],
-              ),
-            ),
-
-            // Separador
-            const Padding(
-              padding: EdgeInsets.only(left: 12),
-              child: Divider(
-                color: Colors.grey,
-                thickness: 0.3,
-                height: 1,
-              ),
-            ),
-
-          ],
+    return ListTile(
+      onTap: () => onSongSelected(context, song),
+      contentPadding: const EdgeInsets.only(left: 10, right: 0), // Reduce el padding derecho
+      // Imagen de la canción
+      leading: SizedBox(
+        width: size.width * 0.14,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Image.network(
+            song.thumbnailUrl,
+            loadingBuilder: (context, child, loadingProgress) => 
+              FadeIn(child: child),
+            errorBuilder: (context, error, stackTrace) => 
+              const Icon(Icons.error),
+          ),
         ),
-      );
+      ),
+
+      // Título y autor
+      title: Text(
+        song.title,
+        style: textStyles.titleMedium!.copyWith(
+          color: isDarkMode ? Colors.white : Colors.black
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(
+        'Canción · ${song.author}',
+        style: textStyles.bodyLarge!.copyWith(
+          color: Colors.grey
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+
+      // Botón de ajustes
+      trailing: IconButton(
+        onPressed: () {},
+        icon: const Icon(
+          Iconsax.more_square_outline,
+          size: 23,
+        ),
+        color: isDarkMode ? Colors.white : Colors.black,
+      ),
+    );
   }
 }
