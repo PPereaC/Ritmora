@@ -17,13 +17,27 @@ class SettingsViewState extends ConsumerState<SettingsView> {
     final isDarkmode = ref.watch(isDarkmodeProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ajustes'),
-      ),
       body: ListView(
         children: [
           ListTile(
-            title: Text('Modo Oscuro', style: Theme.of(context).textTheme.bodyLarge),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Modo Oscuro',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Activa esta opción para cambiar al tema oscuro de la aplicación.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
             trailing: Switch(
               value: isDarkmode,
               onChanged: (value) {
