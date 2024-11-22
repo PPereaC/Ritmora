@@ -35,3 +35,14 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # Assets
+  assets:
+    - assets/
+    - assets/images/
+  
+  # Fonts
+  fonts:
+    - family: Appbar
+      fonts:
+        - asset: assets/fonts/Pacifico-Regular.ttf

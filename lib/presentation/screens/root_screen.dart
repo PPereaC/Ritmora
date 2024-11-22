@@ -18,6 +18,7 @@ class RootScreen extends StatelessWidget {
     final isDesktop = Responsive.isDesktop(context);
 
     return Scaffold(
+      appBar: const CustomAppBar(),
       body: navigationShell,
       bottomNavigationBar: isMobile ? const Navbar() : const SizedBox(),
     );
