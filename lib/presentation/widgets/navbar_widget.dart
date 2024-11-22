@@ -40,6 +40,7 @@ class BottomNavBarState extends ConsumerState<Navbar> {
   Widget build(BuildContext context) {
 
     final themeProvider = ref.watch(themeNotifierProvider);
+    final isDarkMode = themeProvider.isDarkmode;
 
     return NavigationBarTheme(
       data: NavigationBarThemeData(
@@ -67,25 +68,25 @@ class BottomNavBarState extends ConsumerState<Navbar> {
             destinations: [
               NavigationDestination(
                 icon: Icon(
-                  Iconsax.home_2_outline, color: selectedIndex == 0 ? Colors.white : Colors.grey
+                  Iconsax.home_2_outline, color: isDarkMode ? Colors.white : Colors.grey
                 ),
                 label: 'Inicio'
               ),
               NavigationDestination(
                 icon: Icon(
-                  Iconsax.music_playlist_outline, color: selectedIndex == 1 ? Colors.white : Colors.grey
+                  Iconsax.music_playlist_outline, color: isDarkMode ? Colors.white : Colors.grey
                 ),
                 label: 'Biblioteca'
               ),
               NavigationDestination(
                 icon: Icon(
-                  Iconsax.heart_outline, color: selectedIndex == 2 ? Colors.white : Colors.grey
+                  Iconsax.heart_outline, color: isDarkMode ? Colors.white : Colors.grey
                 ),
                 label: 'Favoritos'
               ),
               NavigationDestination(
                 icon: Icon(
-                  Iconsax.setting_3_outline, color: selectedIndex == 3 ? Colors.white : Colors.grey
+                  Iconsax.setting_3_outline, color: isDarkMode ? Colors.white : Colors.grey
                 ),
                 label: 'Ajustes'
               ),
