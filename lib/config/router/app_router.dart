@@ -37,7 +37,7 @@ final appRouter = GoRouter(
           routes: [
             GoRoute(
               path: '/settings',
-              builder: (context, state) => SettingsView(),
+              builder: (context, state) => const SettingsView(),
               routes: const [
                 // GoRoute(
                 //   path: 'home',
