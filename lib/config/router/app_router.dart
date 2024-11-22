@@ -32,6 +32,27 @@ final appRouter = GoRouter(
           ]
         ),
 
+        // Inicio
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/settings',
+              builder: (context, state) => SettingsView(),
+              routes: const [
+                // GoRoute(
+                //   path: 'home',
+                //   name: MovieScreen.name,
+                //   builder: (context, state) {
+                //     // Obtenemos el ID de la película a través de la ruta
+                //     final movieID = state.pathParameters['id'] ?? 'no-id';
+                //     return MovieScreen(movieId: movieID);
+                //   },
+                // )
+              ]
+            )
+          ]
+        ),
+
         // // Categorías
         // StatefulShellBranch(
         //   routes: [

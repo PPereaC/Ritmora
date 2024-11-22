@@ -15,7 +15,7 @@ const List<Color> colorList = [
 class AppTheme {
 
   final int selectedColor;
-  final bool isDarkmode;
+  bool isDarkmode;
 
   AppTheme({
     this.selectedColor = 0,
