@@ -17,6 +17,17 @@ class Song {
   final bool isLiked;
   final String duration;
 
+  @ignore
+  Duration get durationParsed {
+    final parts = duration.split(':');
+    if (parts.length != 2) return const Duration();
+    
+    final minutes = int.tryParse(parts[0]) ?? 0;
+    final seconds = int.tryParse(parts[1]) ?? 0;
+    
+    return Duration(minutes: minutes, seconds: seconds);
+  }
+
   final playlist = IsarLink<Playlist>();
 
   Song({

@@ -88,7 +88,14 @@ final appRouter = GoRouter(
 
 
       ],
+    ),
+
+    // Full Player Screen
+    GoRoute(
+      path: '/full-player',
+      builder: (context, state) => const FullPlayerScreen(),
     )
+      
 
   ]
 );

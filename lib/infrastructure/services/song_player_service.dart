@@ -16,6 +16,17 @@ class SongPlayerService {
   Stream<bool> get playingStream => _justAudioPlayer.playingStream;
   Stream<Song?> get currentSongStream => _songController.stream;
 
+  // Getters para la posición y duración de la canción
+  Duration get currentPosition => _justAudioPlayer.position;
+  Duration get totalDuration => _justAudioPlayer.duration ?? Duration.zero;
+  Stream<Duration> get positionStream => _justAudioPlayer.positionStream;
+  Stream<Duration?> get durationStream => _justAudioPlayer.durationStream;
+
+  // Método para buscar una posición específica
+  Future<void> seek(Duration position) async {
+    await _justAudioPlayer.seek(position);
+  }
+
   Future<void> playSong(Song song) async {
     _currentSong = song;
     _songController.add(song); // Notificar cambio de canción

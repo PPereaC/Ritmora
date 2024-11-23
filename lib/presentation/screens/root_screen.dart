@@ -6,7 +6,7 @@ import '../../config/utils/responsive.dart';
 import '../../domain/entities/song.dart';
 import '../../infrastructure/services/song_player_service.dart';
 import '../providers/song_player_provider.dart';
-import '../widgets/widget.dart';
+import '../widgets/widgets.dart';
 
 class RootScreen extends ConsumerWidget {
 

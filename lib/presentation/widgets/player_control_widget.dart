@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 
 import '../../domain/entities/song.dart';
@@ -57,50 +58,55 @@ class PlayerControlWidget extends ConsumerWidget {
                 ),
               ],
             ),
-            child: ListTile(
-              
-              // Imagen de la canción
-              leading: SizedBox(
-                width: size.width * 0.14,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
-                    currentSong.thumbnailUrl,
-                    loadingBuilder: (context, child, loadingProgress) => FadeIn(child: child),
-                    errorBuilder: (context, error, stackTrace) => 
-                      const Icon(Icons.error),
+            child: GestureDetector(
+              onTap: () {
+                context.go('/full-player');
+              },
+              child: ListTile(
+                
+                // Imagen de la canción
+                leading: SizedBox(
+                  width: size.width * 0.14,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      currentSong.thumbnailUrl,
+                      loadingBuilder: (context, child, loadingProgress) => FadeIn(child: child),
+                      errorBuilder: (context, error, stackTrace) => 
+                        const Icon(Icons.error),
+                    ),
                   ),
                 ),
-              ),
-            
-              // Título y autor
-              title: Text(
-                currentSong.title,
-                style: textStyles.titleMedium!.copyWith(
-                  color: isDarkMode ? Colors.white : Colors.black
+              
+                // Título y autor
+                title: Text(
+                  currentSong.title,
+                  style: textStyles.titleMedium!.copyWith(
+                    color: isDarkMode ? Colors.white : Colors.black
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              subtitle: Text(
-                'Canción · ${currentSong.author}',
-                style: textStyles.bodyLarge!.copyWith(
-                  color: Colors.grey
+                subtitle: Text(
+                  'Canción · ${currentSong.author}',
+                  style: textStyles.bodyLarge!.copyWith(
+                    color: Colors.grey
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            
-              // Botón play/pause
-              trailing: IconButton(
-                onPressed: () => onPlayPause(),
-                icon: Icon(
-                  isPlaying ? Iconsax.pause_bold : Iconsax.play_bold,
-                  size: 28,
+              
+                // Botón play/pause
+                trailing: IconButton(
+                  onPressed: () => onPlayPause(),
+                  icon: Icon(
+                    isPlaying ? Iconsax.pause_bold : Iconsax.play_bold,
+                    size: 28,
+                  ),
+                  color: isDarkMode ? Colors.white : Colors.black,
                 ),
-                color: isDarkMode ? Colors.white : Colors.black,
+              
               ),
-
             ),
           ),
         )
