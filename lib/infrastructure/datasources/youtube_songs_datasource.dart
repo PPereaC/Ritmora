@@ -1,3 +1,4 @@
+import 'package:apolo/config/utils/pretty_print.dart';
 import 'package:apolo/domain/datasources/songs_datasource.dart';
 import 'package:apolo/domain/entities/song.dart';
 import 'package:dio/dio.dart';
@@ -45,6 +46,8 @@ class YoutubeSongsDatasource extends SongsDatasource {
       },
       cancelToken: _cancelToken, // Pasar el token de cancelación
     );
+
+    printINFO("Buscando canciones con nombre => $query");
 
     return _jsonToSongs(response.data);
 

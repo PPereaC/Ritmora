@@ -21,6 +21,7 @@ class SearchedSongsNotifier extends StateNotifier<List<Song>> {
 
   final SearchSongsCallback searchSongs;
   final Ref ref;
+  String _lastQuery = '';
 
   SearchedSongsNotifier({
     required this.searchSongs,
@@ -29,8 +30,16 @@ class SearchedSongsNotifier extends StateNotifier<List<Song>> {
 
   Future<List<Song>> searchSongsByQuery(String query, { String filter = "music_songs" }) async {
 
+    // Si el query es igual al último y tenemos resultados, devolvemos el cache
+    if (query == _lastQuery && state.isNotEmpty) {
+      return state;
+    }
+
     final List<Song> songs = await searchSongs(query, filter);
     ref.read(searchQueryProvider.notifier).update((state) => query);
+
+    // Actualizamos el último query
+    _lastQuery = query;
 
     state = songs;
     return songs;
