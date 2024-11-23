@@ -9,6 +9,16 @@ final Map<String, String> headers = {
   'origin': "https://music.youtube.com/",
 };
 
+final Map<String, dynamic> context = {
+  'context': {
+    'client': {
+      "clientName": "WEB_REMIX",
+      "clientVersion": "1.20230213.01.00",
+    },
+    'user': {}
+  },
+};
+
 final ANDROID_CONTEXT = {
   'client': {
     'clientName': 'ANDROID_MUSIC',

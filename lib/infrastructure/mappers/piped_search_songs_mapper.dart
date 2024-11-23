@@ -9,10 +9,10 @@ class PipedSearchSongsMapper {
     return match?.group(1);
   }
 
-  static Song itemToEntity(Item item) => Song(
+  static Song itemToEntity(Item item, {String? youtubeThumbnail}) => Song(
     title: item.title,
     author: item.uploaderName,
-    thumbnailUrl: item.thumbnail,
+    thumbnailUrl: youtubeThumbnail ?? item.thumbnail,
     streamUrl: "",
     endUrl: item.url,
     songId: extractVideoId(item.url)!,
