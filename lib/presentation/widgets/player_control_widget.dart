@@ -2,7 +2,6 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:icons_plus/icons_plus.dart';
 
 import '../../domain/entities/song.dart';
 import '../../infrastructure/services/song_player_service.dart';
@@ -66,14 +65,19 @@ class PlayerControlWidget extends ConsumerWidget {
                 
                 // Imagen de la canción
                 leading: SizedBox(
-                  width: size.width * 0.14,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      currentSong.thumbnailUrl,
-                      loadingBuilder: (context, child, loadingProgress) => FadeIn(child: child),
-                      errorBuilder: (context, error, stackTrace) => 
-                        const Icon(Icons.error),
+                  width: size.width * 0.12,
+                  child: AspectRatio(
+                    aspectRatio: 1, // Forzar forma cuadrada
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        currentSong.thumbnailUrl,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) => 
+                          FadeIn(child: child),
+                        errorBuilder: (context, error, stackTrace) => 
+                          const Icon(Icons.error),
+                      ),
                     ),
                   ),
                 ),
@@ -100,8 +104,8 @@ class PlayerControlWidget extends ConsumerWidget {
                 trailing: IconButton(
                   onPressed: () => onPlayPause(),
                   icon: Icon(
-                    isPlaying ? Iconsax.pause_bold : Iconsax.play_bold,
-                    size: 28,
+                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                    size: 30,
                   ),
                   color: isDarkMode ? Colors.white : Colors.black,
                 ),
