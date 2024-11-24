@@ -18,156 +18,124 @@ class MusicProgressBar extends StatefulWidget {
   State<MusicProgressBar> createState() => _MusicProgressBarState();
 }
 
-class _MusicProgressBarState extends State<MusicProgressBar> with SingleTickerProviderStateMixin {
+class _MusicProgressBarState extends State<MusicProgressBar> {
   double? dragValue;
   bool isDragging = false;
-  late AnimationController _animationController;
-  double _lastProgress = 0.0;
-  // ignore: unused_field
-  double _targetProgress = 0.0;
-  bool _isAnimating = false;
-  
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 150), // Duración corta para cada paso
-    );
-    _animationController.addListener(() {
-      setState(() {});
+
+  void _updateProgressPosition(double dx, BoxConstraints constraints) {
+    // Calcular el valor normalizado (0.0 a 1.0) basado en la posición horizontal
+    final double normalizedValue = (dx / constraints.maxWidth).clamp(0.0, 1.0);
+    
+    // Actualizar el valor de arrastre
+    setState(() {
+      dragValue = normalizedValue;
     });
-  }
-
-  void _animateToProgress(double targetProgress) async {
-    if (_isAnimating) return;
-    _isAnimating = true;
     
-    const steps = 8; // Número de pasos intermedios
-    final startProgress = _lastProgress;
-    final totalDiff = targetProgress - startProgress;
-    
-    for (var i = 1; i <= steps; i++) {
-      if (!mounted || isDragging) break;
-      
-      // Calculamos el siguiente punto intermedio
-      final nextProgress = startProgress + (totalDiff * (i / steps));
-      
-      // Animamos hasta ese punto
-      await _animationController.animateTo(
-        nextProgress,
-        duration: Duration(milliseconds: 150 + (i * 50)), // Duración incrementa con cada paso
-        curve: Curves.easeOutCubic,
+    // Calcular la nueva duración y notificar
+    if (widget.duration.inMilliseconds > 0) {
+      final newPosition = Duration(
+        milliseconds: (widget.duration.inMilliseconds * normalizedValue).round(),
       );
-      
-      // Pequeña pausa entre pasos
-      await Future.delayed(const Duration(milliseconds: 20));
+      widget.onChanged?.call(newPosition);
     }
-    
-    _lastProgress = targetProgress;
-    _isAnimating = false;
-  }
-
-  @override
-  void didUpdateWidget(MusicProgressBar oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    
-    if (!isDragging) {
-      final newProgress = widget.currentPosition.inSeconds /
-          (widget.duration.inSeconds == 0 ? 1 : widget.duration.inSeconds);
-      
-      if ((newProgress - _lastProgress).abs() > 0.01) {
-        _targetProgress = newProgress;
-        _animateToProgress(newProgress);
-      }
-    }
-  }
-
-  double get _progress {
-    if (isDragging) return dragValue ?? 0.0;
-    return _animationController.value;
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onHorizontalDragStart: (DragStartDetails details) {
-        isDragging = true;
-        _animationController.stop();
-        setState(() {});
-      },
-      onHorizontalDragUpdate: (DragUpdateDetails details) {
-        final box = context.findRenderObject() as RenderBox;
-        final dx = details.localPosition.dx;
-        final newValue = (dx / box.size.width).clamp(0.0, 1.0);
-        dragValue = newValue;
-        _lastProgress = newValue;
-        final newDuration = Duration(
-          seconds: (widget.duration.inSeconds * newValue).round(),
-        );
-        widget.onChanged?.call(newDuration);
-        setState(() {});
-      },
-      onHorizontalDragEnd: (DragEndDetails details) {
-        if (dragValue != null) {
-          final newDuration = Duration(
-            seconds: (widget.duration.inSeconds * dragValue!).round(),
-          );
-          widget.onChangeEnd?.call(newDuration);
-          _animationController.value = dragValue!;
-        }
-        isDragging = false;
-        dragValue = null;
-        setState(() {});
-      },
-      child: Container(
-        height: 36,
-        width: double.infinity,
-        color: Colors.transparent,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              height: 3,
-              decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(1.5),
-              ),
-            ),
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  width: (MediaQuery.of(context).size.width - 40) * _progress,
+    final progress = isDragging
+        ? dragValue!
+        : widget.duration.inMilliseconds > 0
+            ? widget.currentPosition.inMilliseconds / widget.duration.inMilliseconds
+            : 0.0;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return GestureDetector(
+          onHorizontalDragStart: (DragStartDetails details) {
+            setState(() {
+              isDragging = true;
+              // Inicializar dragValue con la posición actual
+              dragValue = widget.currentPosition.inMilliseconds / widget.duration.inMilliseconds;
+            });
+            _updateProgressPosition(details.localPosition.dx, constraints);
+          },
+          onHorizontalDragUpdate: (DragUpdateDetails details) {
+            _updateProgressPosition(details.localPosition.dx, constraints);
+          },
+          onHorizontalDragEnd: (DragEndDetails details) {
+            if (dragValue != null) {
+              final newPosition = Duration(
+                milliseconds: (widget.duration.inMilliseconds * dragValue!).round(),
+              );
+              widget.onChangeEnd?.call(newPosition);
+            }
+            
+            setState(() {
+              isDragging = false;
+              dragValue = null;
+            });
+          },
+          onTapDown: (TapDownDetails details) {
+            _updateProgressPosition(details.localPosition.dx, constraints);
+            // Notificar el cambio final inmediatamente en tap
+            if (dragValue != null) {
+              final newPosition = Duration(
+                milliseconds: (widget.duration.inMilliseconds * dragValue!).round(),
+              );
+              widget.onChangeEnd?.call(newPosition);
+            }
+          },
+          child: Container(
+            height: 36,
+            width: double.infinity,
+            color: Colors.transparent,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Barra de fondo
+                Container(
                   height: 3,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Colors.grey.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(1.5),
                   ),
                 ),
-              ),
-            ),
-            Positioned(
-              left: (MediaQuery.of(context).size.width - 40) * _progress,
-              child: Container(
-                height: isDragging ? 16 : 12,
-                width: isDragging ? 16 : 12,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
+                // Barra de progreso
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    width: constraints.maxWidth * progress,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(1.5),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                // Punto de control
+                Positioned(
+                  left: (constraints.maxWidth * progress) - (isDragging ? 8 : 6),
+                  child: Container(
+                    height: isDragging ? 16 : 12,
+                    width: isDragging ? 16 : 12,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

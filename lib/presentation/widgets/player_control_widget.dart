@@ -60,7 +60,7 @@ class PlayerControlWidget extends ConsumerWidget {
             ),
             child: GestureDetector(
               onTap: () {
-                context.go('/full-player');
+                context.push('/full-player');
               },
               child: ListTile(
                 

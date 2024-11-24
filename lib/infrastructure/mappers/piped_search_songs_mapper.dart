@@ -9,14 +9,26 @@ class PipedSearchSongsMapper {
     return match?.group(1);
   }
 
-  static Song itemToEntity(Item item, {String? youtubeThumbnail}) => Song(
-    title: item.title,
-    author: item.uploaderName,
-    thumbnailUrl: youtubeThumbnail ?? item.thumbnail,
-    streamUrl: "",
-    endUrl: item.url,
-    songId: extractVideoId(item.url)!,
-    duration: item.duration.toString()
-  );
+  static String getHighQualityThumbnail(String videoId) {
+    // Intentar obtener la máxima calidad, con fallbacks
+    return 'https://i.ytimg.com/vi/$videoId/maxresdefault.jpg';
+  }
+
+  static Song itemToEntity(Item item, {String? youtubeThumbnail}) {
+    final videoId = extractVideoId(item.url);
+    final highQualityThumbnail = videoId != null 
+        ? getHighQualityThumbnail(videoId)
+        : item.thumbnail;
+
+    return Song(
+      title: item.title,
+      author: item.uploaderName,
+      thumbnailUrl: highQualityThumbnail,
+      streamUrl: "",
+      endUrl: item.url,
+      songId: videoId!,
+      duration: item.duration.toString()
+    );
+  }
 
 }

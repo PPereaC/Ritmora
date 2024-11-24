@@ -165,18 +165,22 @@ class _SongItem extends ConsumerWidget {
 
     return ListTile(
       onTap: () => onSongSelected(context, song),
-      contentPadding: const EdgeInsets.only(left: 10, right: 0), // Reduce el padding derecho
+      contentPadding: const EdgeInsets.only(left: 10, right: 0),
       // Imagen de la canción
       leading: SizedBox(
-        width: size.width * 0.14,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Image.network(
-            song.thumbnailUrl,
-            loadingBuilder: (context, child, loadingProgress) => 
-              FadeIn(child: child),
-            errorBuilder: (context, error, stackTrace) => 
-              const Icon(Icons.error),
+        width: size.width * 0.13,
+        child: AspectRatio(
+          aspectRatio: 1, // Forzar forma cuadrada
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.network(
+              song.thumbnailUrl,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) => 
+                FadeIn(child: child),
+              errorBuilder: (context, error, stackTrace) => 
+                const Icon(Icons.error),
+            ),
           ),
         ),
       ),

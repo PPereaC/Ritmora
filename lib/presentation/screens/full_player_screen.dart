@@ -14,167 +14,226 @@ class FullPlayerScreen extends ConsumerStatefulWidget {
 }
 
 class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
+
+  // Variable para controlar la posición del deslizamiento
+  double _dragDistance = 0;
+  // Umbral para determinar cuándo cerrar la pantalla
+  final double _dismissThreshold = 200;
+
   @override
   Widget build(BuildContext context) {
     final playerService = ref.watch(songPlayerProvider);
     final currentSong = playerService.currentSong;
     final isPlaying = playerService.isPlaying;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
+        onVerticalDragStart: (_) {
+          setState(() {
+            _dragDistance = 0;
+          });
+        },
+        // Actualizar la posición mientras se desliza
+        onVerticalDragUpdate: (details) {
+          setState(() {
+            _dragDistance += details.delta.dy;
+            if (_dragDistance < 0) _dragDistance = 0; // Limitar el deslizamiento hacia arriba
+          });
+        },
+        // Manejar el final del deslizamiento
         onVerticalDragEnd: (details) {
-          if (details.primaryVelocity! > 500) {
-            Navigator.of(context).pop();
+          if (_dragDistance > screenHeight / 3) { // Si se deslizó más de 1/3 de la pantalla, cerrar
+            context.pop();
+          } else { // Si no, volver a la posición original
+            setState(() {
+              _dragDistance = 0;
+            });
           }
         },
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Barra superior con botón para cerrar
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Iconsax.arrow_down_1_outline, color: Colors.white, size: 30),
-                      onPressed: () => context.pop(),
-                    ),
-                  ],
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          transform: Matrix4.translationValues(0, _dragDistance, 0),
+          child: SafeArea(
+            child: Column(
+              children: [
+                
+                // Barra superior con botón para cerrar
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Iconsax.arrow_down_1_outline, color: Colors.white, size: 30),
+                        onPressed: () {
+                          if (Navigator.of(context).canPop()) {
+                            Navigator.of(context).pop();
+                          } else {
+                            context.go('/');
+                          }
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              
-              // Imagen de la canción
-              Expanded(
-                flex: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.network(
-                      currentSong!.thumbnailUrl,
-                      fit: BoxFit.cover,
+                
+                // Imagen de la canción
+                Expanded(
+                  flex: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 25.0),
+                    child: AspectRatio(
+                      aspectRatio: 1, // Forzar forma cuadrada
+                      child: Hero(
+                        tag: currentSong!.songId,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.network(
+                            currentSong.thumbnailUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, _) => Container(
+                              color: Colors.grey[900],
+                              child: const Icon(
+                                Icons.music_note,
+                                size: 80,
+                                color: Colors.white54,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-
-              // Sección de progreso actualizada
-              Expanded(
-                flex: 2,
-                child: Column(
-                  children: [
-
-                    // Título y artista
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        children: [
-                          Text(
-                            currentSong.title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
+          
+                // Sección de progreso actualizada
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    children: [
+          
+                      // Título y artista
+                      Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            Text(
+                              currentSong.title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            currentSong.author,
-                            style: TextStyle(
-                              color: Colors.grey[400],
-                              fontSize: 18,
+                            const SizedBox(height: 8),
+                            Text(
+                              currentSong.author,
+                              style: TextStyle(
+                                color: Colors.grey[400],
+                                fontSize: 18,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-
-                    StreamBuilder<Duration>(
-                      stream: playerService.positionStream,
-                      builder: (context, positionSnapshot) {
-                        return StreamBuilder<Duration?>(
-                          stream: playerService.durationStream,
-                          builder: (context, durationSnapshot) {
-                            final position = positionSnapshot.data ?? Duration.zero;
-                            final duration = durationSnapshot.data ?? Duration.zero;
-                    
-                            return Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                                  child: MusicProgressBar(
-                                    currentPosition: position,
-                                    duration: duration,
-                                    onChanged: (position) {
-                                      playerService.seek(position);
-                                    },
-                                    onChangeEnd: (position) {
-                                      playerService.seek(position);
-                                    },
+          
+                      StreamBuilder<Duration>(
+                        stream: playerService.positionStream,
+                        builder: (context, positionSnapshot) {
+                          return StreamBuilder<Duration?>(
+                            stream: playerService.durationStream,
+                            builder: (context, durationSnapshot) {
+                              final position = positionSnapshot.data ?? Duration.zero;
+                              final duration = durationSnapshot.data ?? Duration.zero;
+                      
+                              return Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                                    child: MusicProgressBar(
+                                      currentPosition: position,
+                                      duration: duration,
+                                      onChanged: (position) {
+                                        playerService.seek(position);
+                                      },
+                                      onChangeEnd: (position) {
+                                        playerService.seek(position);
+                                      },
+                                    ),
                                   ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        _formatDuration(position),
-                                        style: const TextStyle(color: Colors.white70),
-                                      ),
-                                      Text(
-                                        _formatDuration(duration),
-                                        style: const TextStyle(color: Colors.white70),
-                                      ),
-                                    ],
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          _formatDuration(position),
+                                          style: const TextStyle(color: Colors.white70),
+                                        ),
+                                        Text(
+                                          _formatDuration(duration),
+                                          style: const TextStyle(color: Colors.white70),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                    ),
-
-                    // Controles de reproducción
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          IconButton(
-                            iconSize: 35,
-                            icon: const Icon(Iconsax.previous_bold, color: Colors.white),
-                            onPressed: () {
-                              // Implementar lógica de canción anterior
+                                ],
+                              );
                             },
-                          ),
-                          IconButton(
-                            iconSize: 50,
-                            icon: Icon(
-                              isPlaying ? Iconsax.pause_bold : Icons.play_arrow_rounded,
-                              color: Colors.white,
-                            ),
-                            onPressed: () => playerService.togglePlay(),
-                          ),
-                          IconButton(
-                            iconSize: 35,
-                            icon: const Icon(Iconsax.next_bold, color: Colors.white),
-                            onPressed: () {
-                              // Implementar lógica de siguiente canción
-                            },
-                          ),
-                        ],
+                          );
+                        },
                       ),
-                    ),
-
-                  ],
+          
+                      // Controles de reproducción
+                      Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            IconButton(
+                              iconSize: 35,
+                              icon: const Icon(Iconsax.previous_bold, color: Colors.white),
+                              onPressed: () {
+                                // Implementar lógica de canción anterior
+                              },
+                            ),
+                            IconButton(
+                              iconSize: 50,
+                              icon: Icon(
+                                isPlaying ? Iconsax.pause_bold : Icons.play_arrow_rounded,
+                                color: Colors.white,
+                              ),
+                              onPressed: () => playerService.togglePlay(),
+                            ),
+                            IconButton(
+                              iconSize: 35,
+                              icon: const Icon(Iconsax.next_bold, color: Colors.white),
+                              onPressed: () {
+                                // Implementar lógica de siguiente canción
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+          
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
