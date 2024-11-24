@@ -14,42 +14,33 @@ class FullPlayerScreen extends ConsumerStatefulWidget {
 }
 
 class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
-
-  // Variable para controlar la posición del deslizamiento
   double _dragDistance = 0;
-  // Umbral para determinar cuándo cerrar la pantalla
-  final double _dismissThreshold = 200;
+  Duration? _currentDraggingPosition;
 
   @override
   Widget build(BuildContext context) {
     final playerService = ref.watch(songPlayerProvider);
     final currentSong = playerService.currentSong;
-    final isPlaying = playerService.isPlaying;
     final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
         onVerticalDragStart: (_) {
-          setState(() {
-            _dragDistance = 0;
-          });
+          setState(() => _dragDistance = 0);
         },
-        // Actualizar la posición mientras se desliza
         onVerticalDragUpdate: (details) {
           setState(() {
             _dragDistance += details.delta.dy;
-            if (_dragDistance < 0) _dragDistance = 0; // Limitar el deslizamiento hacia arriba
+            if (_dragDistance < 0) _dragDistance = 0;
           });
         },
-        // Manejar el final del deslizamiento
         onVerticalDragEnd: (details) {
-          if (_dragDistance > screenHeight / 3) { // Si se deslizó más de 1/3 de la pantalla, cerrar
+          if (_dragDistance > screenHeight / 3) {
             context.pop();
-          } else { // Si no, volver a la posición original
-            setState(() {
-              _dragDistance = 0;
-            });
+          } else {
+            setState(() => _dragDistance = 0);
           }
         },
         child: AnimatedContainer(
@@ -58,35 +49,51 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
           child: SafeArea(
             child: Column(
               children: [
-                
-                // Barra superior con botón para cerrar
+                // Barra superior mejorada
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        icon: const Icon(Iconsax.arrow_down_1_outline, color: Colors.white, size: 30),
-                        onPressed: () {
-                          if (Navigator.of(context).canPop()) {
-                            Navigator.of(context).pop();
-                          } else {
-                            context.go('/');
-                          }
-                        },
+                        icon: const Icon(Iconsax.arrow_down_1_outline, 
+                          color: Colors.white, 
+                          size: 28
+                        ),
+                        onPressed: () => context.pop(),
+                      ),
+                      IconButton(
+                        icon: const Icon(Iconsax.more_outline, 
+                          color: Colors.white, 
+                          size: 28
+                        ),
+                        onPressed: () {},
                       ),
                     ],
                   ),
                 ),
                 
-                // Imagen de la canción
+                // Imagen de la canción con sombras
                 Expanded(
                   flex: 2,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 25.0),
-                    child: AspectRatio(
-                      aspectRatio: 1, // Forzar forma cuadrada
-                      child: Hero(
-                        tag: currentSong!.songId,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: screenWidth * 0.05,
+                      vertical: screenHeight * 0.02
+                    ),
+                    child: Hero(
+                      tag: currentSong!.songId,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
                           child: Image.network(
@@ -99,6 +106,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                               return const Center(
                                 child: CircularProgressIndicator(
                                   color: Colors.white,
+                                  strokeWidth: 2,
                                 ),
                               );
                             },
@@ -117,15 +125,14 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                   ),
                 ),
           
-                // Sección de progreso actualizada
+                // Sección de información y controles
                 Expanded(
                   flex: 2,
                   child: Column(
                     children: [
-          
                       // Título y artista
                       Padding(
-                        padding: const EdgeInsets.all(20.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                         child: Column(
                           children: [
                             Text(
@@ -134,8 +141,10 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                 color: Colors.white,
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
+                                letterSpacing: 0.2,
                               ),
                               textAlign: TextAlign.center,
+                              maxLines: 2,
                             ),
                             const SizedBox(height: 8),
                             Text(
@@ -143,13 +152,16 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                               style: TextStyle(
                                 color: Colors.grey[400],
                                 fontSize: 18,
+                                letterSpacing: 0.1,
                               ),
                               textAlign: TextAlign.center,
+                              maxLines: 1,
                             ),
                           ],
                         ),
                       ),
           
+                      // Barra de progreso y tiempo
                       StreamBuilder<Duration>(
                         stream: playerService.positionStream,
                         builder: (context, positionSnapshot) {
@@ -158,34 +170,46 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                             builder: (context, durationSnapshot) {
                               final position = positionSnapshot.data ?? Duration.zero;
                               final duration = durationSnapshot.data ?? Duration.zero;
-                      
+
                               return Column(
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                                    padding: const EdgeInsets.symmetric(horizontal: 23),
                                     child: MusicProgressBar(
                                       currentPosition: position,
                                       duration: duration,
-                                      onChanged: (position) {
-                                        playerService.seek(position);
+                                      onChanged: (newPosition) {
+                                        // Esto se usará para actualizar el texto del tiempo
+                                        setState(() {
+                                          _currentDraggingPosition = newPosition;
+                                        });
                                       },
                                       onChangeEnd: (position) {
                                         playerService.seek(position);
+                                        setState(() {
+                                          _currentDraggingPosition = null;
+                                        });
                                       },
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          _formatDuration(position),
-                                          style: const TextStyle(color: Colors.white70),
+                                          _formatDuration(_currentDraggingPosition ?? position),
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 13,
+                                          ),
                                         ),
                                         Text(
                                           _formatDuration(duration),
-                                          style: const TextStyle(color: Colors.white70),
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 13,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -197,38 +221,72 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                         },
                       ),
           
-                      // Controles de reproducción
-                      Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            IconButton(
-                              iconSize: 35,
-                              icon: const Icon(Iconsax.previous_bold, color: Colors.white),
-                              onPressed: () {
-                                // Implementar lógica de canción anterior
-                              },
+                      // Controles principales
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          IconButton(
+                            iconSize: 35,
+                            icon: const Icon(Iconsax.previous_bold, color: Colors.white),
+                            onPressed: () {},
+                          ),
+                          StreamBuilder<bool>(
+                            stream: playerService.playingStream,
+                            builder: (context, snapshot) {
+                              final isPlaying = snapshot.data ?? false;
+                              return IconButton(
+                                iconSize: 64,
+                                icon: Icon(
+                                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                  color: Colors.white,
+                                ),
+                                onPressed: () => playerService.togglePlay(),
+                              );
+                            },
+                          ),
+                          IconButton(
+                            iconSize: 35,
+                            icon: const Icon(Iconsax.next_bold, color: Colors.white),
+                            onPressed: () {},
+                          ),
+                        ],
+                      ),
+
+                      // Spacer para empujar los controles adicionales hacia abajo
+                      const Spacer(flex: 2),
+
+                      // Controles adicionales
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            top: BorderSide(
+                              color: Colors.white.withOpacity(0.1),
+                              width: 1,
                             ),
-                            IconButton(
-                              iconSize: 50,
-                              icon: Icon(
-                                isPlaying ? Iconsax.pause_bold : Icons.play_arrow_rounded,
-                                color: Colors.white,
-                              ),
-                              onPressed: () => playerService.togglePlay(),
+                          ),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.3),
+                                Colors.black.withOpacity(0.5),
+                              ],
                             ),
-                            IconButton(
-                              iconSize: 35,
-                              icon: const Icon(Iconsax.next_bold, color: Colors.white),
-                              onPressed: () {
-                                // Implementar lógica de siguiente canción
-                              },
-                            ),
-                          ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildControlButton(Iconsax.voice_square_outline, () {}),
+                              _buildControlButton(Iconsax.music_square_outline, () {}),
+                              _buildControlButton(Iconsax.setting_3_outline, () {}),
+                            ],
+                          ),
                         ),
                       ),
-          
                     ],
                   ),
                 ),
@@ -236,6 +294,17 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildControlButton(IconData icon, VoidCallback onPressed) {
+    return IconButton(
+      iconSize: 30,
+      icon: Icon(icon, color: Colors.white70),
+      onPressed: onPressed,
+      style: IconButton.styleFrom(
+        padding: const EdgeInsets.all(5),
       ),
     );
   }

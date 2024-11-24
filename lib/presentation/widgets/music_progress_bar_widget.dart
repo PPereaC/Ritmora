@@ -43,10 +43,22 @@ class _MusicProgressBarState extends State<MusicProgressBar> {
   @override
   Widget build(BuildContext context) {
     final progress = isDragging
-        ? dragValue!
-        : widget.duration.inMilliseconds > 0
-            ? widget.currentPosition.inMilliseconds / widget.duration.inMilliseconds
-            : 0.0;
+    ? dragValue!
+    : widget.duration.inMilliseconds > 0
+        ? widget.currentPosition.inMilliseconds / widget.duration.inMilliseconds
+        : 0.0;
+
+    String _formatDuration(Duration duration) {
+      String twoDigits(int n) => n.toString().padLeft(2, '0');
+      final minutes = twoDigits(duration.inMinutes.remainder(60));
+      final seconds = twoDigits(duration.inSeconds.remainder(60));
+      return '$minutes:$seconds';
+    }
+
+    // Calcular la duración actual basada en el progreso
+    final currentDuration = Duration(
+      milliseconds: (widget.duration.inMilliseconds * progress).round(),
+    );
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -112,6 +124,28 @@ class _MusicProgressBarState extends State<MusicProgressBar> {
                     ),
                   ),
                 ),
+
+                // Añadir el indicador de tiempo
+                if (isDragging)
+                  Positioned(
+                    left: (constraints.maxWidth * progress) - 20,
+                    top: -25, // Posicionarlo encima de la barra
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        _formatDuration(currentDuration),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+
                 // Punto de control
                 Positioned(
                   left: (constraints.maxWidth * progress) - (isDragging ? 8 : 6),
