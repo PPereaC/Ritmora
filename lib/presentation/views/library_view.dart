@@ -74,7 +74,7 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
           style: TextStyle(
             color: isDarkMode ? Colors.white : Colors.black87,
             fontSize: 28,
-            fontFamily: 'Appbar'
+            fontWeight: FontWeight.bold,
           ),
         ),
         actions: [

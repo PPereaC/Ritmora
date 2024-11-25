@@ -25,13 +25,10 @@ class BottomNavBarState extends ConsumerState<Navbar> {
         context.go('/');
         break;
       case 1:
-        context.go('/library');
+        context.go('/search');
         break;
       case 2:
-        context.go('/favorites');
-        break;
-      case 3:
-        context.go('/settings');
+        context.go('/library');
         break;
     }
   }
@@ -79,6 +76,17 @@ class BottomNavBarState extends ConsumerState<Navbar> {
               ),
               NavigationDestination(
                 icon: Icon(
+                  Iconsax.search_normal_1_outline,
+                  color: selectedIndex == 2
+                      ? Colors.white
+                      : isDarkMode
+                          ? Colors.white
+                          : Colors.grey,
+                ),
+                label: 'Buscar',
+              ),
+              NavigationDestination(
+                icon: Icon(
                   Iconsax.music_playlist_outline,
                   color: selectedIndex == 1
                       ? Colors.white
@@ -87,28 +95,6 @@ class BottomNavBarState extends ConsumerState<Navbar> {
                           : Colors.grey,
                 ),
                 label: 'Biblioteca',
-              ),
-              NavigationDestination(
-                icon: Icon(
-                  Iconsax.heart_outline,
-                  color: selectedIndex == 2
-                      ? Colors.white
-                      : isDarkMode
-                          ? Colors.white
-                          : Colors.grey,
-                ),
-                label: 'Favoritos',
-              ),
-              NavigationDestination(
-                icon: Icon(
-                  Iconsax.setting_3_outline,
-                  color: selectedIndex == 3
-                      ? Colors.white
-                      : isDarkMode
-                          ? Colors.white
-                          : Colors.grey,
-                ),
-                label: 'Ajustes',
               ),
             ],
           ),
