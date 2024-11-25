@@ -21,7 +21,17 @@ final appRouter = GoRouter(
           ]
         ),
 
-        // Inicio
+        // Librería
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/library',
+              builder: (context, state) => const LibraryView(),
+            )
+          ]
+        ),
+
+        // Ajustes
         StatefulShellBranch(
           routes: [
             GoRoute(

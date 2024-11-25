@@ -23,7 +23,7 @@ class RootScreen extends ConsumerWidget {
     final SongPlayerService playerService = ref.read(songPlayerProvider);
 
     return Scaffold(
-      appBar: const CustomAppBar(),
+      // appBar: const CustomAppBar(),
       body: Stack(
         children: [
           // Contenido principal
