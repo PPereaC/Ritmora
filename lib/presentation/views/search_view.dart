@@ -43,7 +43,8 @@ class SearchView extends ConsumerWidget {
                       context: context,
                       delegate: SearchSongsDelegate(
                         initialSongs: searchedSongs,
-                        searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery
+                        searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery,
+                        isDarkMode: isDarkMode,
                       )
                     );
                   },

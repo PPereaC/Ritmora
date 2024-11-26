@@ -19,20 +19,33 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
   List<Song> initialSongs;
   StreamController<List<Song>> debouncesSongs = StreamController.broadcast();
   Timer? _debounceTimer;
+  final bool isDarkMode;
+
+  SearchSongsDelegate({
+    required this.searchSongs,
+    required this.initialSongs,
+    required this.isDarkMode,
+   }): super(
+    searchFieldLabel: 'Buscar canciones o videos',
+    searchFieldStyle: const TextStyle(
+      color: Colors.white,
+      fontSize: 20,
+    ),
+  );
 
   @override
   ThemeData appBarTheme(BuildContext context) {
     return ThemeData(
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.grey[800], // Color de fondo
-        iconTheme: const IconThemeData(color: Colors.white), // Color de los iconos
+        backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white, // Color de fondo
+        iconTheme: IconThemeData(color: isDarkMode ? Colors.white : Colors.black), // Color de los iconos
         toolbarHeight: 60,
       ),
       inputDecorationTheme: InputDecorationTheme(
-        hintStyle: const TextStyle(color: Colors.grey),
+        hintStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.grey),
         border: InputBorder.none,
         filled: true,
-        fillColor: Colors.grey[800],
+        fillColor: isDarkMode ? Colors.grey[900] : Colors.white,
       ),
       textTheme: const TextTheme(
         titleLarge: TextStyle(
@@ -42,17 +55,6 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
       ),
     );
   }
-
-    SearchSongsDelegate({
-      required this.searchSongs,
-      required this.initialSongs
-    }): super(
-      searchFieldLabel: 'Buscar canciones o videos',
-      searchFieldStyle: const TextStyle(
-        color: Colors.white,
-        fontSize: 20,
-      ),
-    );
 
   void clearStreams() {
     debouncesSongs.close();
@@ -71,37 +73,34 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
 
   Widget buildResultsAndSuggestions (BuildContext context) {
     return Container(
-      color: Theme.of(context).colorScheme.surfaceContainerLowest,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: StreamBuilder(
-          initialData: initialSongs,
-          stream: debouncesSongs.stream,
-          builder: (context, snapshot) {
-        
-            final songs = snapshot.data ?? [];
-            return ListView.builder(
-              itemCount: songs.length,
-              itemBuilder: (context, index) => _SongItem(
-                song: songs[index],
-                onSongSelected: (context, song) async {
-        
-                  // Obtener el stream url de la canción en segundo plano
-                  await getStreamUrlInBackground(song.songId).then((streamUrl) {
-                    song.streamUrl = streamUrl;
-                    clearStreams();
-                    close(context, song);
-                  });
-        
-                  // Reproducir la canción
-                  context.read(songPlayerProvider).playSong(song);
-        
-                },
-              )
-            );
-        
-          },
-        ),
+      color: isDarkMode ? Colors.grey[900] : Colors.white,
+      child: StreamBuilder(
+        initialData: initialSongs,
+        stream: debouncesSongs.stream,
+        builder: (context, snapshot) {
+      
+          final songs = snapshot.data ?? [];
+          return ListView.builder(
+            itemCount: songs.length,
+            itemBuilder: (context, index) => _SongItem(
+              song: songs[index],
+              onSongSelected: (context, song) async {
+      
+                // Obtener el stream url de la canción en segundo plano
+                await getStreamUrlInBackground(song.songId).then((streamUrl) {
+                  song.streamUrl = streamUrl;
+                  clearStreams();
+                  close(context, song);
+                });
+      
+                // Reproducir la canción
+                context.read(songPlayerProvider).playSong(song);
+      
+              },
+            )
+          );
+      
+        },
       ),
     );
   }
