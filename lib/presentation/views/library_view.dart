@@ -2,6 +2,7 @@ import 'package:apolo/presentation/providers/playlist/playlist_provider.dart';
 import 'package:apolo/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 
 import '../../domain/entities/playlist.dart';
@@ -22,6 +23,11 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    Future.microtask(() => _loadPlaylists());
+  }
+
+  Future<void> _loadPlaylists() async {
+    await ref.read(playlistProvider.notifier).loadPlaylists();
   }
 
   @override
@@ -156,7 +162,7 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
             return MouseRegion(
               child: InkWell(
                 onTap: () { // Acción al tocar la playlist
-                  
+                  context.go('/library/playlist/${playlist.id}');
                 },
                 child: Container(
                   decoration: BoxDecoration(

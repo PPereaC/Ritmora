@@ -96,5 +96,16 @@ class IsarPlaylistDatasource extends PlaylistDatasource {
     });
 
   }
+  
+  @override
+  Future<Playlist> getPlaylistByID(int playlistID) {
+    final isar = db;
+    return isar.then((isar) async {
+      final playlist = await isar.playlists.get(playlistID);
+      await playlist?.songLinks.load();
+      playlist?.songs = playlist.songLinks.toList();
+      return playlist!;
+    });
+  }
 
 }

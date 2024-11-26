@@ -1,11 +1,9 @@
-// playlist_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:apolo/domain/entities/playlist.dart';
-import 'package:apolo/domain/entities/song.dart';
-import '../../../infrastructure/repositories/playlist_repository_impl.dart';
-import './playlist_repository_provider.dart';
 
-// Estado para manejar las playlists
+import '../../../infrastructure/repositories/playlist_repository_impl.dart';
+import 'playlist_repository_provider.dart';
+
 class PlaylistState {
   final List<Playlist> playlists;
   final bool isLoading;
@@ -25,7 +23,7 @@ class PlaylistState {
     return PlaylistState(
       playlists: playlists ?? this.playlists,
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: errorMessage,
+      errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 }
@@ -57,47 +55,25 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
       await loadPlaylists(); // Recargar la lista
     } catch (e) {
       state = state.copyWith(
-        errorMessage: 'Error al añadir playlist: $e',
+        errorMessage: 'Error al añadir la playlist: $e',
       );
     }
   }
 
-  Future<void> addSongToPlaylist(int playlistId, Song song) async {
+  Future<Playlist> getPlaylistByID(int playlistID) async {
     try {
-      await _repository.addSongToPlaylist(playlistId, song);
-      await loadPlaylists(); // Recargar para reflejar cambios
+      final playlist = await _repository.getPlaylistByID(playlistID);
+      return playlist;
     } catch (e) {
-      state = state.copyWith(
-        errorMessage: 'Error al añadir canción: $e',
-      );
-    }
-  }
-
-  Future<void> removePlaylist(Playlist playlist) async {
-    try {
-      await _repository.removePlaylist(playlist);
-      await loadPlaylists();
-    } catch (e) {
-      state = state.copyWith(
-        errorMessage: 'Error al eliminar playlist: $e',
-      );
-    }
-  }
-
-  Future<void> updatePlaylist(Playlist playlist) async {
-    try {
-      await _repository.updatePlaylist(playlist);
-      await loadPlaylists();
-    } catch (e) {
-      state = state.copyWith(
-        errorMessage: 'Error al actualizar playlist: $e',
+      return Playlist(
+        title: 'Error',
+        author: 'Error',
+        thumbnailUrl: ''
       );
     }
   }
 }
 
-// Providers
-final playlistProvider = StateNotifierProvider<PlaylistNotifier, PlaylistState>((ref) {
-  final repository = ref.watch(playlistRepositoryProvider);
-  return PlaylistNotifier(repository);
-});
+final playlistProvider = StateNotifierProvider<PlaylistNotifier, PlaylistState>(
+  (ref) => PlaylistNotifier(ref.watch(playlistRepositoryProvider)),
+);

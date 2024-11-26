@@ -34,5 +34,10 @@ class PlaylistRepositoryImpl extends PlaylistRepository {
   Future<void> updatePlaylist(Playlist playlist) {
     return datasource.updatePlaylist(playlist);
   }
+  
+  @override
+  Future<Playlist> getPlaylistByID(int playlistID) {
+    return datasource.getPlaylistByID(playlistID);
+  }
 
 }

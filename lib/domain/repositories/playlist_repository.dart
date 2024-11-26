@@ -8,5 +8,6 @@ abstract class PlaylistRepository {
   Future<void> removePlaylist(Playlist playlist);
   Future<void> updatePlaylist(Playlist playlist);
   Future<void> addSongToPlaylist(int playlistID, Song song);
+  Future<Playlist> getPlaylistByID(int playlistID);
 
 }
