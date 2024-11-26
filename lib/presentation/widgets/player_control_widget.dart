@@ -28,41 +28,33 @@ class PlayerControlWidget extends ConsumerWidget {
     final textStyles = Theme.of(context).textTheme;
     final size = MediaQuery.of(context).size;
 
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 12,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+    return SizedBox(
+      height: 68,
+      child: Container(
+        color: isDarkMode 
+          ? Colors.grey[900]
+          : Colors.grey,
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
           child: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  isDarkMode ? Colors.grey[850]! : Colors.grey[300]!,
-                  isDarkMode ? Colors.grey[900]! : Colors.grey[400]!,
+                  isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
+                  isDarkMode ? Colors.grey[800]! : Colors.grey[400]!,
                 ],
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: isDarkMode 
-                    ? Colors.black.withOpacity(0.3) 
-                    : Colors.grey.withOpacity(0.3),
-                  offset: const Offset(0, 2),
-                  blurRadius: 4,
-                  spreadRadius: 1,
-                ),
-              ],
             ),
             child: GestureDetector(
               onTap: () {
                 context.push('/full-player');
               },
               child: ListTile(
-                
                 // Imagen de la canción
                 leading: SizedBox(
                   width: size.width * 0.12,
@@ -85,16 +77,16 @@ class PlayerControlWidget extends ConsumerWidget {
                 // Título y autor
                 title: Text(
                   currentSong.title,
-                  style: textStyles.titleMedium!.copyWith(
-                    color: isDarkMode ? Colors.white : Colors.black
+                  style: textStyles.bodyLarge!.copyWith(
+                    color: isDarkMode ? Colors.white : Colors.black,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 subtitle: Text(
                   'Canción · ${currentSong.author}',
-                  style: textStyles.bodyLarge!.copyWith(
-                    color: Colors.grey
+                  style: textStyles.bodyMedium!.copyWith(
+                    color: Colors.grey,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -102,18 +94,17 @@ class PlayerControlWidget extends ConsumerWidget {
               
                 // Botón play/pause
                 trailing: IconButton(
-                  onPressed: () => onPlayPause(),
+                  onPressed: onPlayPause,
                   icon: Icon(
                     isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
                     size: 30,
                   ),
                   color: isDarkMode ? Colors.white : Colors.black,
                 ),
-              
               ),
             ),
           ),
-        )
+        ),
       ),
     );
   }
