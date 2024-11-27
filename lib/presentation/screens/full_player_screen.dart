@@ -23,9 +23,10 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
     final playerService = ref.watch(songPlayerProvider);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+    final isDarkMode = ref.watch(isDarkmodeProvider);
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: isDarkMode ? Colors.black : Colors.white,
       body: StreamBuilder<Song?>(
         stream: playerService.currentSongStream,
         builder: (context, snapshot) {
@@ -61,15 +62,15 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           IconButton(
-                            icon: const Icon(Iconsax.arrow_down_1_outline, 
-                              color: Colors.white, 
+                            icon: Icon(Iconsax.arrow_down_1_outline, 
+                              color: isDarkMode ? Colors.white : Colors.grey, 
                               size: 28
                             ),
                             onPressed: () => context.pop(),
                           ),
                           IconButton(
-                            icon: const Icon(Iconsax.more_outline, 
-                              color: Colors.white, 
+                            icon: Icon(Iconsax.more_outline, 
+                              color: isDarkMode ? Colors.white : Colors.grey, 
                               size: 28
                             ),
                             onPressed: () {},
@@ -92,7 +93,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
+                                  color: isDarkMode ? Colors.black.withOpacity(0.3) : Colors.grey.withOpacity(0.3),
                                   blurRadius: 15,
                                   offset: const Offset(0, 8),
                                 ),
@@ -107,15 +108,15 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                 height: double.infinity,
                                 loadingBuilder: (context, child, loadingProgress) {
                                   if (loadingProgress == null) return child;
-                                  return const Center(
+                                  return Center(
                                     child: CircularProgressIndicator(
-                                      color: Colors.white,
+                                      color: isDarkMode ? Colors.white : Colors.black,
                                       strokeWidth: 2,
                                     ),
                                   );
                                 },
                                 errorBuilder: (context, error, _) => Container(
-                                  color: Colors.grey[900],
+                                  color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
                                   child: const Icon(
                                     Icons.music_note,
                                     size: 80,
@@ -139,8 +140,8 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                               children: [
                                 Text(
                                   currentSong.title,
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.white : Colors.black,
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 0.2,
@@ -198,15 +199,15 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                           children: [
                                             Text(
                                               _formatDuration(_currentDraggingPosition ?? position),
-                                              style: const TextStyle(
-                                                color: Colors.white70,
+                                              style: TextStyle(
+                                                color: isDarkMode ? Colors.white70 : Colors.black54,
                                                 fontSize: 13,
                                               ),
                                             ),
                                             Text(
                                               _formatDuration(duration),
-                                              style: const TextStyle(
-                                                color: Colors.white70,
+                                              style: TextStyle(
+                                                color: isDarkMode ? Colors.white70 : Colors.black54,
                                                 fontSize: 13,
                                               ),
                                             ),
@@ -225,7 +226,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                             children: [
                               IconButton(
                                 iconSize: 35,
-                                icon: const Icon(Iconsax.previous_bold, color: Colors.white),
+                                icon: Icon(Iconsax.previous_bold, color: isDarkMode ? Colors.white : Colors.grey),
                                 onPressed: () => playerService.playPrevious(),
                               ),
                               StreamBuilder<bool>(
@@ -236,7 +237,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                     iconSize: 64,
                                     icon: Icon(
                                       isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                                      color: Colors.white,
+                                      color: isDarkMode ? Colors.white : Colors.grey,
                                     ),
                                     onPressed: () => playerService.togglePlay(),
                                   );
@@ -244,7 +245,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                               ),
                               IconButton(
                                 iconSize: 35,
-                                icon: const Icon(Iconsax.next_bold, color: Colors.white),
+                                icon: Icon(Iconsax.next_bold, color: isDarkMode ? Colors.white : Colors.grey),
                                 onPressed: () => playerService.playNext(),
                               ),
                             ],
@@ -254,7 +255,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                             decoration: BoxDecoration(
                               border: Border(
                                 top: BorderSide(
-                                  color: Colors.white.withOpacity(0.1),
+                                  color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
                                   width: 1,
                                 ),
                               ),
