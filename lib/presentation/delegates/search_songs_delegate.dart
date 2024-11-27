@@ -9,6 +9,7 @@ import '../../config/utils/background_tasks.dart';
 import '../../domain/entities/song.dart';
 import '../providers/song_player_provider.dart';
 import '../providers/theme/theme_provider.dart';
+import '../widgets/bottom_sheet_bar_widget.dart';
 
 
 typedef SearchSongsCallback = Future<List<Song>> Function(String query);
@@ -97,6 +98,16 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
                 context.read(songPlayerProvider).playSong(song);
       
               },
+              onSongOptions: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return BottomSheetBarWidget(
+                      song: songs[index],
+                    );
+                  },
+                );
+              },
             )
           );
       
@@ -153,8 +164,9 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
 class _SongItem extends ConsumerWidget {
   final Song song;
   final Function onSongSelected;
+  final Function onSongOptions;
 
-  const _SongItem({required this.song, required this.onSongSelected});
+  const _SongItem({required this.song, required this.onSongSelected, required this.onSongOptions});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -204,7 +216,7 @@ class _SongItem extends ConsumerWidget {
 
       // Botón de ajustes
       trailing: IconButton(
-        onPressed: () {},
+        onPressed: () => onSongOptions(),
         icon: const Icon(
           Iconsax.more_square_outline,
           size: 23,
