@@ -257,58 +257,55 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                           // Mostrar las canciones que vienen después (3 canciones)
                           SizedBox(
                             height: 60,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: nextSongs.length,
-                              itemBuilder: (context, index) {
-                                final song = nextSongs[index];
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                  child: Row(
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: Image.network(
-                                          song.thumbnailUrl,
-                                          width: 40,
-                                          height: 40,
-                                          fit: BoxFit.cover,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: nextSongs.map((song) {
+                                return Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(8),
+                                          child: Image.network(
+                                            song.thumbnailUrl,
+                                            width: 40,
+                                            height: 40,
+                                            fit: BoxFit.cover,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          ConstrainedBox(
-                                            constraints: const BoxConstraints(maxWidth: 70),
-                                            child: Text(
-                                              song.title,
-                                              style: TextStyle(
-                                                color: isDarkMode ? Colors.white : Colors.black,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                song.title,
+                                                style: TextStyle(
+                                                  color: isDarkMode ? Colors.white : Colors.black,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
                                               ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          ConstrainedBox(
-                                            constraints: const BoxConstraints(maxWidth: 70),
-                                            child: Text(
-                                              song.author,
-                                              style: TextStyle(
-                                                color: isDarkMode ? Colors.white70 : Colors.black54,
-                                                fontSize: 10,
+                                              Text(
+                                                song.author,
+                                                style: TextStyle(
+                                                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                                                  fontSize: 10,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
                                               ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
+                                            ],
                                           ),
-                                        ],
-                                      )
-                                    ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 );
-                              },
+                              }).toList(),
                             ),
                           ),
 

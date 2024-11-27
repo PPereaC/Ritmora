@@ -72,16 +72,22 @@ class SongPlayerService {
 
   // Añadir canción a la cola
   void addToQueue(Song song) async {
-    song.streamUrl = (await getStreamUrlInBackground(song.songId))!;
-    _queue.add(song);
-    _queueController.add(_queue);
+    if (!_queue.contains(song)) {
+      song.streamUrl = (await getStreamUrlInBackground(song.songId))!;
+      _queue.add(song);
+      _queueController.add(_queue);
+    }
   }
-
+  
   // Añadir canción a continuación
   void addNext(Song song) async {
     if (_currentIndex < 0) {
       addToQueue(song);
     } else {
+      // Eliminar la canción de la cola si ya existe
+      if (_queue.contains(song)) {
+        _queue.remove(song);
+      }
       song.streamUrl = (await getStreamUrlInBackground(song.songId))!;
       _queue.insert(_currentIndex + 1, song);
       _queueController.add(_queue);
