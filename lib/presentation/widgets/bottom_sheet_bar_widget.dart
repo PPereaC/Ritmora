@@ -1,6 +1,7 @@
 import 'package:apolo/presentation/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 
 import '../../domain/entities/song.dart';
@@ -67,11 +68,47 @@ class BottomSheetBarWidget extends ConsumerWidget {
           Expanded(
             child: ListView(
               children: [
-                _buildListOption(Iconsax.music_filter_outline, 'Añadir a la cola', isDarkMode, textStyle),
-                _buildListOption(Iconsax.play_circle_outline, 'Añadir a continuación', isDarkMode, textStyle),
-                _buildListOption(Iconsax.music_playlist_outline, 'Añadir a una playlist', isDarkMode, textStyle),
-                _buildListOption(Iconsax.voice_square_outline, 'Ecualizador', isDarkMode, textStyle),
-                _buildListOption(Iconsax.cd_outline, 'Ver álbum', isDarkMode, textStyle),
+                _buildListOption(
+                  Iconsax.music_filter_outline,
+                  'Añadir a la cola',
+                  isDarkMode,
+                  textStyle,
+                  () {
+                    ref.read(songPlayerProvider).addToQueue(song);
+                    context.pop();
+                  },
+                ),
+                _buildListOption(
+                  Iconsax.play_circle_outline,
+                  'Añadir a continuación',
+                  isDarkMode,
+                  textStyle,
+                  () {
+                    ref.read(songPlayerProvider).addNext(song);
+                    context.pop();
+                  },
+                ),
+                _buildListOption(
+                  Iconsax.music_playlist_outline,
+                  'Añadir a una playlist',
+                  isDarkMode,
+                  textStyle,
+                  () {},
+                ),
+                _buildListOption(
+                  Iconsax.voice_square_outline,
+                  'Ecualizador',
+                  isDarkMode,
+                  textStyle,
+                  () {},
+                ),
+                _buildListOption(
+                  Iconsax.cd_outline,
+                  'Ver álbum',
+                  isDarkMode,
+                  textStyle,
+                  () {},
+                ),
               ],
             ),
           ),
@@ -80,7 +117,7 @@ class BottomSheetBarWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildListOption(IconData icon, String title, isDarkMode, textStyle) {
+  Widget _buildListOption(IconData icon, String title, bool isDarkMode, TextTheme textStyle, Function onPressed) {
     return ListTile(
       leading: Icon(
         icon,
@@ -91,9 +128,7 @@ class BottomSheetBarWidget extends ConsumerWidget {
         title,
         style: textStyle.titleLarge!.copyWith(color: isDarkMode ? Colors.white : Colors.black),
       ),
-      onTap: () {
-        // Acción al presionar la opción
-      },
+      onTap: () => onPressed(),
     );
   }
 }

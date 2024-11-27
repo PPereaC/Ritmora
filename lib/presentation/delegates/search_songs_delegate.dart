@@ -65,11 +65,27 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
     if (_debounceTimer?.isActive ?? false) {
       _debounceTimer!.cancel();
     }
+  
+    if (debouncesSongs.isClosed) return;
+  
     _debounceTimer = Timer(const Duration(milliseconds: 800), () async {
-      final songs = await searchSongs(query);
-      initialSongs = songs;
-      debouncesSongs.add(songs);
+      try {
+        final songs = await searchSongs(query);
+        if (!debouncesSongs.isClosed) {
+          initialSongs = songs;
+          debouncesSongs.add(songs);
+        }
+      } catch (e) {
+        print('Error al buscar canciones: $e');
+      }
     });
+  }
+  
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    debouncesSongs.close();
+    super.dispose();
   }
 
   Widget buildResultsAndSuggestions (BuildContext context) {
@@ -86,6 +102,9 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
             itemBuilder: (context, index) => _SongItem(
               song: songs[index],
               onSongSelected: (context, song) async {
+
+                // Quitar el foco para ocultar el teclado
+                FocusScope.of(context).unfocus();
       
                 // Obtener el stream url de la canción en segundo plano
                 await getStreamUrlInBackground(song.songId).then((streamUrl) {
