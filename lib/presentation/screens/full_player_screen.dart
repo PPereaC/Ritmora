@@ -32,6 +32,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
         builder: (context, snapshot) {
           final currentSong = snapshot.data ?? playerService.currentSong;
           if (currentSong == null) return const SizedBox.shrink();
+          final nextSongs = playerService.queue.skip(playerService.queue.indexOf(currentSong) + 1).take(3).toList();
 
           return GestureDetector(
             onVerticalDragStart: (_) {
@@ -57,7 +58,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                 child: Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -250,7 +251,67 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                               ),
                             ],
                           ),
-                          const Spacer(flex: 2),
+
+                          const Spacer(),
+                          
+                          // Mostrar las canciones que vienen después (3 canciones)
+                          SizedBox(
+                            height: 60,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: nextSongs.length,
+                              itemBuilder: (context, index) {
+                                final song = nextSongs[index];
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                  child: Row(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.network(
+                                          song.thumbnailUrl,
+                                          width: 40,
+                                          height: 40,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          ConstrainedBox(
+                                            constraints: const BoxConstraints(maxWidth: 70),
+                                            child: Text(
+                                              song.title,
+                                              style: TextStyle(
+                                                color: isDarkMode ? Colors.white : Colors.black,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          ConstrainedBox(
+                                            constraints: const BoxConstraints(maxWidth: 70),
+                                            child: Text(
+                                              song.author,
+                                              style: TextStyle(
+                                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                                                fontSize: 10,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+
                           Container(
                             decoration: BoxDecoration(
                               border: Border(
@@ -261,7 +322,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                               ),
                             ),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              padding: const EdgeInsets.symmetric(vertical: 5),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   begin: Alignment.topCenter,
