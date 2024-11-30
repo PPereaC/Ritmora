@@ -1,9 +1,15 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:apolo/config/utils/pretty_print.dart';
 import 'package:apolo/domain/datasources/playlist_datasource.dart';
 import 'package:apolo/domain/entities/playlist.dart';
 import 'package:apolo/domain/entities/song.dart';
+import 'package:flutter/material.dart';
+import 'package:icons_plus/icons_plus.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
+
+import '../../presentation/widgets/widgets.dart';
 
 class IsarPlaylistDatasource extends PlaylistDatasource {
 
@@ -41,24 +47,53 @@ class IsarPlaylistDatasource extends PlaylistDatasource {
   }
 
   @override
-  Future<void> addSongToPlaylist(int playlistID, Song song) async {
+  Future<void> addSongToPlaylist(BuildContext context, int playlistID, Song song) async {
     final isar = await db;
-  
-    printINFO('Añadiendo ${song.title} a la playlist $playlistID');
-  
-    await isar.writeTxn(() async {
-      // Guardar la canción en la base de datos para que sea un objeto gestionado
-      await isar.songs.put(song);
-  
+    
+    try {
+      // Obtener la playlist a partir del id pasado por parámetro y cargar todas sus canciones
       final playlist = await isar.playlists.get(playlistID);
-      if (playlist != null) {
-        // Añadir la canción a los links de la playlist
-        playlist.songLinks.add(song);
+      if (playlist == null) return; // Si no existe la playlist, se sale
   
-        // Guardar los links actualizados de la playlist
-        await playlist.songLinks.save();
+      // Cargar las canciones de la playlist
+      await playlist.songLinks.load();
+      
+      // Verificar los duplicados comparando el songId para ver si existe la canción en la playlist ya
+      final isDuplicate = playlist.songLinks
+          .any((existingSong) => existingSong.songId == song.songId);
+  
+      if (isDuplicate) {
+        CustomSnackbar.show(
+          context,
+          'Esta canción ya está en la playlist',
+          Colors.red,
+          Iconsax.warning_2_outline,
+        );
+        return;
       }
-    });
+  
+      // Si no está duplicada, añadir la canción a la playlist
+      await isar.writeTxn(() async {
+        await isar.songs.put(song);
+        playlist.songLinks.add(song);
+        await playlist.songLinks.save();
+      });
+  
+      CustomSnackbar.show(
+        context,
+        'Canción añadida a la playlist',
+        Colors.green,
+        Iconsax.tick_circle_outline,
+      );
+  
+    } catch (e) { // Si hay un error, mostrar un snackbar de error con la excepción
+      CustomSnackbar.show(
+        context,
+        'Error al añadir la canción',
+        Colors.red,
+        Iconsax.warning_2_outline,
+      );
+    }
   }
 
   @override

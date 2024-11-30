@@ -1,3 +1,6 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:apolo/presentation/providers/playlist/playlist_repository_provider.dart';
 import 'package:apolo/presentation/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +25,7 @@ class BottomSheetBarWidget extends ConsumerWidget {
       height: MediaQuery.of(context).size.height * 0.44,
       child: Column(
         children: [
+
           // Indicador de arrastre
           Container(
             margin: const EdgeInsets.only(top: 8),
@@ -32,6 +36,7 @@ class BottomSheetBarWidget extends ConsumerWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
+
           // Información de la canción
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -93,7 +98,28 @@ class BottomSheetBarWidget extends ConsumerWidget {
                   'Añadir a una playlist',
                   isDarkMode,
                   textStyle,
-                  () {},
+                  () async {
+
+                    // Obtener las playlists
+                    final playlists = await ref.read(playlistRepositoryProvider).getPlaylists();
+
+                    // Navegar y obtener el resultado (lista de ids de las playlists seleccionadas)
+                    final selectedIds = await context.push<List<String>>(
+                      '/select-playlist',
+                      extra: playlists,
+                    );
+
+                    if (selectedIds == null) {
+                      // No hacer nada si no se selecciona ninguna playlist
+                    } else {
+                      if (selectedIds.isNotEmpty) {
+                        for (final id in selectedIds) {
+                          await ref.read(playlistRepositoryProvider).addSongToPlaylist(context, int.parse(id), song);
+                        }
+                      }
+                    }
+                      
+                  },
                 ),
                 _buildListOption(
                   Iconsax.voice_square_outline,

@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 
+import '../../domain/entities/playlist.dart';
 import '../../presentation/screens/screens.dart';
 import '../../presentation/views/views.dart';
 
@@ -64,6 +65,14 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/queue',
       builder: (context, state) => const QueueScreen(),
+    ),
+
+    // Select Playlist Screen
+    GoRoute(
+      path: '/select-playlist',
+      builder: (context, state) => SelectPlaylistScreen(
+        playlists: state.extra as List<Playlist>,
+      ),
     ),
 
   ]

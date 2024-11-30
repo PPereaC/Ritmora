@@ -1,6 +1,7 @@
 import 'package:apolo/domain/datasources/playlist_datasource.dart';
 import 'package:apolo/domain/entities/playlist.dart';
 import 'package:apolo/domain/entities/song.dart';
+import 'package:flutter/material.dart';
 
 import '../../domain/repositories/playlist_repository.dart';
 
@@ -16,8 +17,8 @@ class PlaylistRepositoryImpl extends PlaylistRepository {
   }
 
   @override
-  Future<void> addSongToPlaylist(int playlistID, Song song) {
-    return datasource.addSongToPlaylist(playlistID, song);
+  Future<void> addSongToPlaylist(BuildContext context, int playlistID, Song song) {
+    return datasource.addSongToPlaylist(context, playlistID, song);
   }
 
   @override
