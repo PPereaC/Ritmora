@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
 
+import '../../config/utils/background_tasks.dart';
 import '../../domain/entities/playlist.dart';
+import '../providers/song_player_provider.dart';
+import '../widgets/widgets.dart';
 
 class PlaylistScreen extends ConsumerStatefulWidget {
   final String playlistID;
@@ -91,54 +94,36 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                     child: ListView.builder(
                       padding: const EdgeInsets.only(bottom: 120),
                       itemCount: playlist.songs.length,
-                      itemBuilder: (context, index) {
-                        final song = playlist.songs[index];
-                        return ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          leading: ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: Image.network(
-                              song.thumbnailUrl,
-                              width: 55,
-                              height: 55,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
-                            ),
-                          ),
-                          title: Text(
-                            song.title,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16.0,
-                              color: Colors.white,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          subtitle: Text(
-                            song.author,
-                            style: TextStyle(
-                              fontSize: 14.0,
-                              color: Colors.grey[400],
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          trailing: IconButton(
-                            onPressed: () {
-                              // Acción para mostrar opciones de la canción
+                      itemBuilder: (context, index) => SongListTile(
+                        song: playlist.songs[index],
+                        onSongSelected: (context, song) async {
+                          // Quitar el foco para ocultar el teclado
+                          FocusScope.of(context).unfocus();
+                
+                          // Obtener el stream url de la canción en segundo plano
+                          await getStreamUrlInBackground(song.songId).then((streamUrl) {
+                            song.streamUrl = streamUrl;
+                          });
+                
+                          // Reproducir la canción
+                          context.read(songPlayerProvider).playSong(song);
+                
+                        },
+                        onSongOptions: () {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (context) {
+                              return BottomSheetBarWidget(
+                                song: playlist.songs[index],
+                              );
                             },
-                            icon: const Icon(Icons.more_vert, color: Colors.white),
-                          ),
-                          onTap: () {
-                            // Acción al tocar la canción
-                          },
-                        );
-                      },
+                          );
+                        },
+                      )
                     ),
                   ),
                 ],
               ),
-              // Controlador de música fijo en la parte inferior
-              // MusicController(musicPlayerProvider: musicPlayerProvider),
             ],
           );
         },
