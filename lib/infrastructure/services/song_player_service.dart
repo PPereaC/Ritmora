@@ -1,5 +1,3 @@
-// ignore_for_file: unused_field
-
 import 'dart:async';
 
 import 'package:just_audio/just_audio.dart';
@@ -24,9 +22,9 @@ class SongPlayerService {
     });
   }
 
-  // Cola de reproducción
+  // Historial y cola de reproducción
+  final List<Song> _history = []; // Añadimos esta lista para el historial
   final List<Song> _queue = [];
-  int _currentIndex = -1;
 
   // Getters
   Song? get currentSong => _currentSong;
@@ -47,71 +45,27 @@ class SongPlayerService {
     await _justAudioPlayer.seek(position);
   }
 
+  // Reproducir una canción
   Future<void> playSong(Song song) async {
-    // Si la canción no está en la cola, añadirla
-    if (!_queue.contains(song)) {
-      _queue.add(song);
-      _currentIndex = _queue.length - 1;
-    } else {
-      _currentIndex = _queue.indexOf(song);
+    // Si hay una canción actual, moverla al historial
+    if (_currentSong != null) {
+      _history.add(_currentSong!);
     }
-    
+
     _currentSong = song;
     _songController.add(song);
-    _queueController.add(_queue);
-    
+
+    // Cargar y reproducir la canción
     await _justAudioPlayer.setUrl(song.streamUrl);
     await _justAudioPlayer.play();
     _isPlaying = true;
+
+    _queueController.add(_queue);
   }
 
   Future<void> pause() async {
     await _justAudioPlayer.pause();
     _isPlaying = false;
-  }
-
-  // Añadir canción a la cola
-  void addToQueue(Song song) async {
-    if (!_queue.contains(song)) {
-      song.streamUrl = (await getStreamUrlInBackground(song.songId))!;
-      _queue.add(song);
-      _queueController.add(_queue);
-    }
-  }
-  
-  // Añadir canción a continuación
-  void addNext(Song song) async {
-    if (_currentIndex < 0) {
-      addToQueue(song);
-    } else {
-      // Eliminar la canción de la cola si ya existe
-      if (_queue.contains(song)) {
-        _queue.remove(song);
-      }
-      song.streamUrl = (await getStreamUrlInBackground(song.songId))!;
-      _queue.insert(_currentIndex + 1, song);
-      _queueController.add(_queue);
-    }
-  }
-
-  // Reproducir siguiente canción
-  Future<void> playNext() async {
-    if (_currentIndex < _queue.length - 1) {
-      _currentIndex++;
-      await playSong(_queue[_currentIndex]);
-    }
-  }
-
-  // Reproducir canción anterior
-  Future<void> playPrevious() async {
-    if (_currentIndex > 0) {
-      _currentIndex--;
-      await playSong(_queue[_currentIndex]);
-    } else if (_currentIndex == 0) {
-      // Reiniciar canción actual
-      await _justAudioPlayer.seek(Duration.zero);
-      await resume();
-    }
   }
 
   Future<void> resume() async {
@@ -123,24 +77,77 @@ class SongPlayerService {
 
   Future<void> togglePlay() async {
     if (_currentSong == null) return;
-      
+
     if (_justAudioPlayer.playing) {
       await pause();
     } else {
       await resume();
     }
-    
+
     _isPlaying = _justAudioPlayer.playing;
+  }
+
+  // Añadir canción al final de la cola
+  Future<void> addToQueue(Song song) async {
+    if (!_queue.contains(song)) {
+      song.streamUrl = (await getStreamUrlInBackground(song.songId))!;
+      _queue.add(song);
+      _queueController.add(_queue);
+    }
+  }
+
+  // Añadir canción siguiente en la cola
+  Future<void> addNext(Song song) async {
+    if (!_queue.contains(song)) {
+      song.streamUrl = (await getStreamUrlInBackground(song.songId))!;
+      _queue.insert(0, song);
+      _queueController.add(_queue);
+    }
+  }
+
+  // Este método modifica la lista mutable interna _queue y luego actualiza el stream de la cola.
+  void reorderQueue(int oldIndex, int newIndex) {
+    if (oldIndex < 0 || oldIndex >= _queue.length) return;
+    if (newIndex < 0 || newIndex >= _queue.length) return;
+
+    final item = _queue.removeAt(oldIndex);
+    _queue.insert(newIndex, item);
+    _queueController.add(_queue);
+  }
+
+  // Reproducir siguiente canción
+  Future<void> playNext() async {
+    if (_queue.isNotEmpty) {
+      final nextSong = _queue.removeAt(0);
+      await playSong(nextSong);
+    } else {
+      // No hay más canciones en la cola
+      await _justAudioPlayer.stop();
+      _isPlaying = false;
+    }
+    _queueController.add(_queue);
+  }
+
+  // Reproducir canción anterior
+  Future<void> playPrevious() async {
+    if (_history.isNotEmpty) {
+      final previousSong = _history.removeLast();
+      // Añadir la canción actual al inicio de la cola para no perderla
+      if (_currentSong != null) {
+        _queue.insert(0, _currentSong!);
+      }
+      await playSong(previousSong);
+    } else {
+      // No hay canción anterior; reiniciar la canción actual
+      await _justAudioPlayer.seek(Duration.zero);
+      await resume();
+    }
+    _queueController.add(_queue);
   }
 
   // Eliminar canción de la cola
   void removeFromQueue(int index) {
     if (index < 0 || index >= _queue.length) return;
-    
-    if (index < _currentIndex) {
-      _currentIndex--;
-    }
-    
     _queue.removeAt(index);
     _queueController.add(_queue);
   }
@@ -149,5 +156,6 @@ class SongPlayerService {
     _justAudioPlayer.dispose();
     _songController.close();
     _queueController.close();
+    _playerStateListener?.cancel();
   }
 }

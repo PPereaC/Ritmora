@@ -334,7 +334,12 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
                                   _buildControlButton(Iconsax.voice_square_outline, () {}),
-                                  _buildControlButton(Iconsax.music_square_outline, () {}),
+                                  _buildControlButton(
+                                    Iconsax.music_square_outline,
+                                    () {
+                                      context.push('/queue');
+                                    }
+                                  ),
                                   _buildControlButton(Iconsax.setting_3_outline, () {}),
                                 ],
                               ),

@@ -58,7 +58,13 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/full-player',
       builder: (context, state) => const FullPlayerScreen(),
-    )
+    ),
+
+    // Queue Screen
+    GoRoute(
+      path: '/queue',
+      builder: (context, state) => const QueueScreen(),
+    ),
 
   ]
 );
