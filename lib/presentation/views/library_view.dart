@@ -37,6 +37,33 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
     super.dispose();
   }
 
+  Future<bool> showConfirmationDialog(
+    BuildContext context,
+    String title,
+    String content,
+    String cancelButtonText,
+    String confirmButtonText,
+  ) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(cancelButtonText),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(confirmButtonText),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   Future<void> _showCreatePlaylistDialog(bool isDarkMode) {
     return showDialog(
       context: context,
@@ -54,7 +81,7 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
           final playlist = Playlist(
             title: value,
             author: '',
-            thumbnailUrl: 'https://img.freepik.com/premium-vector/image-available-icon-set-default-missing-photo-stock-vector-symbol-black-filled-outlined-style-no-image-found-sign_268104-2278.jpg',
+            thumbnailUrl: 'https://pictures.abebooks.com/isbn/9781474836340-es.jpg',
           );
           await ref.read(playlistProvider.notifier).addPlaylist(playlist);
           if (context.mounted) {
@@ -163,6 +190,21 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
               child: InkWell(
                 onTap: () { // Acción al tocar la playlist
                   context.go('/library/playlist/${playlist.id}');
+                },
+                onLongPress: () async { // Acción al mantener presionado la playlist (borrar)
+                  final shouldDelete = await showConfirmationDialog(
+                    context,
+                    '¿Seguro que quieres eliminar la playlist?',
+                    'Esta acción no se puede deshacer',
+                    'Cancelar',
+                    'Eliminar',
+                  );
+                  if (shouldDelete) {
+                    await ref.read(playlistProvider.notifier).deletePlaylist(playlist);
+                    if (context.mounted && context.canPop()) {
+                      context.pop();
+                    }
+                  }
                 },
                 child: Container(
                   decoration: BoxDecoration(

@@ -12,7 +12,7 @@ class CustomDialog extends StatelessWidget {
   const CustomDialog({
     super.key,
     required this.title,
-    required this.hintText,
+    this.hintText = '',
     required this.cancelButtonText,
     required this.confirmButtonText,
     required this.onConfirm,
@@ -46,31 +46,34 @@ class CustomDialog extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            
             const SizedBox(height: 24),
-            TextField(
-              controller: controller,
-              autofocus: true,
-              style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black87,
-                fontSize: 16,
+
+            if(hintText.isNotEmpty)
+              TextField(
+                controller: controller,
+                autofocus: true,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                  fontSize: 16,
+                ),
+                decoration: InputDecoration(
+                  hintText: hintText,
+                  hintStyle: TextStyle(
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                  filled: true,
+                  fillColor: isDarkMode ? Colors.grey[850] : Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                ),
               ),
-              decoration: InputDecoration(
-                hintText: hintText,
-                hintStyle: TextStyle(
-                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                ),
-                filled: true,
-                fillColor: isDarkMode ? Colors.grey[850] : Colors.grey[100],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-              ),
-            ),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,

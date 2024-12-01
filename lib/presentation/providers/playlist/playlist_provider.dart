@@ -1,3 +1,4 @@
+import 'package:apolo/config/utils/pretty_print.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:apolo/domain/entities/playlist.dart';
 
@@ -72,6 +73,17 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
       );
     }
   }
+
+  Future<void> deletePlaylist(Playlist playlist) async {
+    try {
+      printINFO('Eliminando la playlist: ${playlist.title}');
+      await _repository.removePlaylist(playlist);
+      await loadPlaylists(); // Recargar la lista
+    } catch (e) {
+      printERROR('Error al eliminar la playlist: $e');
+    }
+  }
+
 }
 
 final playlistProvider = StateNotifierProvider<PlaylistNotifier, PlaylistState>(
