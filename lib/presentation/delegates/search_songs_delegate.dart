@@ -6,9 +6,7 @@ import 'package:apolo/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:icons_plus/icons_plus.dart';
 
-import '../../config/utils/background_tasks.dart';
 import '../../domain/entities/song.dart';
-import '../providers/song_player_provider.dart';
 
 
 typedef SearchSongsCallback = Future<List<Song>> Function(String query);
@@ -100,22 +98,6 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
             itemCount: songs.length,
             itemBuilder: (context, index) => SongListTile(
               song: songs[index],
-              onSongSelected: (context, song) async {
-
-                // Quitar el foco para ocultar el teclado
-                FocusScope.of(context).unfocus();
-      
-                // Obtener el stream url de la canción en segundo plano
-                await getStreamUrlInBackground(song.songId).then((streamUrl) {
-                  song.streamUrl = streamUrl;
-                  clearStreams();
-                  close(context, song);
-                });
-      
-                // Reproducir la canción
-                context.read(songPlayerProvider).playSong(song);
-      
-              },
               onSongOptions: () {
                 showModalBottomSheet(
                   context: context,

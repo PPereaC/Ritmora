@@ -4,17 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
 
+import '../../config/utils/background_tasks.dart';
 import '../../domain/entities/song.dart';
 
 class SongListTile extends ConsumerWidget {
 
   final Song song;
-  final Function onSongSelected;
   final Function onSongOptions;
 
   const SongListTile({
     super.key,
-    required this.onSongSelected,
     required this.song,
     required this.onSongOptions,
   });
@@ -27,7 +26,19 @@ class SongListTile extends ConsumerWidget {
     final size = MediaQuery.of(context).size;
 
     return ListTile(
-      onTap: () => onSongSelected(context, song),
+      onTap: () async {
+
+        // Quitar el foco para ocultar el teclado
+        FocusScope.of(context).unfocus();
+        
+        // Obtener el stream url de la canción en segundo plano
+        await getStreamUrlInBackground(song.songId).then((streamUrl) {
+          song.streamUrl = streamUrl!;
+        });
+        
+        // Reproducir la canción
+        ref.read(songPlayerProvider).playSong(song);
+      },
       contentPadding: const EdgeInsets.only(left: 10, right: 0),
       // Imagen de la canción
       leading: SizedBox(
