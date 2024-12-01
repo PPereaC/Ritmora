@@ -157,6 +157,7 @@ class PlaylistHeader extends ConsumerWidget {
                     final image = await ImagePickerWidget.pickImage(context);
                     if (image != null) {
                       ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, image.path);
+                      context.push('/library');
                     }
                   }
                 },
@@ -169,6 +170,7 @@ class PlaylistHeader extends ConsumerWidget {
         final image = await ImagePickerWidget.pickImage(context);
         if (image != null) {
           ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, image.path);
+          context.push('/library');
         }
       }
     }
