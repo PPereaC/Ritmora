@@ -84,6 +84,15 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
     }
   }
 
+  Future<void> updatePlaylistThumbnail(int playlistID, String thumbnailURL) async {
+    try {
+      await _repository.updatePlaylistThumbnail(playlistID, thumbnailURL);
+      await loadPlaylists(); // Recargar la lista
+    } catch (e) {
+      printERROR('Error al actualizar la imagen de la playlist: $e');
+    }
+  }
+
 }
 
 final playlistProvider = StateNotifierProvider<PlaylistNotifier, PlaylistState>(

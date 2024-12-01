@@ -11,5 +11,6 @@ abstract class PlaylistDatasource {
   Future<void> updatePlaylist(Playlist playlist);
   Future<void> addSongToPlaylist(BuildContext context, int playlistID, Song song);
   Future<Playlist> getPlaylistByID(int playlistID);
+  Future<void> updatePlaylistThumbnail(int playlistID, String thumbnailURL);
 
 }

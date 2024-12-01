@@ -142,5 +142,17 @@ class IsarPlaylistDatasource extends PlaylistDatasource {
       return playlist!;
     });
   }
+  
+  @override
+  Future<void> updatePlaylistThumbnail(int playlistID, String thumbnailURL) {
+    final isar = db;
+    return isar.then((isar) async {
+      final playlist = await isar.playlists.get(playlistID);
+      playlist?.thumbnailUrl = thumbnailURL;
+      await isar.writeTxn(() async {
+        await isar.playlists.put(playlist!);
+      });
+    });
+  }
 
 }

@@ -9,7 +9,7 @@ class Playlist {
 
   final String title;
   final String author;
-  final String thumbnailUrl;
+  String thumbnailUrl;
 
   @Ignore()
   List<Song> songs = [];

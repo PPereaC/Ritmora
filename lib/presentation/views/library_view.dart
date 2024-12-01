@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:apolo/presentation/providers/playlist/playlist_provider.dart';
 import 'package:apolo/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -81,9 +83,11 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
           final playlist = Playlist(
             title: value,
             author: '',
-            thumbnailUrl: 'https://pictures.abebooks.com/isbn/9781474836340-es.jpg',
+            thumbnailUrl: 'assets/images/playlist_default.jpg',
           );
+          
           await ref.read(playlistProvider.notifier).addPlaylist(playlist);
+          
           if (context.mounted) {
             Navigator.pop(context);
           }
@@ -223,17 +227,21 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
                     borderRadius: BorderRadius.circular(10.0),
                     child: Stack(
                       children: [
-                        Image.network(
-                          playlist.thumbnailUrl,
+
+                        Image(
+                          image: playlist.thumbnailUrl.startsWith('assets/')
+                              ? AssetImage(playlist.thumbnailUrl)
+                              : FileImage(File(playlist.thumbnailUrl)) as ImageProvider,
                           height: double.infinity,
                           width: double.infinity,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => Icon(
-                            Icons.playlist_play,
+                            Icons.error_outline,
                             size: 48,
                             color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
                           ),
                         ),
+                        
                         Positioned(
                           bottom: 0,
                           left: 0,

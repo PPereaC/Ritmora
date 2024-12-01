@@ -1,9 +1,16 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:io';
 import 'package:apolo/presentation/providers/playlist/playlist_provider.dart';
+import 'package:apolo/presentation/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 
+import '../../config/helpers/permissions_helper.dart';
 import '../../domain/entities/playlist.dart';
+import '../widgets/image_picker_widget.dart';
 import '../widgets/widgets.dart';
 
 class PlaylistScreen extends ConsumerStatefulWidget {
@@ -75,16 +82,15 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
               Column(
                 children: [
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
                         flex: 3,
                         child: PlaylistHeader(
                           title: playlist.title,
                           thumbnail: playlist.thumbnailUrl,
+                          playlistID: playlist.id,
                         ),
                       ),
-                      const SizedBox(width: 16),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -117,48 +123,141 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
   }
 }
 
-class PlaylistHeader extends StatelessWidget {
+class PlaylistHeader extends ConsumerWidget {
   final String title;
   final String thumbnail;
+  final int playlistID;
 
   const PlaylistHeader({
     super.key,
     required this.title, 
     required this.thumbnail,
+    required this.playlistID
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          Center(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10.0),
-              child: Image.network(
-                thumbnail,
-                width: 200,
-                height: 200,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => 
-                  const Icon(Icons.error, size: 200),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final textStyle = Theme.of(context).textTheme;
+    final isDarkMode = ref.watch(isDarkmodeProvider);
+
+    Future<void> updateThumbnail() async {
+      bool isGranted = await PermissionsHelper.storagePermission();
+      if (!isGranted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Permisos de almacenamiento'),
+            content: const Text('No tienes permisos de almacenamiento. Por favor, actívalos manualmente en la configuración de tu dispositivo.'),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  bool isGranted = await PermissionsHelper.storagePermission();
+                  if (isGranted) {
+                    final image = await ImagePickerWidget.pickImage(context);
+                    if (image != null) {
+                      ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, image.path);
+                    }
+                  }
+                },
+                child: const Text('Aceptar'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        final image = await ImagePickerWidget.pickImage(context);
+        if (image != null) {
+          ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, image.path);
+        }
+      }
+    }
+
+    return Column(
+      children: [
+        MouseRegion(
+          child: GestureDetector(
+            onLongPress: () {
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                builder: (context) => Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  child: SafeArea(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[600],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        ListTile(
+                          leading: const Icon(Iconsax.edit_outline, size: 28),
+                          title: Text(
+                            'Cambiar nombre',
+                            style: textStyle.titleLarge,
+                          ),
+                          onTap: () {
+                            context.pop();
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Iconsax.gallery_edit_outline, size: 28),
+                          title: Text(
+                            'Cambiar imagen',
+                            style: textStyle.titleLarge,
+                          ),
+                          onTap: () {
+                            context.pop();
+                            updateThumbnail();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 5),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20.0),
+                child: Image(
+                  image: thumbnail.startsWith('assets/')
+                      ? AssetImage(thumbnail)
+                      : FileImage(File(thumbnail)) as ImageProvider,
+                  height: 300,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Icon(
+                    Icons.error_outline,
+                    size: 48,
+                    color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
+                  ),
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 16.0),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 24.0,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-            textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16.0),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 24.0,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-        ],
-      ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 }

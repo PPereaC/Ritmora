@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:animate_do/animate_do.dart';
 import 'package:apolo/presentation/providers/providers.dart';
 import 'package:flutter/material.dart';
@@ -163,11 +165,22 @@ class _PlaylistImage extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: thumbnailUrl != null
-          ? Image.network(
-              thumbnailUrl!,
+          ? Image(
+              image: thumbnailUrl!.startsWith('assets/')
+                  ? AssetImage(thumbnailUrl!)
+                  : FileImage(File(thumbnailUrl!)) as ImageProvider,
               width: 56,
               height: 56,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(
+                width: 56,
+                height: 56,
+                color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                child: Icon(
+                  Icons.error_outline,
+                  color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+                ),
+              ),
             )
           : Container(
               width: 56,
