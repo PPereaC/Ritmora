@@ -47,52 +47,54 @@ class IsarPlaylistDatasource extends PlaylistDatasource {
   }
 
   @override
-  Future<void> addSongToPlaylist(BuildContext context, int playlistID, Song song) async {
+  Future<void> addSongToPlaylist(BuildContext context, int playlistID, Song song, {bool showNotifications = true, bool reloadPlaylists = true}) async {
     final isar = await db;
     
     try {
-      // Obtener la playlist a partir del id pasado por parámetro y cargar todas sus canciones
       final playlist = await isar.playlists.get(playlistID);
-      if (playlist == null) return; // Si no existe la playlist, se sale
-  
-      // Cargar las canciones de la playlist
+      if (playlist == null) return;
+
       await playlist.songLinks.load();
       
-      // Verificar los duplicados comparando el songId para ver si existe la canción en la playlist ya
       final isDuplicate = playlist.songLinks
           .any((existingSong) => existingSong.songId == song.songId);
-  
+
       if (isDuplicate) {
-        CustomSnackbar.show(
-          context,
-          'Esta canción ya está en la playlist',
-          Colors.red,
-          Iconsax.warning_2_outline,
-        );
+        if (showNotifications) {
+          CustomSnackbar.show(
+            context,
+            'Esta canción ya está en la playlist',
+            Colors.red,
+            Iconsax.warning_2_outline,
+          );
+        }
         return;
       }
-  
-      // Si no está duplicada, añadir la canción a la playlist
+
       await isar.writeTxn(() async {
         await isar.songs.put(song);
         playlist.songLinks.add(song);
         await playlist.songLinks.save();
       });
-  
-      CustomSnackbar.show(
-        context,
-        'Canción añadida a la playlist',
-        Colors.green,
-        Iconsax.tick_circle_outline,
-      );
-  
-    } catch (e) { // Si hay un error, mostrar un snackbar de error con la excepción
-      CustomSnackbar.show(
-        context,
-        'Error al añadir la canción',
-        Colors.red,
-        Iconsax.warning_2_outline,
-      );
+
+      if (showNotifications) {
+        CustomSnackbar.show(
+          context,
+          'Canción añadida a la playlist',
+          Colors.green,
+          Iconsax.tick_circle_outline,
+        );
+      }
+
+    } catch (e) {
+      if (showNotifications) {
+        CustomSnackbar.show(
+          context,
+          'Error al añadir la canción',
+          Colors.red,
+          Iconsax.warning_2_outline,
+        );
+      }
     }
   }
 

@@ -69,7 +69,7 @@ class SongListTile extends ConsumerWidget {
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
-        'Canción · ${song.author}',
+        song.author,
         style: textStyles.bodyLarge!.copyWith(
           color: Colors.grey
         ),

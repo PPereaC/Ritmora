@@ -1,13 +1,20 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
+import 'package:apolo/config/utils/pretty_print.dart';
 import 'package:apolo/presentation/providers/playlist/playlist_provider.dart';
 import 'package:apolo/presentation/widgets/widgets.dart';
+import 'package:csv/csv.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 
+import '../../config/helpers/permissions_helper.dart';
 import '../../domain/entities/playlist.dart';
+import '../../domain/entities/song.dart';
 import '../providers/theme/theme_provider.dart';
 
 class LibraryView extends ConsumerStatefulWidget {
@@ -97,6 +104,137 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
     );
   }
 
+  Future<void> _importPlaylist() async {
+    List<Song> songList = [];
+    String playlistName = '';
+  
+    try {
+      // Verificar permisos de almacenamiento
+      bool hasPermissions = await PermissionsHelper.storagePermission();
+      if (!hasPermissions) {
+        printERROR('No se concedieron los permisos necesarios');
+        return;
+      }
+  
+      // Configurar FilePicker para seleccionar un archivo CSV
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+        allowMultiple: false,
+        dialogTitle: 'Seleccionar archivo CSV',
+        withData: true,
+      );
+  
+      if (result != null) {
+        final path = result.files.single.path;
+        if (path != null) {
+          final file = File(path);
+          if (path.toLowerCase().endsWith('.csv')) {
+            final contents = await file.readAsString();
+            final rows = const CsvToListConverter().convert(contents);
+            
+            if (rows.isEmpty) {
+              printERROR('El archivo CSV está vacío');
+              return;
+            }
+  
+            // Procesar los headers (encabezados)
+            final headers = rows.first;
+            final mediaIdIndex = headers.indexWhere(
+              (header) => header.toString().toLowerCase() == 'mediaid'
+            );
+            final titleIndex = headers.indexWhere(
+              (header) => header.toString().toLowerCase() == 'title'
+            );
+            final artistsIndex = headers.indexWhere(
+              (header) => header.toString().toLowerCase() == 'artists'
+            );
+            final thumbnailUrlIndex = headers.indexWhere(
+              (header) => header.toString().toLowerCase() == 'thumbnailurl'
+            );
+            final playlistNameIndex = headers.indexWhere(
+              (header) => header.toString().toLowerCase() == 'playlistname'
+            );
+  
+            // Verificar que existan todas las columnas necesarias
+            if (mediaIdIndex == -1 || titleIndex == -1 || 
+                artistsIndex == -1 || thumbnailUrlIndex == -1 || playlistNameIndex == -1) {
+                CustomSnackbar.show(
+                  context,
+                  'Faltan columnas requeridas en el CSV',
+                  Colors.red,
+                  Iconsax.warning_2_outline,
+                  duration: 3,
+                );
+              printERROR('Faltan columnas requeridas en el CSV');
+              return;
+            }
+  
+            // Procesar filas y crear canciones
+            for (var row in rows.skip(1)) {
+              if (row.length > mediaIdIndex) {
+                final song = Song(
+                  songId: row[mediaIdIndex].toString(),
+                  title: row[titleIndex].toString(),
+                  author: row[artistsIndex].toString(),
+                  thumbnailUrl: row[thumbnailUrlIndex].toString(),
+                  streamUrl: '',
+                  endUrl: '/watch?v=${row[mediaIdIndex].toString()}',
+                  duration: '',
+                );
+                songList.add(song);
+                playlistName = row[playlistNameIndex].toString();
+              }
+            }
+
+            if (songList.isEmpty) {
+              printERROR('No se encontraron canciones válidas en el CSV');
+              return;
+            }
+
+            // Crear y guardar la playlist
+            final playlist = Playlist(
+              title: playlistName,
+              author: '',
+              thumbnailUrl: 'assets/images/playlist_default.jpg',
+            );
+
+            await ref.read(playlistProvider.notifier).addPlaylist(playlist);
+
+            // Agregar todas las canciones a la playlist
+            for (final song in songList) {
+              await ref.read(playlistProvider.notifier).addSongToPlaylist(
+                context, 
+                playlist.id, 
+                song,
+                showNotifications: false,
+                reloadPlaylists: false  // Evita recargas innecesarias
+              );
+            }
+
+            // Recargar la lista una sola vez al finalizar
+            await ref.read(playlistProvider.notifier).loadPlaylists();
+
+            // Mostrar una única notificación al finalizar
+            CustomSnackbar.show(
+              context,
+              'Playlist importada con éxito: ${songList.length} canciones agregadas',
+              Colors.green,
+              Iconsax.tick_circle_outline,
+              duration: 3,
+            );
+            
+          }
+        }
+      } else {
+        printERROR('No se seleccionó ningún archivo');
+      }
+    } catch (e) {
+      printERROR('Error al procesar el archivo: $e');
+    }
+  }
+    
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = ref.watch(isDarkmodeProvider);
@@ -116,8 +254,16 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
         ),
         actions: [
           IconButton(
+            onPressed: () => _importPlaylist(),
             icon: Icon(
-              Iconsax.add_circle_bold,
+              Iconsax.import_2_outline,
+              color: isDarkMode ? Colors.white : Colors.grey,
+              size: 28,
+            ),
+          ),
+          IconButton(
+            icon: Icon(
+              Iconsax.add_square_outline,
               color: isDarkMode ? Colors.white : Colors.grey,
               size: 28,
             ),

@@ -9,8 +9,10 @@ environment:
 
 dependencies:
   animate_do: ^3.3.4
+  csv: ^6.0.0
   device_info_plus: ^11.1.1
   dio: ^5.7.0
+  file_picker: ^8.1.4
   flutter:
     sdk: flutter
   flutter_riverpod: ^2.6.1

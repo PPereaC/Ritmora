@@ -1,7 +1,9 @@
 import 'package:apolo/config/utils/pretty_print.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:apolo/domain/entities/playlist.dart';
 
+import '../../../domain/entities/song.dart';
 import '../../../infrastructure/repositories/playlist_repository_impl.dart';
 import 'playlist_repository_provider.dart';
 
@@ -57,6 +59,19 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
     } catch (e) {
       state = state.copyWith(
         errorMessage: 'Error al añadir la playlist: $e',
+      );
+    }
+  }
+
+  Future<void> addSongToPlaylist(BuildContext context, int playlistID, Song song, {bool showNotifications = true, bool reloadPlaylists = true}) async {
+    try {
+      await _repository.addSongToPlaylist(context, playlistID, song, showNotifications: showNotifications);
+      if (reloadPlaylists) {
+        await loadPlaylists(); // Solo recarga si es necesario
+      }
+    } catch (e) {
+      state = state.copyWith(
+        errorMessage: 'Error al añadir la canción a la playlist: $e',
       );
     }
   }

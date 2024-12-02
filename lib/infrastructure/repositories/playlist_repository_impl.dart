@@ -17,8 +17,8 @@ class PlaylistRepositoryImpl extends PlaylistRepository {
   }
 
   @override
-  Future<void> addSongToPlaylist(BuildContext context, int playlistID, Song song) {
-    return datasource.addSongToPlaylist(context, playlistID, song);
+  Future<void> addSongToPlaylist(BuildContext context, int playlistID, Song song, {bool showNotifications = true, bool reloadPlaylists = true}) {
+    return datasource.addSongToPlaylist(context, playlistID, song, showNotifications: showNotifications);
   }
 
   @override
