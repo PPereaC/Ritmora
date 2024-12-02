@@ -10,7 +10,6 @@ class PipedSearchSongsMapper {
   }
 
   static String getHighQualityThumbnail(String videoId) {
-    // Intentar obtener la máxima calidad, con fallbacks
     return 'https://i.ytimg.com/vi/$videoId/maxresdefault.jpg';
   }
 

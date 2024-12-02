@@ -15,6 +15,7 @@ import 'package:icons_plus/icons_plus.dart';
 import '../../config/helpers/permissions_helper.dart';
 import '../../domain/entities/playlist.dart';
 import '../../domain/entities/song.dart';
+import '../../infrastructure/mappers/piped_search_songs_mapper.dart';
 import '../providers/theme/theme_provider.dart';
 
 class LibraryView extends ConsumerStatefulWidget {
@@ -149,16 +150,13 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
             final artistsIndex = headers.indexWhere(
               (header) => header.toString().toLowerCase() == 'artists'
             );
-            final thumbnailUrlIndex = headers.indexWhere(
-              (header) => header.toString().toLowerCase() == 'thumbnailurl'
-            );
             final playlistNameIndex = headers.indexWhere(
               (header) => header.toString().toLowerCase() == 'playlistname'
             );
   
             // Verificar que existan todas las columnas necesarias
             if (mediaIdIndex == -1 || titleIndex == -1 || 
-                artistsIndex == -1 || thumbnailUrlIndex == -1 || playlistNameIndex == -1) {
+                artistsIndex == -1 || playlistNameIndex == -1) {
                 CustomSnackbar.show(
                   context,
                   'Faltan columnas requeridas en el CSV',
@@ -177,7 +175,7 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
                   songId: row[mediaIdIndex].toString(),
                   title: row[titleIndex].toString(),
                   author: row[artistsIndex].toString(),
-                  thumbnailUrl: row[thumbnailUrlIndex].toString(),
+                  thumbnailUrl: PipedSearchSongsMapper.getHighQualityThumbnail(row[mediaIdIndex].toString()),
                   streamUrl: '',
                   endUrl: '/watch?v=${row[mediaIdIndex].toString()}',
                   duration: '',

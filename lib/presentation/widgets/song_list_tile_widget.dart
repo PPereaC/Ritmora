@@ -1,5 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:animate_do/animate_do.dart';
 import 'package:apolo/presentation/providers/providers.dart';
+import 'package:apolo/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
@@ -28,16 +31,31 @@ class SongListTile extends ConsumerWidget {
     return ListTile(
       onTap: () async {
 
+        bool isPlayable = true;
+
         // Quitar el foco para ocultar el teclado
         FocusScope.of(context).unfocus();
         
         // Obtener el stream url de la canción en segundo plano
-        await getStreamUrlInBackground(song.songId).then((streamUrl) {
-          song.streamUrl = streamUrl!;
+        await getStreamUrlInBackground(song.songId).then((url) {
+          if (url == null) {
+            CustomSnackbar.show(
+              context,
+              'No es posible reproducir esta canción',
+              Colors.red,
+              Iconsax.warning_2_outline,
+              duration: 3,
+            );
+            isPlayable = false;
+            return;
+          }
+          song.streamUrl = url;
         });
         
-        // Reproducir la canción
-        ref.read(songPlayerProvider).playSong(song);
+        if(isPlayable) { // Reproducir la canción si no hay problemas
+          ref.read(songPlayerProvider).playSong(song);
+        }
+        
       },
       contentPadding: const EdgeInsets.only(left: 10, right: 0),
       // Imagen de la canción
