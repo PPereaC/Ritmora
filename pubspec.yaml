@@ -49,7 +49,6 @@ flutter:
   assets:
     - assets/
     - assets/images/
-    - assets/images/playlist_default.jpg
 
   # Fonts
   fonts:

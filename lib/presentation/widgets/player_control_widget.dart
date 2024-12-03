@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../config/utils/constants.dart';
 import '../../domain/entities/song.dart';
 import '../../infrastructure/services/song_player_service.dart';
 import '../providers/theme/theme_provider.dart';
@@ -67,8 +68,15 @@ class PlayerControlWidget extends ConsumerWidget {
                         fit: BoxFit.cover,
                         loadingBuilder: (context, child, loadingProgress) => 
                           FadeIn(child: child),
-                        errorBuilder: (context, error, stackTrace) => 
-                          const Icon(Icons.error),
+                        errorBuilder: (context, error, _) => Container(
+                          color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                          child: Image.asset(
+                            defaultPoster,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                          )
+                        ),
                       ),
                     ),
                   ),
@@ -84,7 +92,7 @@ class PlayerControlWidget extends ConsumerWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 subtitle: Text(
-                  'Canción · ${currentSong.author}',
+                  currentSong.author,
                   style: textStyles.bodyMedium!.copyWith(
                     color: Colors.grey,
                   ),

@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
 
 import '../../config/utils/background_tasks.dart';
+import '../../config/utils/constants.dart';
 import '../../domain/entities/song.dart';
 
 class SongListTile extends ConsumerWidget {
@@ -76,20 +77,21 @@ class SongListTile extends ConsumerWidget {
               fadeOutDuration: const Duration(milliseconds: 300),
               placeholder: (context, url) => Center(
                 child: Image.asset(
-                  'assets/images/loading.gif',
+                  defaultLoader,
                   width: double.infinity,
                   height: double.infinity,
                   fit: BoxFit.cover,
                 ),
               ),
-              errorWidget: (context, url, error) {
-                // Evitar que siga intentando cargar
-                debugPrint('Error cargando imagen: $error');
-                return Image.asset(
-                  'assets/images/playlist_default.jpg',
+              errorWidget: (context, url, error) => Container(
+                color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                child: Image.asset(
+                  defaultPoster,
                   fit: BoxFit.cover,
-                );
-              },
+                  width: double.infinity,
+                  height: double.infinity,
+                )
+              ),
               maxHeightDiskCache: 300,
               // Timeout después de 10 segundos
               httpHeaders: const {'Cache-Control': 'max-age=7200'},

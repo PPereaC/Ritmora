@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:animate_do/animate_do.dart';
 import 'package:apolo/presentation/providers/playlist/playlist_repository_provider.dart';
 import 'package:apolo/presentation/providers/providers.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 
+import '../../config/utils/constants.dart';
 import '../../domain/entities/song.dart';
 
 class BottomSheetBarWidget extends ConsumerWidget {
@@ -47,7 +49,21 @@ class BottomSheetBarWidget extends ConsumerWidget {
                   child: SizedBox(
                     width: 55,
                     height: 55,
-                    child: Image.network(song.thumbnailUrl, fit: BoxFit.cover),
+                    child: Image.network(
+                      song.thumbnailUrl,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) => 
+                        FadeIn(child: child),
+                      errorBuilder: (context, error, _) => Container(
+                        color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                        child: Image.asset(
+                          defaultPoster,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                        )
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),

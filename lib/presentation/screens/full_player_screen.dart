@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 
+import '../../config/utils/constants.dart';
 import '../../domain/entities/song.dart';
 import '../providers/providers.dart';
 import '../widgets/widgets.dart';
@@ -80,6 +81,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                       ),
                     ),
                     
+                    // Carátula de la canción
                     Expanded(
                       flex: 2,
                       child: Padding(
@@ -94,34 +96,51 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: isDarkMode ? Colors.black.withOpacity(0.3) : Colors.grey.withOpacity(0.3),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 8),
+                                  color: isDarkMode ? Colors.black.withOpacity(0.5) : Colors.grey.withOpacity(0.5),
+                                  blurRadius: 20,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 10),
+                                ),
+                                BoxShadow(
+                                  color: isDarkMode ? Colors.black.withOpacity(0.3) : Colors.white.withOpacity(0.7),
+                                  blurRadius: 8,
+                                  spreadRadius: -2,
+                                  offset: const Offset(0, -4),
                                 ),
                               ],
                             ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: Image.network(
-                                currentSong.thumbnailUrl,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                height: double.infinity,
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Center(
-                                    child: CircularProgressIndicator(
-                                      color: isDarkMode ? Colors.white : Colors.black,
-                                      strokeWidth: 2,
-                                    ),
-                                  );
-                                },
-                                errorBuilder: (context, error, _) => Container(
-                                  color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
-                                  child: const Icon(
-                                    Icons.music_note,
-                                    size: 80,
-                                    color: Colors.white54,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isDarkMode ? Colors.white24 : Colors.black12,
+                                  width: 0.5,
+                                ),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Image.network(
+                                  currentSong.thumbnailUrl,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Center(
+                                      child: CircularProgressIndicator(
+                                        color: isDarkMode ? Colors.white : Colors.black,
+                                        strokeWidth: 2,
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, _) => Container(
+                                    color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                                    child: Image.asset(
+                                      defaultPoster,
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                    )
                                   ),
                                 ),
                               ),
@@ -131,6 +150,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                       ),
                     ),
               
+                    // Información de la canción
                     Expanded(
                       flex: 2,
                       child: Column(
@@ -165,6 +185,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                             ),
                           ),
               
+                          // Barra de progreso
                           StreamBuilder<Duration>(
                             stream: playerService.positionStream,
                             builder: (context, positionSnapshot) {
@@ -222,6 +243,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                             },
                           ),
               
+                          // Controles de reproducción
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
@@ -254,7 +276,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
 
                           const Spacer(),
                           
-                          // Mostrar las canciones que vienen después (3 canciones)
+                          // Cola de canciones (próximas tres canciones)
                           SizedBox(
                             height: 60,
                             child: Row(
@@ -262,7 +284,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                               children: nextSongs.map((song) {
                                 return Expanded(
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    padding: const EdgeInsets.symmetric(horizontal: 5.0),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
@@ -273,6 +295,15 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                             width: 40,
                                             height: 40,
                                             fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) => Container(
+                                              color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                                              child: Image.asset(
+                                                defaultPoster,
+                                                fit: BoxFit.cover,
+                                                width: 40,
+                                                height: 40,
+                                              )
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(width: 8),
@@ -309,6 +340,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                             ),
                           ),
 
+                          // Controles adicionales
                           Container(
                             decoration: BoxDecoration(
                               border: Border(

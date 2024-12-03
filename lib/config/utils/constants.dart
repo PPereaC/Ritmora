@@ -1,4 +1,6 @@
 const instance = "https://pipedapi-libre.kavin.rocks";
+const defaultPoster = "assets/images/default_poster.jpg";
+const defaultLoader = "assets/images/loading.gif";
 
 // ignore_for_file: non_constant_identifier_names
 
@@ -9,7 +11,7 @@ final Map<String, String> headers = {
   'origin': "https://music.youtube.com/",
 };
 
-final Map<String, dynamic> context = {
+final Map<String, dynamic> api_context = {
   'context': {
     'client': {
       "clientName": "WEB_REMIX",

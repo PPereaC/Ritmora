@@ -13,6 +13,7 @@ import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 
 import '../../config/helpers/permissions_helper.dart';
+import '../../config/utils/constants.dart';
 import '../../domain/entities/playlist.dart';
 import '../../domain/entities/song.dart';
 import '../../infrastructure/mappers/piped_search_songs_mapper.dart';
@@ -91,7 +92,7 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
           final playlist = Playlist(
             title: value,
             author: '',
-            thumbnailUrl: 'assets/images/playlist_default.jpg',
+            thumbnailUrl: defaultPoster,
           );
           
           await ref.read(playlistProvider.notifier).addPlaylist(playlist);
@@ -194,7 +195,7 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
             final playlist = Playlist(
               title: playlistName,
               author: '',
-              thumbnailUrl: 'assets/images/playlist_default.jpg',
+              thumbnailUrl: defaultPoster,
             );
 
             await ref.read(playlistProvider.notifier).addPlaylist(playlist);
@@ -379,10 +380,14 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
                           height: double.infinity,
                           width: double.infinity,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Icon(
-                            Icons.error_outline,
-                            size: 48,
-                            color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                            child: Image.asset(
+                              defaultPoster,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                            )
                           ),
                         ),
                         

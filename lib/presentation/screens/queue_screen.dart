@@ -1,18 +1,19 @@
+import 'package:apolo/presentation/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
 
+import '../../config/utils/constants.dart';
 import '../../domain/entities/song.dart';
-import '../providers/song_player_provider.dart';
 
 class QueueScreen extends ConsumerStatefulWidget {
   const QueueScreen({super.key});
 
   @override
-  _QueueScreenState createState() => _QueueScreenState();
+  QueueScreenState createState() => QueueScreenState();
 }
 
-class _QueueScreenState extends ConsumerState<QueueScreen> {
+class QueueScreenState extends ConsumerState<QueueScreen> {
   final Set<int> _selectedSongs = {};
 
   @override
@@ -22,6 +23,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
     List<Song> queue = ref.watch(songPlayerProvider).queue;
     final currentSong = ref.watch(songPlayerProvider).currentSong;
     final textStyle = Theme.of(context).textTheme;
+    final isDarkMode = ref.watch(isDarkmodeProvider);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -69,13 +71,47 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                   color: Colors.black,
                   child: Row(
                     children: [              
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          currentSong!.thumbnailUrl,
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
+                                            Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: isDarkMode ? Colors.black.withOpacity(0.3) : Colors.grey.withOpacity(0.3),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                            BoxShadow(
+                              color: isDarkMode ? Colors.white12 : Colors.white,
+                              blurRadius: 3,
+                              offset: const Offset(0, -1),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: isDarkMode ? Colors.white12 : Colors.black12,
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Image.network(
+                              currentSong!.thumbnailUrl,
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                                child: Image.asset(
+                                  defaultPoster,
+                                  fit: BoxFit.cover,
+                                  width: 50,
+                                  height: 50,
+                                )
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 16),
