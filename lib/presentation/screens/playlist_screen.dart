@@ -77,43 +77,47 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
 
           final playlist = snapshot.data!;
 
-          return Stack(
-            children: [
-              Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: PlaylistHeader(
-                          title: playlist.title,
-                          thumbnail: playlist.thumbnailUrl,
-                          playlistID: playlist.id,
+          return CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: PlaylistHeader(
+                            title: playlist.title,
+                            thumbnail: playlist.thumbnailUrl,
+                            playlistID: playlist.id,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.only(bottom: 120),
-                      itemCount: playlist.songs.length,
-                      itemBuilder: (context, index) => SongListTile(
-                        song: playlist.songs[index],
-                        onSongOptions: () {
-                          showModalBottomSheet(
-                            context: context,
-                            builder: (context) {
-                              return BottomSheetBarWidget(
-                                song: playlist.songs[index],
-                              );
-                            },
-                          );
-                        },
-                      )
+                      ],
                     ),
+                    const SizedBox(height: 10),
+                  ],
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.only(bottom: 120),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => SongListTile(
+                      song: playlist.songs[index],
+                      onSongOptions: () {
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (context) {
+                            return BottomSheetBarWidget(
+                              song: playlist.songs[index],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    childCount: playlist.songs.length,
                   ),
-                ],
+                ),
               ),
             ],
           );
@@ -236,8 +240,8 @@ class PlaylistHeader extends ConsumerWidget {
                   image: thumbnail.startsWith('assets/')
                       ? AssetImage(thumbnail)
                       : FileImage(File(thumbnail)) as ImageProvider,
-                  height: 300,
-                  width: double.infinity,
+                  height: 260,
+                  width: 260,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Icon(
                     Icons.error_outline,
@@ -258,6 +262,34 @@ class PlaylistHeader extends ConsumerWidget {
             color: Colors.white,
           ),
           textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 16.0),
+        // Botones de play y shuffle
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FilledButton(
+              onPressed: () {},
+              child: const Row(
+                children: [
+                  Icon(Icons.play_arrow_rounded, size: 32),
+                  SizedBox(width: 8),
+                  Text('Reproducir', style: TextStyle(fontSize: 16)),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            FilledButton(
+              onPressed: () {},
+              child: const Row(
+                children: [
+                  Icon(Icons.shuffle_rounded, size: 32),
+                  SizedBox(width: 8),
+                  Text('Aleatorio', style: TextStyle(fontSize: 16)),
+                ],
+              ),
+            ),
+          ],
         ),
       ],
     );
