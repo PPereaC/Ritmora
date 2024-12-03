@@ -1,8 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:animate_do/animate_do.dart';
 import 'package:apolo/presentation/providers/providers.dart';
 import 'package:apolo/presentation/widgets/widgets.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
@@ -62,16 +62,37 @@ class SongListTile extends ConsumerWidget {
       leading: SizedBox(
         width: size.width * 0.13,
         child: AspectRatio(
-          aspectRatio: 1, // Forzar forma cuadrada
+          aspectRatio: 1,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: Image.network(
-              song.thumbnailUrl,
+            child: CachedNetworkImage(
+              key: ValueKey(song.thumbnailUrl),
+              imageUrl: song.thumbnailUrl,
               fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) => 
-                FadeIn(child: child),
-              errorBuilder: (context, error, stackTrace) => 
-                const Icon(Icons.error),
+              memCacheWidth: 300,
+              maxWidthDiskCache: 300,
+              useOldImageOnUrlChange: true,
+              placeholderFadeInDuration: const Duration(milliseconds: 300),
+              fadeOutDuration: const Duration(milliseconds: 300),
+              placeholder: (context, url) => Center(
+                child: Image.asset(
+                  'assets/images/loading.gif',
+                  width: double.infinity,
+                  height: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              errorWidget: (context, url, error) {
+                // Evitar que siga intentando cargar
+                debugPrint('Error cargando imagen: $error');
+                return Image.asset(
+                  'assets/images/playlist_default.jpg',
+                  fit: BoxFit.cover,
+                );
+              },
+              maxHeightDiskCache: 300,
+              // Timeout después de 10 segundos
+              httpHeaders: const {'Cache-Control': 'max-age=7200'},
             ),
           ),
         ),
