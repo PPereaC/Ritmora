@@ -260,14 +260,14 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
             icon: Icon(
               Iconsax.import_2_outline,
               color: isDarkMode ? Colors.white : Colors.grey,
-              size: 28,
+              size: 24,
             ),
           ),
           IconButton(
             icon: Icon(
               Iconsax.add_square_outline,
               color: isDarkMode ? Colors.white : Colors.grey,
-              size: 28,
+              size: 24,
             ),
             onPressed: () => _showCreatePlaylistDialog(isDarkMode),
           ),
