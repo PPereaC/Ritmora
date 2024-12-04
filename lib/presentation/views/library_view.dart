@@ -191,6 +191,9 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
               return;
             }
 
+            // Invertir el orden de las canciones
+            songList = songList.reversed.toList();
+
             // Crear y guardar la playlist
             final playlist = Playlist(
               title: playlistName,
