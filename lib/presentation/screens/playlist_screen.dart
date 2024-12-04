@@ -11,6 +11,7 @@ import 'package:icons_plus/icons_plus.dart';
 import '../../config/helpers/permissions_helper.dart';
 import '../../config/utils/constants.dart';
 import '../../domain/entities/playlist.dart';
+import '../../domain/entities/song.dart';
 import '../widgets/image_picker_widget.dart';
 import '../widgets/widgets.dart';
 
@@ -24,6 +25,7 @@ class PlaylistScreen extends ConsumerStatefulWidget {
 }
 
 class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
+
   Future<Playlist> getPlaylistByID(String playlistID) async {
     final pID = int.parse(playlistID);
     final playlist = await ref.read(playlistProvider.notifier).getPlaylistByID(pID);
@@ -49,12 +51,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Iconsax.search_normal_1_outline, color: Colors.white),
-                  onPressed: () {
-                    // Acción de búsqueda
-                  },
-                ),
-                IconButton(
                   icon: const Icon(Iconsax.setting_2_outline, color: Colors.white),
                   onPressed: () {
                     // Acción de más opciones
@@ -68,61 +64,117 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
       body: FutureBuilder<Playlist>(
         future: getPlaylistByID(widget.playlistID),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData) {
-            return const Center(child: Text('No se encontró la playlist'));
-          }
-
+          if (!snapshot.hasData) return const CircularProgressIndicator();
+          
           final playlist = snapshot.data!;
-
           return CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: PlaylistHeader(
-                            title: playlist.title,
-                            thumbnail: playlist.thumbnailUrl,
-                            playlistID: playlist.id,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                  ],
+                child: PlaylistHeader(
+                  title: playlist.title,
+                  thumbnail: playlist.thumbnailUrl,
+                  playlistID: playlist.id,
                 ),
               ),
-              SliverPadding(
-                padding: const EdgeInsets.only(bottom: 120),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => SongListTile(
-                      song: playlist.songs[index],
-                      onSongOptions: () {
-                        showModalBottomSheet(
-                          context: context,
-                          builder: (context) {
-                            return BottomSheetBarWidget(
-                              song: playlist.songs[index],
-                            );
-                          },
-                        );
-                      },
-                    ),
-                    childCount: playlist.songs.length,
-                  ),
-                ),
-              ),
+              _PlaylistSongsList(songs: playlist.songs),
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _PlaylistSongsList extends StatefulWidget {
+  final List<Song> songs;
+  
+  const _PlaylistSongsList({
+    required this.songs,
+  });
+
+  @override
+  State<_PlaylistSongsList> createState() => _PlaylistSongsListState();
+}
+
+class _PlaylistSongsListState extends State<_PlaylistSongsList> {
+  bool _showReversed = false;
+
+  @override
+  Widget build(BuildContext context) {
+
+    final textStyle = Theme.of(context).textTheme;
+
+    return SliverPadding(
+      padding: const EdgeInsets.only(bottom: 10),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final songIndex = _showReversed
+              ? (widget.songs.length - 1 - index) 
+              : index;
+
+            return Column(
+              children: [
+
+                const SizedBox(height: 8.0),
+
+                Row(
+                  children: [
+
+                    // Ordenar canciones
+                    if (index == 0) 
+                      IconButton(
+                        icon: Icon(
+                          _showReversed 
+                            ? Icons.arrow_downward
+                            : Icons.arrow_upward,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _showReversed = !_showReversed;
+                          });
+                        },
+                      ),
+
+                    if (index == 0) 
+                      Text(
+                        'Posición',
+                        style: textStyle.bodyLarge,
+                      ),
+
+                    const Spacer(),
+
+                    // Botón de búsqueda
+                    if (index == 0)
+                      IconButton(
+                        icon: const Icon(Iconsax.search_normal_1_outline, size: 22),
+                        onPressed: () { // Acción de búsqueda de canciones
+                          
+                        },
+                      ),
+
+                  ],  
+                ),
+                
+                SongListTile(
+                  song: widget.songs[songIndex],
+                  onSongOptions: () {
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (context) {
+                        return BottomSheetBarWidget(
+                          song: widget.songs[songIndex],
+                        );
+                      },
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+          childCount: widget.songs.length,
+        ),
       ),
     );
   }
@@ -271,7 +323,7 @@ class PlaylistHeader extends ConsumerWidget {
         const SizedBox(height: 16.0),
         // Botones de play y shuffle
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             FilledButton(
               onPressed: () {},
@@ -283,7 +335,6 @@ class PlaylistHeader extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 16),
             FilledButton(
               onPressed: () {},
               child: const Row(
