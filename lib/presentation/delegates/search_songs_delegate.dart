@@ -96,19 +96,24 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
           final songs = snapshot.data ?? [];
           return ListView.builder(
             itemCount: songs.length,
-            itemBuilder: (context, index) => SongListTile(
-              song: songs[index],
-              onSongOptions: () {
-                showModalBottomSheet(
-                  context: context,
-                  builder: (context) {
-                    return BottomSheetBarWidget(
-                      song: songs[index],
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3),
+                child: SongListTile(
+                  song: songs[index],
+                  onSongOptions: () {
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (context) {
+                        return BottomSheetBarWidget(
+                          song: songs[index],
+                        );
+                      },
                     );
                   },
-                );
-              },
-            )
+                ),
+              );
+            }
           );
       
         },

@@ -29,15 +29,11 @@ class SongListTile extends ConsumerWidget {
     final textStyles = Theme.of(context).textTheme;
     final size = MediaQuery.of(context).size;
 
-    return ListTile(
+    return InkWell(
       onTap: () async {
-
         bool isPlayable = true;
-
-        // Quitar el foco para ocultar el teclado
         FocusScope.of(context).unfocus();
         
-        // Obtener el stream url de la canción en segundo plano
         await getStreamUrlInBackground(song.songId).then((url) {
           if (url == null) {
             CustomSnackbar.show(
@@ -53,79 +49,99 @@ class SongListTile extends ConsumerWidget {
           song.streamUrl = url;
         });
         
-        if(isPlayable) { // Reproducir la canción si no hay problemas
+        if(isPlayable) {
           ref.read(songPlayerProvider).playSong(song);
         }
-        
       },
-      contentPadding: const EdgeInsets.only(left: 10, right: 0),
-      // Imagen de la canción
-      leading: SizedBox(
-        width: size.width * 0.13,
-        child: AspectRatio(
-          aspectRatio: 1,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: CachedNetworkImage(
-              key: ValueKey(song.thumbnailUrl),
-              imageUrl: song.thumbnailUrl,
-              fit: BoxFit.cover,
-              memCacheWidth: 300,
-              maxWidthDiskCache: 300,
-              useOldImageOnUrlChange: true,
-              placeholderFadeInDuration: const Duration(milliseconds: 300),
-              fadeOutDuration: const Duration(milliseconds: 300),
-              placeholder: (context, url) => Center(
-                child: Image.asset(
-                  defaultLoader,
-                  width: double.infinity,
-                  height: double.infinity,
-                  fit: BoxFit.cover,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
+        child: Row(
+          children: [
+            // Thumbnail
+            SizedBox(
+              width: size.width * 0.13,
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: CachedNetworkImage(
+                    key: ValueKey(song.thumbnailUrl),
+                    imageUrl: song.thumbnailUrl,
+                    fit: BoxFit.cover,
+                    memCacheWidth: 300,
+                    maxWidthDiskCache: 300,
+                    useOldImageOnUrlChange: true,
+                    placeholderFadeInDuration: const Duration(milliseconds: 300),
+                    fadeOutDuration: const Duration(milliseconds: 300),
+                    placeholder: (context, url) => Center(
+                      child: Image.asset(
+                        defaultLoader,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                      child: Image.asset(
+                        defaultPoster,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                      )
+                    ),
+                    maxHeightDiskCache: 300,
+                    // Timeout después de 10 segundos
+                    httpHeaders: const {'Cache-Control': 'max-age=7200'},
+                  ),
                 ),
               ),
-              errorWidget: (context, url, error) => Container(
-                color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
-                child: Image.asset(
-                  defaultPoster,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                )
-              ),
-              maxHeightDiskCache: 300,
-              // Timeout después de 10 segundos
-              httpHeaders: const {'Cache-Control': 'max-age=7200'},
             ),
-          ),
+            
+            const SizedBox(width: 12),
+            
+            // Título y autor
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    song.title,
+                    style: textStyles.titleMedium!.copyWith(
+                      color: isDarkMode ? Colors.white : Colors.black
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    song.author,
+                    style: textStyles.bodyLarge!.copyWith(
+                      color: Colors.grey
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+
+            // Botón de opciones
+            Container(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                onPressed: () => onSongOptions(),
+                icon: const Icon(
+                  Iconsax.more_square_outline,
+                  size: 23,
+                ),
+                color: isDarkMode ? Colors.white : Colors.black,
+                padding: const EdgeInsets.only(left: 25),
+                constraints: const BoxConstraints(),
+              ),
+            ),
+          ],
         ),
-      ),
-    
-      // Título y autor
-      title: Text(
-        song.title,
-        style: textStyles.titleMedium!.copyWith(
-          color: isDarkMode ? Colors.white : Colors.black
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: Text(
-        song.author,
-        style: textStyles.bodyLarge!.copyWith(
-          color: Colors.grey
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-    
-      // Botón de ajustes
-      trailing: IconButton(
-        onPressed: () => onSongOptions(),
-        icon: const Icon(
-          Iconsax.more_square_outline,
-          size: 23,
-        ),
-        color: isDarkMode ? Colors.white : Colors.black,
       ),
     );
   }
