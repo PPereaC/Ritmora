@@ -16,6 +16,7 @@ class Song {
   final String songId;
   final bool isLiked;
   final String duration;
+  final String videoId;
 
   @ignore
   Duration get durationParsed {
@@ -38,6 +39,7 @@ class Song {
     required this.endUrl,
     required this.songId,
     this.isLiked = false,
-    required this.duration
+    required this.duration,
+    this.videoId = '',
   });
 }

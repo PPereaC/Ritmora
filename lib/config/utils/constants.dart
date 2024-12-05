@@ -6,15 +6,17 @@ const defaultLoader = "assets/images/loading.gif";
 
 final Map<String, String> headers = {
   'accept': '*/*',
+  'accept-encoding': 'gzip, deflate',
   'content-type': 'application/json',
   'content-encoding': 'gzip',
-  'origin': "https://music.youtube.com/",
+  'origin': 'https://music.youtube.com/',
+  'cookie': 'CONSENT=YES+1',
 };
 
 final WEB_CONTEXT = {
   'client': {
-    'clientName': 'WEB_REMIX',
-    'clientVersion': '1.20230213.01.00',
+    "clientName": "WEB_REMIX",
+    "clientVersion": "1.20230213.01.00",
   },
   'user': {}
 };
@@ -56,5 +58,5 @@ String getUrl(int option) =>
     "https://music.youtube.com/youtubei/v1/player?key=${allKeys[option]}&prettyPrint=false";
 
 Map<String, dynamic> getBody(int option) => {
-      "context": option == 0 ? IOS_CONTEXT : ANDROID_CONTEXT,
+      "context": option == 0 ? IOS_CONTEXT : option == 1 ? ANDROID_CONTEXT : WEB_CONTEXT,
     };

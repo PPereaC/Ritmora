@@ -8,7 +8,8 @@ import '../../config/utils/constants.dart';
 class PlayerResponse {
   final bool playable;
   final List<Audio> audioFormats;
-  PlayerResponse({required this.playable, required this.audioFormats});
+  final List<Audio> videoAudioFormats;
+  PlayerResponse({required this.playable, required this.audioFormats, required this.videoAudioFormats});
   static int retry = 0;
 
   static Future<PlayerResponse?> fetch(String videoId, {int option = 0}) async {
@@ -36,7 +37,7 @@ class PlayerResponse {
           return fetch(videoId, option: (option + 1) % 2);
         } else {
           retry = 0;
-          return PlayerResponse(playable: false, audioFormats: []);
+          return PlayerResponse(playable: false, audioFormats: [], videoAudioFormats: []);
         }
       } else {
         return null;
@@ -53,10 +54,32 @@ class PlayerResponse {
     final availableAudioFormats =
         (json["streamingData"]["adaptiveFormats"] as List)
             .where((item) => item['mimeType'].contains("audio"));
+    
+    final availableAudiosFromVideos =
+        (json["streamingData"]["adaptiveFormats"] as List)
+            .where((item) => item['mimeType'].contains("video"));
+
     return PlayerResponse(
-        playable: true,
-        audioFormats:
-            availableAudioFormats.map((item) => Audio.fromJson(item)).toList());
+      playable: true,
+      audioFormats: availableAudioFormats.map((item) => Audio.fromJson(item)).toList(),
+      videoAudioFormats: availableAudiosFromVideos.map((item) => Audio.fromJson(item)).toList(),
+    );
+        
+        
+  }
+
+  Audio get bestQualityVideo {
+    final videoFormats = videoAudioFormats
+        .map((item) => Audio(
+            itag: item.itag,
+            audioCodec: item.audioCodec,
+            bitrate: item.bitrate,
+            duration: item.duration,
+            loudnessDb: item.loudnessDb,
+            url: item.url,
+            size: item.size))
+        .toList();
+    return videoFormats.reduce((current, next) => current.bitrate > next.bitrate ? current : next);
   }
 
   Audio get highestBitrateAudio => sortByBitrate[0];
@@ -129,6 +152,42 @@ class Audio {
         "approxDurationMs": duration,
         "size": size
       };
+}
+
+class Video {
+  final int itag;
+  final String mimeType;
+  final int bitrate;
+  final int width;
+  final int height;
+  final String url;
+
+  Video({
+    required this.itag,
+    required this.mimeType,
+    required this.bitrate,
+    required this.width,
+    required this.height,
+    required this.url,
+  });
+
+  factory Video.fromJson(json) => Video(
+    itag: json['itag'],
+    mimeType: json['mimeType'],
+    bitrate: json['bitrate'],
+    width: json['width'],
+    height: json['height'],
+    url: json['url'],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "itag": itag,
+    "mimeType": mimeType,
+    "bitrate": bitrate,
+    "width": width,
+    "height": height,
+    "url": url,
+  };
 }
 
 enum Codec { mp4a, opus }
