@@ -36,13 +36,13 @@ class SearchView extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(16, 60, 16, 16),
                 child: GestureDetector(
                   onTap: () async {
-                    final searchedSongs = ref.read(searchSongsProvider);
                     final searchQuery = ref.read(searchQueryProvider);
+                    
+                    // ignore: unused_local_variable
                     final song = await showSearch<Song?>(
                       query: searchQuery,
                       context: context,
                       delegate: SearchSongsDelegate(
-                        initialSongs: searchedSongs,
                         searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery,
                         isDarkMode: isDarkMode,
                       )

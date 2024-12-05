@@ -99,18 +99,20 @@ class YoutubeSongsDatasource extends SongsDatasource {
   // Obtener parámetros de búsqueda para filtrar por canciones o videos
   String _getSearchParams(String filter) {
     if (filter == 'songs') {
-      return 'Eg-KAQwIARAAGAAgACgAMABqChAEEAMQCRAFEAo%3D';
+      return 'Eg-KAQwIARAAGAAgACgAMABqChAEEAMQCRAFEAo%3D'; // Para canciones
     } else if (filter == 'videos') {
-      return 'Eg-KAQwIAhABGAE%3D';
+      return 'Eg-KAQwIAhABGAE%3D'; // Para videos musicales
     }
     return '';
   }
 
   @override
   Future<List<Song>> searchSongs(String query, String filter) async {
-    
     // Cancelar la solicitud anterior
     _cancelToken?.cancel();
+
+    // [DEBUG] Imprimir información de la búsqueda
+    printINFO('Realizando búsqueda >> $query');
 
     // Comprobar que la query no esté vacía
     if (query.isEmpty) {
@@ -122,15 +124,14 @@ class YoutubeSongsDatasource extends SongsDatasource {
 
     // Añadir parámetros de búsqueda si el filtro no está vacío
     if (filter.isNotEmpty) {
-      body['params'] = _getSearchParams(filter);
+      final params = _getSearchParams(filter);
+      body['params'] = params;
     }
 
     final response = await _sendRequest('search', body);
-
     final songs = await _jsonToSongs(response.data);
 
     return songs;
-
   }
 
 }
