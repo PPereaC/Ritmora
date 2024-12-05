@@ -1,6 +1,7 @@
 import 'package:apolo/config/utils/pretty_print.dart';
 import 'package:apolo/domain/datasources/songs_datasource.dart';
 import 'package:apolo/domain/entities/song.dart';
+import 'package:apolo/infrastructure/mappers/youtube_search_songs_response.dart';
 import 'package:dio/dio.dart';
 
 import '../../config/utils/constants.dart';
@@ -17,7 +18,7 @@ class YoutubeSongsDatasource extends SongsDatasource {
     },
   ));
 
-  Future<Response> sendRequest(String action, Map<String, dynamic> body) async {
+  Future<Response> _sendRequest(String action, Map<String, dynamic> body) async {
     try {
       final response = await dioSearch.post(action, options: Options(headers: headers), data: body);
       return response;
@@ -27,121 +28,75 @@ class YoutubeSongsDatasource extends SongsDatasource {
     }
   }
 
-  Future<List<Song>> _jsonToSongs(Map<String, dynamic> json) async {
-    final List<dynamic> sections = json['contents']['tabbedSearchResultsRenderer']['tabs'][0]['tabRenderer']['content']['sectionListRenderer']['contents'];
+  static String _getHighQualityThumbnail(String videoId) {
+    return 'https://i.ytimg.com/vi/$videoId/maxresdefault.jpg';
+  }
 
+  Future<List<Song>> _jsonToSongs(Map<String, dynamic> json) async {
+    final response = YoutubeSearchSongsResponse.fromJson(json);
+    final sections = response.contents.tabbedSearchResultsRenderer.tabs.first.tabRenderer.content.sectionListRenderer.contents;
     final List<Song> songs = [];
 
     for (var section in sections) {
-      if (section.containsKey('itemSectionRenderer')) {
-        final items = section['itemSectionRenderer']['contents'];
+
+      // Verificar si tiene ItemSectionRenderer
+      if (section.itemSectionRenderer != null) {
+        final items = section.itemSectionRenderer?.contents ?? [];
         for (var item in items) {
-          if (item.containsKey('musicResponsiveListItemRenderer')) {
-            final musicItem = item['musicResponsiveListItemRenderer'];
-            final title = musicItem['flexColumns']?[0]['musicResponsiveListItemFlexColumnRenderer']['text']['runs']?[0]['text'];
-            final artist = musicItem['flexColumns']?[1]['musicResponsiveListItemFlexColumnRenderer']['text']['runs']?[0]['text'];
-            final videoId = musicItem['playlistItemData']?['videoId'];
-            final subtitle = item['musicResponsiveListItemFlexColumnRenderer']['text']?['runs']?[8]['text'];
-            String? durationText;
-
-            final thumbnails = musicItem['thumbnail']?['musicThumbnailRenderer']['thumbnail']['thumbnails'];
-            String? thumbnailUrl;
-
-            if (thumbnails != null) {
-              // Ordenar thumbnails por tamaño (width * height) de mayor a menor
-              final sortedThumbnails = List.from(thumbnails)
-                ..sort((a, b) => 
-                  (b['width'] * b['height']).compareTo(a['width'] * a['height'])
-                );
-                
-              // Tomar la URL base de la thumbnail más grande
-              String baseUrl = sortedThumbnails.first['url'];
-              
-              // Modificar la URL para obtener la máxima calidad
-              // Reemplazar los parámetros w{X}-h{X} por w1000-h1000
-              thumbnailUrl = baseUrl.replaceAll(RegExp(r'=w\d+-h\d+'), '=w1000-h1000');
-            }
-
-
-            if (subtitle != null) {
-              for (var run in subtitle) {
-                if (run['text'] != null && run['text'].contains(':')) {
-                  durationText = run['text'];
-                  break;
-                }
-              }
-            }
-
-            if (title != null && artist != null && thumbnailUrl != null && videoId != null) {
-              songs.add(Song(
-                title: title,
-                author: artist,
-                thumbnailUrl: thumbnailUrl,
-                streamUrl: '',
-                endUrl: '',
-                songId: videoId,
-                duration: durationText!,
-              ));
-            }
+          if (item.musicResponsiveListItemRenderer != null) {
+            _processListItem(item.musicResponsiveListItemRenderer!, songs);
           }
         }
-      } else if (section.containsKey('musicShelfRenderer')) {
-        final items = section['musicShelfRenderer']['contents'];
+      }
+      else if (section.musicShelfRenderer != null) { // Verificar si tiene MusicShelfRenderer
+        final items = section.musicShelfRenderer?.contents ?? [];
         for (var item in items) {
-          if (item.containsKey('musicResponsiveListItemRenderer')) {
-            final musicItem = item['musicResponsiveListItemRenderer'];
-            final title = musicItem['flexColumns']?[0]['musicResponsiveListItemFlexColumnRenderer']['text']['runs']?[0]['text'];
-            final artist = musicItem['flexColumns']?[1]['musicResponsiveListItemFlexColumnRenderer']['text']['runs']?[0]['text'];
-            final videoId = musicItem['playlistItemData']?['videoId'];
-            final subtitle = musicItem['flexColumns']?[1]['musicResponsiveListItemFlexColumnRenderer']['text']['runs'];
-            String? durationText;
-
-            final thumbnails = musicItem['thumbnail']?['musicThumbnailRenderer']['thumbnail']['thumbnails'];
-            String? thumbnailUrl;
-
-            if (thumbnails != null) {
-              // Ordenar thumbnails por tamaño (width * height) de mayor a menor
-              final sortedThumbnails = List.from(thumbnails)
-                ..sort((a, b) => 
-                  (b['width'] * b['height']).compareTo(a['width'] * a['height'])
-                );
-                
-              // Tomar la URL base de la thumbnail más grande
-              String baseUrl = sortedThumbnails.first['url'];
-              
-              // Modificar la URL para obtener la máxima calidad
-              // Reemplazar los parámetros w{X}-h{X} por w1000-h1000
-              thumbnailUrl = baseUrl.replaceAll(RegExp(r'=w\d+-h\d+'), '=w1000-h1000');
-            }
-
-            if (subtitle != null) {
-              for (var run in subtitle) {
-                if (run['text'] != null && RegExp(r'^\d+:\d+$').hasMatch(run['text'])) {
-                  durationText = run['text'];
-                  break;
-                }
-              }
-            }
-
-            if (title != null && artist != null && thumbnailUrl != null && videoId != null) {
-              songs.add(Song(
-                title: title,
-                author: artist,
-                thumbnailUrl: thumbnailUrl,
-                streamUrl: '',
-                endUrl: '',
-                songId: videoId,
-                duration: durationText ?? '',
-              ));
-            }
-          }
+          _processListItem(item.musicResponsiveListItemRenderer, songs);
         }
       }
     }
 
     return songs;
   }
+  
+  void _processListItem(MusicResponsiveListItemRenderer musicItem, List<Song> songs) {
 
+    // Verificar que existan los flexColumns necesarios
+    if (musicItem.flexColumns.length < 2) return;
+
+    // Extraer datos usando acceso seguro con ?. y ?? para valores por defecto
+    final title = musicItem.flexColumns[0].musicResponsiveListItemFlexColumnRenderer.text?.runs.firstOrNull?.text ?? '';
+    final artist = musicItem.flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text?.runs.firstOrNull?.text ?? '';
+    final videoId = musicItem.playlistItemData.videoId;
+
+    // Obtener duración de la canción
+    String? durationText;
+    final runs = musicItem.flexColumns[1].musicResponsiveListItemFlexColumnRenderer.text?.runs ?? [];
+    for (var run in runs) {
+      if ((run.text).contains(':')) {
+        durationText = run.text;
+        break;
+      }
+    }
+
+    // Obtener thumbnail de alta calidad
+    String? thumbnailUrl = _getHighQualityThumbnail(videoId);
+
+    // Solo agregar si tenemos los datos mínimos necesarios
+    if (title.isNotEmpty && artist.isNotEmpty && videoId.isNotEmpty) {
+      songs.add(Song(
+        title: title,
+        author: artist,
+        thumbnailUrl: thumbnailUrl,
+        streamUrl: '',
+        endUrl: '',
+        songId: videoId,
+        duration: durationText ?? '',
+      ));
+    }
+  }
+
+  // Obtener parámetros de búsqueda para filtrar por canciones o videos
   String _getSearchParams(String filter) {
     if (filter == 'songs') {
       return 'Eg-KAQwIARAAGAAgACgAMABqChAEEAMQCRAFEAo%3D';
@@ -164,16 +119,13 @@ class YoutubeSongsDatasource extends SongsDatasource {
 
     final body = getBody(2);
     body['query'] = query;
-    printINFO('Body: $body');
 
     // Añadir parámetros de búsqueda si el filtro no está vacío
     if (filter.isNotEmpty) {
       body['params'] = _getSearchParams(filter);
     }
 
-    final response = await sendRequest('search', body);
-
-    printINFO(response.data);
+    final response = await _sendRequest('search', body);
 
     final songs = await _jsonToSongs(response.data);
 
