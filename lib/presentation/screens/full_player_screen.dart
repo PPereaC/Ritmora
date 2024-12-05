@@ -1,3 +1,4 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import 'package:icons_plus/icons_plus.dart';
 import '../../config/utils/constants.dart';
 import '../../domain/entities/song.dart';
 import '../providers/providers.dart';
+import '../providers/thumbnail_color_provider.dart';
 import '../widgets/widgets.dart';
 
 class FullPlayerScreen extends ConsumerStatefulWidget {
@@ -18,6 +20,7 @@ class FullPlayerScreen extends ConsumerStatefulWidget {
 class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
   double _dragDistance = 0;
   Duration? _currentDraggingPosition;
+  String? _lastProcessedSongId;
 
   @override
   Widget build(BuildContext context) {
@@ -25,9 +28,19 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
     final isDarkMode = ref.watch(isDarkmodeProvider);
+    final thumbnailShadowColor = ref.watch(thumbnailColorProvider);
+
+    void _updateThumbnailColorIfNeeded(Song currentSong) {
+      if (_lastProcessedSongId != currentSong.songId) {
+        _lastProcessedSongId = currentSong.songId;
+        extractDominantColor(currentSong.thumbnailUrl).then((color) {
+          ref.read(thumbnailColorProvider.notifier).state = color;
+        });
+      }
+    }
 
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : Colors.white,
+      backgroundColor: isDarkMode ? Colors.black87 : Colors.white,
       body: StreamBuilder<Song?>(
         stream: playerService.currentSongStream,
         builder: (context, snapshot) {
@@ -84,65 +97,57 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                     // Carátula de la canción
                     Expanded(
                       flex: 2,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: screenWidth * 0.05,
-                          vertical: screenHeight * 0.02
+                      child: Container(
+                        margin: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.08,
+                          vertical: screenHeight * 0.03
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: thumbnailShadowColor.withOpacity(0.7),
+                              blurRadius: 10,
+                              spreadRadius: 5,
+                              offset: const Offset(0, 5),
+                            ),
+                            BoxShadow(
+                              color: thumbnailShadowColor.withOpacity(0.5),
+                              blurRadius: 20,
+                              spreadRadius: 10,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
                         ),
                         child: Hero(
                           tag: currentSong.songId,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: isDarkMode ? Colors.black.withOpacity(0.5) : Colors.grey.withOpacity(0.5),
-                                  blurRadius: 20,
-                                  spreadRadius: 2,
-                                  offset: const Offset(0, 10),
-                                ),
-                                BoxShadow(
-                                  color: isDarkMode ? Colors.black.withOpacity(0.3) : Colors.white.withOpacity(0.7),
-                                  blurRadius: 8,
-                                  spreadRadius: -2,
-                                  offset: const Offset(0, -4),
-                                ),
-                              ],
-                            ),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: isDarkMode ? Colors.white24 : Colors.black12,
-                                  width: 0.5,
-                                ),
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: Image.network(
-                                  currentSong.thumbnailUrl,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Image.network(
+                              currentSong.thumbnailUrl,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) {
+                                  _updateThumbnailColorIfNeeded(currentSong);
+                                  return FadeIn(child: child);
+                                }
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    color: isDarkMode ? Colors.white : Colors.black,
+                                    strokeWidth: 2,
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, _) => Container(
+                                color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                                child: Image.asset(
+                                  defaultPoster,
                                   fit: BoxFit.cover,
                                   width: double.infinity,
                                   height: double.infinity,
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        color: isDarkMode ? Colors.white : Colors.black,
-                                        strokeWidth: 2,
-                                      ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, _) => Container(
-                                    color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
-                                    child: Image.asset(
-                                      defaultPoster,
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                    )
-                                  ),
-                                ),
+                                )
                               ),
                             ),
                           ),
