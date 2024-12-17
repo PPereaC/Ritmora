@@ -191,6 +191,7 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
                                   builder: (context) => BottomSheetBarWidget(song: song),
                                 );
                               },
+                              isPlaylist: false,
                             );
                           },
                         );

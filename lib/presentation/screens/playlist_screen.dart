@@ -169,6 +169,7 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
                       },
                     );
                   },
+                  isPlaylist: true,
                 ),
               ],
             );

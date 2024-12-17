@@ -15,11 +15,13 @@ class SongListTile extends ConsumerWidget {
 
   final Song song;
   final Function onSongOptions;
+  final bool isPlaylist;
 
   const SongListTile({
     super.key,
     required this.song,
     required this.onSongOptions,
+    required this.isPlaylist
   });
 
   @override
@@ -64,7 +66,8 @@ class SongListTile extends ConsumerWidget {
                 aspectRatio: 1,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: CachedNetworkImage(
+                  child: isPlaylist // Cachear las carátulas de las canciones solo si es una playlist
+                  ? CachedNetworkImage(
                     key: ValueKey(song.thumbnailUrl),
                     imageUrl: song.thumbnailUrl,
                     fit: BoxFit.cover,
@@ -93,7 +96,27 @@ class SongListTile extends ConsumerWidget {
                     maxHeightDiskCache: 300,
                     // Timeout después de 10 segundos
                     httpHeaders: const {'Cache-Control': 'max-age=7200'},
-                  ),
+                  )
+                  : Image.network(
+                    song.thumbnailUrl,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) {
+                        return child;
+                      } else {
+                        return Center(
+                          child: Image.asset(
+                            defaultLoader,
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                        );
+                      }
+                    },
+                  )
                 ),
               ),
             ),
