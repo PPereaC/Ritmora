@@ -183,15 +183,19 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
                           itemCount: snapshot.data!.length,
                           itemBuilder: (context, index) {
                             final song = snapshot.data![index];
-                            return SongListTile(
-                              song: song,
-                              onSongOptions: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  builder: (context) => BottomSheetBarWidget(song: song),
-                                );
-                              },
-                              isPlaylist: false,
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 3),
+                              child: SongListTile(
+                                song: song,
+                                onSongOptions: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    builder: (context) => BottomSheetBarWidget(song: song),
+                                  );
+                                },
+                                isPlaylist: false,
+                                isVideo: song.author.contains('Video') || song.author.contains('Episode'),
+                              ),
                             );
                           },
                         );

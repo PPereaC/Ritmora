@@ -16,12 +16,14 @@ class SongListTile extends ConsumerWidget {
   final Song song;
   final Function onSongOptions;
   final bool isPlaylist;
+  final bool isVideo;
 
   const SongListTile({
     super.key,
     required this.song,
     required this.onSongOptions,
-    required this.isPlaylist
+    required this.isPlaylist,
+    required this.isVideo
   });
 
   @override
@@ -63,14 +65,14 @@ class SongListTile extends ConsumerWidget {
             SizedBox(
               width: size.width * 0.13,
               child: AspectRatio(
-                aspectRatio: 1,
+                aspectRatio: isVideo ? 16/12 : 1,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: isPlaylist // Cachear las carátulas de las canciones solo si es una playlist
                   ? CachedNetworkImage(
                     key: ValueKey(song.thumbnailUrl),
                     imageUrl: song.thumbnailUrl,
-                    fit: BoxFit.cover,
+                    fit: isVideo ? BoxFit.contain : BoxFit.cover,
                     memCacheWidth: 300,
                     maxWidthDiskCache: 300,
                     useOldImageOnUrlChange: true,
@@ -88,7 +90,7 @@ class SongListTile extends ConsumerWidget {
                       color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
                       child: Image.asset(
                         defaultPoster,
-                        fit: BoxFit.cover,
+                        fit: isVideo ? BoxFit.contain : BoxFit.cover,
                         width: double.infinity,
                         height: double.infinity,
                       )
@@ -99,7 +101,7 @@ class SongListTile extends ConsumerWidget {
                   )
                   : Image.network(
                     song.thumbnailUrl,
-                    fit: BoxFit.cover,
+                    fit: isVideo ? BoxFit.contain : BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
                     loadingBuilder: (context, child, loadingProgress) {
@@ -115,6 +117,17 @@ class SongListTile extends ConsumerWidget {
                           ),
                         );
                       }
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                        child: Image.asset(
+                          defaultPoster,
+                          fit: isVideo ? BoxFit.contain : BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                        )
+                      );
                     },
                   )
                 ),

@@ -1,5 +1,5 @@
 const instance = "https://pipedapi-libre.kavin.rocks";
-const defaultPoster = "assets/images/default_poster.jpg";
+const defaultPoster = "assets/images/default_poster.jpeg";
 const defaultLoader = "assets/images/loading.gif";
 
 // ignore_for_file: non_constant_identifier_names

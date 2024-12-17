@@ -170,6 +170,7 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
                     );
                   },
                   isPlaylist: true,
+                  isVideo: widget.songs[songIndex].author.contains('Video') || widget.songs[songIndex].author.contains('Episode'),
                 ),
               ],
             );
