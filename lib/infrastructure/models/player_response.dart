@@ -24,17 +24,17 @@ class PlayerResponse {
           data: body));
       if (response.statusCode == 200) {
         final playable = response.data["playabilityStatus"]["status"] == "OK";
-
-        //if playable then return the response
+  
+        // Si es reproducible, devolver la respuesta
         if (playable) {
           retry = 0;
           return PlayerResponse.fromJson(response.data);
         }
-
-        //if not playable and not retried yet then retry once
-        if (!playable && retry == 0) {
+  
+        // Si no es reproducible y no se ha reintentado aún, reintentar con la siguiente opción
+        if (!playable && retry < 2) {
           retry++;
-          return fetch(videoId, option: (option + 1) % 2);
+          return fetch(videoId, option: (option + 1) % 3);
         } else {
           retry = 0;
           return PlayerResponse(playable: false, audioFormats: [], videoAudioFormats: []);

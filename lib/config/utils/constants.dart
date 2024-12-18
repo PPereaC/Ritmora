@@ -52,11 +52,13 @@ final IOS_CONTEXT = {
 
 const kPartIOS = "AIzaSyB-63vPrdThhKuerbB2N_l7Kwwcxj6yUAc";
 const kPartAndroid = "AIzaSyAOghZGza2MQSZkY_zfZ370N-PUdXEo8AI";
-const allKeys = [kPartIOS, kPartAndroid];
+const kpartWeb = "AIzaSyBAETezhkwP0ZWA02RsqT1zu78Fpt0bC_s";
+const kpartWeb2 = "AIzaSyBAETezhkwP0ZWA02RsqT1zu78Fpt0bC_s";
+const allKeys = [kPartIOS, kPartAndroid, kpartWeb, kpartWeb2];
 
 String getUrl(int option) =>
     "https://music.youtube.com/youtubei/v1/player?key=${allKeys[option]}&prettyPrint=false";
 
 Map<String, dynamic> getBody(int option) => {
-      "context": option == 0 ? IOS_CONTEXT : option == 1 ? ANDROID_CONTEXT : WEB_CONTEXT,
+      "context": option == 0 ? IOS_CONTEXT : option == 1 ? ANDROID_CONTEXT : option == 2 ? WEB_CONTEXT : IOS_CONTEXT,
     };

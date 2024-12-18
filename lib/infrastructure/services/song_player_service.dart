@@ -56,11 +56,15 @@ class SongPlayerService {
     _songController.add(song);
 
     // Cargar y reproducir la canción
-    await _justAudioPlayer.setUrl(song.streamUrl);
-    await _justAudioPlayer.play();
-    _isPlaying = true;
+    if(song.streamUrl.isEmpty) {
+      // Si la url está vacía, no hacer nada
+    } else {
+      await _justAudioPlayer.setUrl(song.streamUrl);
+      await _justAudioPlayer.play();
+      _isPlaying = true;
 
-    _queueController.add(_queue);
+      _queueController.add(_queue);
+    }
   }
 
   Future<void> pause() async {
@@ -90,7 +94,7 @@ class SongPlayerService {
   // Añadir canción al final de la cola
   Future<void> addToQueue(Song song) async {
     if (!_queue.contains(song)) {
-      song.streamUrl = (await getStreamUrlInBackground(song.songId))!;
+      song.streamUrl = (await getStreamUrlInBackground(song.songId)) ?? '';
       _queue.add(song);
       _queueController.add(_queue);
     }
