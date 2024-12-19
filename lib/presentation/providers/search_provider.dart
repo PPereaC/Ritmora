@@ -1,14 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/song.dart';
-import 'search_repository_provider.dart';
+import 'song_repository_provider.dart';
 
 final searchQueryProvider = StateProvider<String>((ref) => '');
 final searchFilterProvider = StateProvider<String>((ref) => 'songs'); // Provider para el filtro actual
 
 final searchSongsProvider = StateNotifierProvider<SearchedSongsNotifier, List<Song>>((ref) {
 
-  final songRepository = ref.read(songProvider);
+  final songRepository = ref.read(songRepositoryProvider);
 
   return SearchedSongsNotifier(
     searchSongs: songRepository.searchSongs,

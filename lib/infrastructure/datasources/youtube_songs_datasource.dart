@@ -158,40 +158,44 @@ class YoutubeSongsDatasource extends SongsDatasource {
     for (final section in sections) {
       if (section.musicCarouselShelfRenderer != null && 
           section.musicCarouselShelfRenderer.contents != null && 
-          section.musicCarouselShelfRenderer.contents.isNotEmpty && 
-          section.musicCarouselShelfRenderer.contents[0].musicTwoRowItemRenderer != null) {
+          section.musicCarouselShelfRenderer.contents.isNotEmpty) {
         
-        try {
-          final item = section.musicCarouselShelfRenderer.contents[0].musicTwoRowItemRenderer;
-          
-          // Título
-          final title = item.title.runs.first.text.toString();
-          
-          // Artista
-          final artist = item.subtitle.runs.first.text;
-          
-          // VideoId
-          final videoId = item.navigationEndpoint.watchEndpoint.videoId.toString();
-          
-          // Verificar que los datos no sean null o vacíos
-          if (title.isEmpty || artist.isEmpty || videoId.isEmpty) {
+        // Iteramos sobre todos los contents de la sección
+        for (final content in section.musicCarouselShelfRenderer.contents) {
+          if (content.musicTwoRowItemRenderer == null) continue;
+  
+          try {
+            final item = content.musicTwoRowItemRenderer;
+            
+            // Título
+            final title = item.title.runs.first.text;
+            
+            // Artista
+            final artist = item.subtitle.runs.first.text;
+            
+            // VideoId
+            final videoId = item.navigationEndpoint.watchEndpoint.videoId.toString();
+            
+            // Verificar que los datos no sean null o vacíos
+            if (title.isEmpty || artist.isEmpty || videoId.isEmpty) {
+              continue;
+            }
+            
+            songs.add(
+              Song(
+                title: title,
+                author: artist, 
+                thumbnailUrl: _getHighQualityThumbnail(videoId),
+                streamUrl: '',
+                endUrl: '/watch?v=$videoId',
+                songId: videoId,
+                duration: '',
+              )
+            );
+          } catch (e) {
+            // Si ocurre un error, continuar con la siguiente canción
             continue;
           }
-          
-          songs.add(
-            Song(
-              title: title,
-              author: artist, 
-              thumbnailUrl: _getHighQualityThumbnail(videoId),
-              streamUrl: '',
-              endUrl: '/watch?v=$videoId',
-              songId: videoId,
-              duration: '',
-            )
-          );
-        } catch (e) {
-          // Si ocurre un error, continuar con la siguiente canción
-          continue;
         }
       }
     }
