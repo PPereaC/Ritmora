@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'package:apolo/config/utils/pretty_print.dart';
 import 'package:apolo/domain/datasources/songs_datasource.dart';
 import 'package:apolo/domain/entities/song.dart';
@@ -5,12 +7,13 @@ import 'package:apolo/infrastructure/mappers/youtube_search_songs_response.dart'
 import 'package:dio/dio.dart';
 
 import '../../config/utils/constants.dart';
+import '../models/youtube_trending_response.dart';
 
 class YoutubeSongsDatasource extends SongsDatasource {
 
   CancelToken? _cancelToken;
 
-  final dioSearch = Dio(BaseOptions(
+  final dio = Dio(BaseOptions(
     baseUrl: 'https://music.youtube.com/youtubei/v1/',
     queryParameters: {
       'key': kPartIOS,
@@ -20,7 +23,7 @@ class YoutubeSongsDatasource extends SongsDatasource {
 
   Future<Response> _sendRequest(String action, Map<String, dynamic> body) async {
     try {
-      final response = await dioSearch.post(action, options: Options(headers: headers), data: body);
+      final response = await dio.post(action, options: Options(headers: headers), data: body);
       return response;
     } catch (e) {
       printERROR('Error sending request: $e');
@@ -102,6 +105,8 @@ class YoutubeSongsDatasource extends SongsDatasource {
       return 'Eg-KAQwIARAAGAAgACgAMABqChAEEAMQCRAFEAo%3D'; // Para canciones
     } else if (filter == 'videos') {
       return 'Eg-KAQwIAhABGAE%3D'; // Para videos musicales
+    } else if (filter == 'trendings') {
+      return 'EgZzcGFpbg%3D%3D'; // Para canciones en tendencia
     }
     return '';
   }
@@ -131,6 +136,66 @@ class YoutubeSongsDatasource extends SongsDatasource {
     final response = await _sendRequest('search', body);
     final songs = await _jsonToSongs(response.data);
 
+    return songs;
+  }
+
+  @override
+  Future<List<Song>> getTrendingSongs() async {
+    final body = getBody(2);
+    body['browseId'] = 'FEmusic_charts';
+    body['params'] = _getSearchParams('trendings');
+    final response = await _sendRequest('browse', body);
+    final songs = await _jsonToTrendingSongs(response.data);
+
+    return songs;
+  }
+
+  Future<List<Song>> _jsonToTrendingSongs(Map<String, dynamic> json) async {
+    final response = YoutubeTrendingResponse.fromJson(json);
+    final sections = response.contents.singleColumnBrowseResultsRenderer.tabs.first.tabRenderer.content.sectionListRenderer.contents;
+    final List<Song> songs = [];
+    
+    for (final section in sections) {
+      if (section.musicCarouselShelfRenderer != null && 
+          section.musicCarouselShelfRenderer.contents != null && 
+          section.musicCarouselShelfRenderer.contents.isNotEmpty && 
+          section.musicCarouselShelfRenderer.contents[0].musicTwoRowItemRenderer != null) {
+        
+        try {
+          final item = section.musicCarouselShelfRenderer.contents[0].musicTwoRowItemRenderer;
+          
+          // Título
+          final title = item.title.runs.first.text.toString();
+          
+          // Artista
+          final artist = item.subtitle.runs.first.text;
+          
+          // VideoId
+          final videoId = item.navigationEndpoint.watchEndpoint.videoId.toString();
+          
+          // Verificar que los datos no sean null o vacíos
+          if (title.isEmpty || artist.isEmpty || videoId.isEmpty) {
+            continue;
+          }
+          
+          songs.add(
+            Song(
+              title: title,
+              author: artist, 
+              thumbnailUrl: _getHighQualityThumbnail(videoId),
+              streamUrl: '',
+              endUrl: '/watch?v=$videoId',
+              songId: videoId,
+              duration: '',
+            )
+          );
+        } catch (e) {
+          // Si ocurre un error, continuar con la siguiente canción
+          continue;
+        }
+      }
+    }
+  
     return songs;
   }
 

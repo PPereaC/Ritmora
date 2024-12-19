@@ -17,6 +17,8 @@ final WEB_CONTEXT = {
   'client': {
     "clientName": "WEB_REMIX",
     "clientVersion": "1.20230213.01.00",
+    "hl": "es",
+    "gl": "ES"
   },
   'user': {}
 };

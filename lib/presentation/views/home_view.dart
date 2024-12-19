@@ -1,7 +1,9 @@
+import 'package:apolo/config/utils/pretty_print.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/providers.dart';
+import '../providers/search_repository_provider.dart';
 
 class HomeView extends ConsumerWidget {
   const HomeView({super.key});
@@ -11,6 +13,7 @@ class HomeView extends ConsumerWidget {
 
     final isDarkMode = ref.watch(isDarkmodeProvider);
     final themeProvider = ref.watch(themeNotifierProvider.notifier);
+    final songsProvider = ref.watch(songProvider);
 
     return Scaffold(
       backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[100],
@@ -30,6 +33,17 @@ class HomeView extends ConsumerWidget {
             onPressed: () => themeProvider.toggleDarkmode(),
             icon: Icon(
               isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+              color: isDarkMode ? Colors.white : Colors.grey,
+              size: 24,
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              final songs = songsProvider.getTrendingSongs();
+              printINFO('Trending songs: ${songs.toString().length}');
+            },
+            icon: Icon(
+              Icons.trending_up_rounded,
               color: isDarkMode ? Colors.white : Colors.grey,
               size: 24,
             ),

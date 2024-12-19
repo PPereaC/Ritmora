@@ -8,7 +8,7 @@ final searchFilterProvider = StateProvider<String>((ref) => 'songs'); // Provide
 
 final searchSongsProvider = StateNotifierProvider<SearchedSongsNotifier, List<Song>>((ref) {
 
-  final songRepository = ref.read(songRepositoryProvider);
+  final songRepository = ref.read(songProvider);
 
   return SearchedSongsNotifier(
     searchSongs: songRepository.searchSongs,
