@@ -174,7 +174,7 @@ class YoutubeSongsDatasource extends SongsDatasource {
             final artist = item.subtitle.runs.first.text;
             
             // VideoId
-            final videoId = item.navigationEndpoint.watchEndpoint.videoId.toString();
+            final videoId = item.navigationEndpoint.watchEndpoint.videoId;
             
             // Verificar que los datos no sean null o vacíos
             if (title.isEmpty || artist.isEmpty || videoId.isEmpty) {

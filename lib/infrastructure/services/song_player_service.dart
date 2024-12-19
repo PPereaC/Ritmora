@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:apolo/config/utils/pretty_print.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../config/utils/background_tasks.dart';
@@ -46,7 +47,16 @@ class SongPlayerService {
   }
 
   // Reproducir una canción
-  Future<void> playSong(Song song) async {
+  Future<void> playSong(Song song, [int retryCount = 0]) async {
+
+    // Máximo número de intentos
+    const maxRetries = 3;
+
+    // Si excedemos los intentos, lanzar error
+    if (retryCount >= maxRetries) {
+      printERROR('Número máximo de intentos excedido');
+    }
+
     // Si hay una canción actual, moverla al historial
     if (_currentSong != null) {
       _history.add(_currentSong!);
@@ -57,14 +67,23 @@ class SongPlayerService {
 
     // Cargar y reproducir la canción
     if(song.streamUrl.isEmpty) {
-      // Si la url está vacía, no hacer nada
-    } else {
+      final streamUrl = await getStreamUrlInBackground(song.songId);
+      if (streamUrl == null || streamUrl.isEmpty) {
+        // Incrementar contador y reintentar
+        return playSong(song, retryCount + 1);
+      }
+      song.streamUrl = streamUrl;
+    }
+
+    try {
       await _justAudioPlayer.setUrl(song.streamUrl);
       await _justAudioPlayer.play();
       _isPlaying = true;
-
       _queueController.add(_queue);
+    } catch (e) {
+      printERROR('Error al reproducir la canción: $e');
     }
+    
   }
 
   Future<void> pause() async {
