@@ -24,7 +24,7 @@ class BottomNavBarState extends ConsumerState<Navbar> {
         context.go('/');
         break;
       case 1:
-        context.go('/search');
+        context.go('/favorites');
         break;
       case 2:
         context.go('/library');

@@ -22,12 +22,12 @@ final appRouter = GoRouter(
           ]
         ),
 
-        // Buscar
+        // Canciones favoritas
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/search',
-              builder: (context, state) => const SearchView(),
+              path: '/favorites',
+              builder: (context, state) => const FavoritesView(),
             )
           ]
         ),
