@@ -54,6 +54,7 @@ class HomeViewState extends ConsumerState<HomeView> {
                       context: context,
                       delegate: SearchSongsDelegate(
                         searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery,
+                        colors: colors,
                       )
                     );
                   },

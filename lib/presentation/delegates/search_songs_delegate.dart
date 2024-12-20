@@ -12,13 +12,37 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
   final ValueNotifier<String> _queryNotifier = ValueNotifier<String>('');
   final ValueNotifier<String> _filterNotifier = ValueNotifier<String>('songs');
   Timer? _searchTimer;
+  final ColorScheme colors;
 
   SearchSongsDelegate({
     required this.searchSongs,
+    required this.colors,
   }) : super(
-    searchFieldLabel: 'Buscar canciones o videos',
-    searchFieldStyle: const TextStyle(color: Colors.white, fontSize: 20),
+      searchFieldLabel: 'Buscar canciones o videos',
+      searchFieldStyle: const TextStyle(color: Colors.white, fontSize: 20),
   );
+
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    return ThemeData(
+      appBarTheme: AppBarTheme(
+        backgroundColor: colors.surface,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      textTheme: const TextTheme(
+        // Estilo para el texto de entrada
+        titleMedium: TextStyle(color: Colors.white),
+      ),
+      inputDecorationTheme: const InputDecorationTheme(
+        // Color del texto de entrada
+        hintStyle: TextStyle(color: Colors.white),
+        labelStyle: TextStyle(color: Colors.white),
+        // Color del texto mientras se escribe
+        counterStyle: TextStyle(color: Colors.white),
+      ),
+    );
+  }
 
   Future<List<Song>> _debouncedSearch(String query, String filter) async {
     _searchTimer?.cancel();
@@ -73,9 +97,9 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
     super.dispose();
   }
 
-  Widget buildResultsAndSuggestions() {
+  Widget buildResultsAndSuggestions(ColorScheme colors) {
     return Container(
-      color: Colors.grey[900],
+      color: colors.surface,
       child: Column(
         children: [
           Padding(
@@ -100,8 +124,8 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
                         ),
                         style: FilledButton.styleFrom(
                           backgroundColor: filter == 'songs'
-                              ? (Colors.blue[700])
-                              : (Colors.grey[800]),
+                              ? (colors.primary)
+                              : (colors.secondary),
                         ),
                       ),
                     ),
@@ -121,8 +145,8 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
                         ),
                         style: FilledButton.styleFrom(
                           backgroundColor: filter == 'videos'
-                              ? (Colors.blue[700])
-                              : (Colors.grey[800]),
+                              ? (colors.primary)
+                              : (colors.secondary),
                         ),
                       ),
                     ),
@@ -162,7 +186,7 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
                             child: Text(
                               'Error: ${snapshot.error}',
                               style: const TextStyle(
-                                color: Colors.white70,
+                                color: Colors.white,
                               ),
                             ),
                           );
@@ -171,7 +195,7 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
                             child: Text(
                               'No se encontraron resultados',
                               style: TextStyle(
-                                color: Colors.white70,
+                                color: Colors.white,
                               ),
                             ),
                           );
@@ -192,7 +216,10 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
                                   );
                                 },
                                 isPlaylist: false,
-                                isVideo: song.author.contains('Video') || song.author.contains('Episode'),
+                                isVideo: song.title.contains('Vídeo') || 
+                                  song.title.contains('Episodio') ||
+                                  song.author.contains('Vídeo') ||
+                                  song.author.contains('Episodio'),
                               ),
                             );
                           },
@@ -221,7 +248,7 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
               _queryNotifier.value = '';
               _searchTimer?.cancel();
             },
-            icon: const Icon(Iconsax.close_square_outline),
+            icon: const Icon(Iconsax.close_square_outline, color: Colors.white),
           ),
         ),
     ];
@@ -231,20 +258,26 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
   Widget? buildLeading(BuildContext context) {
     return IconButton(
       onPressed: () => close(context, null),
-      icon: const Icon(Icons.arrow_back_ios_new_outlined),
+      icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
     );
   }
 
   @override
-  Widget buildResults(BuildContext context) => buildResultsAndSuggestions();
+  Widget buildResults(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return buildResultsAndSuggestions(colors);
+  } 
 
   @override
   Widget buildSuggestions(BuildContext context) {
+
+    final colors = Theme.of(context).colorScheme;
+
     // Forzar búsqueda automática al escribir
     if (query.isNotEmpty) {
       _queryNotifier.value = query;
       _debouncedSearch(query, _filterNotifier.value);
     }
-    return buildResultsAndSuggestions();
+    return buildResultsAndSuggestions(colors);
   }
 }

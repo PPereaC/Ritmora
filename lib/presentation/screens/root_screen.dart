@@ -18,32 +18,39 @@ class RootScreen extends ConsumerWidget {
     final SongPlayerService playerService = ref.read(songPlayerProvider);
 
     return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: navigationShell,
-          ),
-          StreamBuilder<Song?>(
-            stream: playerService.currentSongStream,
-            builder: (context, songSnapshot) {
-              final currentSong = songSnapshot.data;
-              if (currentSong == null) {
-                return const SizedBox.shrink();
-              }
-              return StreamBuilder<bool>(
-                stream: playerService.playingStream,
-                builder: (context, playingSnapshot) {
-                  return PlayerControlWidget(
-                    currentSong: currentSong,
-                    playerService: playerService,
-                    isPlaying: playingSnapshot.data ?? false,
-                    onPlayPause: () => playerService.togglePlay(),
-                  );
-                },
-              );
-            },
-          ),
-        ],
+      backgroundColor: Colors.transparent,
+      extendBody: true,
+      body: Padding(
+        padding: EdgeInsets.only(
+          bottom: isMobile ? kBottomNavigationBarHeight - 50 : 0,
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: navigationShell,
+            ),
+            StreamBuilder<Song?>(
+              stream: playerService.currentSongStream,
+              builder: (context, songSnapshot) {
+                final currentSong = songSnapshot.data;
+                if (currentSong == null) {
+                  return const SizedBox.shrink();
+                }
+                return StreamBuilder<bool>(
+                  stream: playerService.playingStream,
+                  builder: (context, playingSnapshot) {
+                    return PlayerControlWidget(
+                      currentSong: currentSong,
+                      playerService: playerService,
+                      isPlaying: playingSnapshot.data ?? false,
+                      onPlayPause: () => playerService.togglePlay(),
+                    );
+                  },
+                );
+              },
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: isMobile ? const Navbar() : const SizedBox(),
     );

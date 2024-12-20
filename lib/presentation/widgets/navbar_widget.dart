@@ -36,80 +36,79 @@ class BottomNavBarState extends ConsumerState<Navbar> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
   
-    return SafeArea(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color.lerp(colors.onSurface, colors.primary, 0.1) ?? colors.onSurface,
-              Color.lerp(colors.onSurface, colors.secondary, 0.2) ?? colors.onSurface,
+    return Container(
+      color: Colors.transparent,
+      child: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color.lerp(colors.onSurface, colors.primary, 0.1) ?? colors.onSurface,
+                Color.lerp(colors.onSurface, colors.secondary, 0.2) ?? colors.onSurface,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: const BorderRadius.all(Radius.circular(28)),
+            boxShadow: [
+              BoxShadow(
+                color: colors.shadow.withOpacity(0.2),
+                offset: const Offset(0, 10),
+                blurRadius: 24,
+                spreadRadius: 0,
+              ),
+              BoxShadow(
+                color: colors.primary.withOpacity(0.05),
+                offset: const Offset(0, 4),
+                blurRadius: 12,
+                spreadRadius: 0,
+              ),
+              BoxShadow(
+                color: Colors.white.withOpacity(0.1),
+                offset: const Offset(0, -2),
+                blurRadius: 8,
+                spreadRadius: 0,
+              ),
             ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
           ),
-          borderRadius: const BorderRadius.all(Radius.circular(28)),
-          border: Border.all(
-            color: colors.primary.withOpacity(0.1),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: colors.shadow.withOpacity(0.2),
-              offset: const Offset(0, 10),
-              blurRadius: 24,
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: colors.primary.withOpacity(0.05),
-              offset: const Offset(0, 4),
-              blurRadius: 12,
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: Colors.white.withOpacity(0.1),
-              offset: const Offset(0, -2),
-              blurRadius: 8,
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(
-            bottomNavItems.length,
-            (index) {
-              final isSelected = selectedIndex == index;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                child: InkWell(
-                  onTap: () => onItemTapped(index),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.only(bottom: 8),
-                        height: 5,
-                        width: isSelected ? 20 : 0,
-                        decoration: BoxDecoration(
-                          color: colors.primary,
-                          borderRadius: BorderRadius.circular(8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(
+              bottomNavItems.length,
+              (index) {
+                final isSelected = selectedIndex == index;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  child: InkWell(
+                    onTap: () => onItemTapped(index),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          margin: const EdgeInsets.only(bottom: 8),
+                          height: 5,
+                          width: isSelected ? 20 : 0,
+                          decoration: BoxDecoration(
+                            color: colors.primary,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
-                      ),
-                      Icon(
-                        bottomNavItems[index].icon,
-                        size: 28,
-                        color:Colors.white
-                      ),
-                    ],
+                        Icon(
+                          bottomNavItems[index].icon,
+                          size: 28,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),
