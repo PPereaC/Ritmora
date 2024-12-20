@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
 
+import '../../domain/entities/song.dart';
+import '../delegates/search_songs_delegate.dart';
+import '../providers/providers.dart';
+
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
 
@@ -41,7 +45,18 @@ class HomeViewState extends ConsumerState<HomeView> {
             child: Row(
               children: [
                 IconButton.filled(
-                  onPressed: () {},
+                  onPressed: () async {
+                    final searchQuery = ref.read(searchQueryProvider);
+                    
+                    // ignore: unused_local_variable
+                    final song = await showSearch<Song?>(
+                      query: searchQuery,
+                      context: context,
+                      delegate: SearchSongsDelegate(
+                        searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery,
+                      )
+                    );
+                  },
                   icon: const Icon(Iconsax.search_normal_1_outline),
                   color: Colors.white,
                   style: IconButton.styleFrom(
