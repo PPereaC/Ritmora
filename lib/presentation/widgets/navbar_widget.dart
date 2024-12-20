@@ -44,7 +44,7 @@ class BottomNavBarState extends ConsumerState<Navbar> {
           gradient: LinearGradient(
             colors: [
               Color.lerp(colors.onSurface, colors.primary, 0.1) ?? colors.onSurface,
-              Color.lerp(colors.onSurface, colors.secondary, 0.3) ?? colors.onSurface,
+              Color.lerp(colors.onSurface, colors.secondary, 0.2) ?? colors.onSurface,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -84,7 +84,7 @@ class BottomNavBarState extends ConsumerState<Navbar> {
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                 child: InkWell(
                   onTap: () => onItemTapped(index),
                   child: Column(
@@ -92,7 +92,7 @@ class BottomNavBarState extends ConsumerState<Navbar> {
                     children: [
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.only(bottom: 4),
+                        margin: const EdgeInsets.only(bottom: 8),
                         height: 5,
                         width: isSelected ? 20 : 0,
                         decoration: BoxDecoration(
