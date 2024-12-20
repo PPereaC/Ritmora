@@ -44,7 +44,7 @@ class AppTheme {
       error: Colors.red[800]!,
       onPrimary: Colors.white,
       onSecondary: Colors.white,
-      onSurface: Colors.white,
+      onSurface: Colors.grey[900]!,
       onError: Colors.black,
     );
   }
