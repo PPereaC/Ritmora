@@ -1,9 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../config/theme/app_theme.dart';
-
-final isDarkmodeProvider = StateProvider((ref) => false);
 
 // Listado de colores inmutable
 final colorListProvider = Provider((ref) => colorList);
@@ -24,20 +21,7 @@ class ThemeNotifier extends StateNotifier<AppTheme> {
   }
 
   Future<void> _loadTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isDarkmode = prefs.getBool('isDarkmode') ?? false;
-    
-    state = AppTheme(isDarkmode: isDarkmode);
-    ref.read(isDarkmodeProvider.notifier).state = isDarkmode;
-  }
-
-  void toggleDarkmode() async {
-    state = state.copyWith(isDarkmode: !state.isDarkmode);
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isDarkmode', state.isDarkmode);
-
-    ref.read(isDarkmodeProvider.notifier).state = state.isDarkmode;
+    state = AppTheme();
   }
 
   void changeColorIndex(int colorIndex) {

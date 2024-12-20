@@ -68,7 +68,6 @@ class _Slide extends ConsumerWidget {
     final textStyles = Theme.of(context).textTheme;
     final colors = Theme.of(context).colorScheme;
     const double containerWidth = 120.0;
-    final isDarkMode = ref.watch(isDarkmodeProvider);
     final songPlayer = ref.watch(songPlayerProvider);
 
     return Material(
@@ -95,7 +94,7 @@ class _Slide extends ConsumerWidget {
                           width: containerWidth,
                           height: containerWidth,
                           decoration: BoxDecoration(
-                            color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                            color: Colors.grey[800],
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Center(
@@ -110,13 +109,13 @@ class _Slide extends ConsumerWidget {
                         width: containerWidth,
                         height: containerWidth,
                         decoration: BoxDecoration(
-                          color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                          color: Colors.grey[800],
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
                           Icons.music_note_rounded,
                           size: 40,
-                          color: isDarkMode ? Colors.grey[700] : Colors.grey[400],
+                          color: Colors.grey[700],
                         ),
                       );
                     },
@@ -175,7 +174,7 @@ class _Slide extends ConsumerWidget {
                     maxLines: 1,
                     style: textStyles.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: isDarkMode ? Colors.white : Colors.black87,
+                      color: Colors.white,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -183,7 +182,7 @@ class _Slide extends ConsumerWidget {
                   Text(
                     song.author,
                     style: textStyles.bodySmall?.copyWith(
-                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                      color: Colors.grey[400],
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

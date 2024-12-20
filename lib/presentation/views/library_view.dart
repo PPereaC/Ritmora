@@ -17,7 +17,6 @@ import '../../config/utils/constants.dart';
 import '../../domain/entities/playlist.dart';
 import '../../domain/entities/song.dart';
 import '../../infrastructure/mappers/piped_search_songs_mapper.dart';
-import '../providers/theme/theme_provider.dart';
 
 class LibraryView extends ConsumerStatefulWidget {
   const LibraryView({super.key});
@@ -75,7 +74,7 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
     return result ?? false;
   }
 
-  Future<void> _showCreatePlaylistDialog(bool isDarkMode) {
+  Future<void> _showCreatePlaylistDialog() {
     return showDialog(
       context: context,
       builder: (context) => CustomDialog(
@@ -239,17 +238,15 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = ref.watch(isDarkmodeProvider);
-    
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[100],
+      backgroundColor: Colors.grey[900],
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
-        title: Text(
+        backgroundColor: Colors.grey[900],
+        title: const Text(
           'Biblioteca',
           style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black87,
+            color: Colors.white,
             fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
@@ -257,26 +254,26 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
         actions: [
           IconButton(
             onPressed: () => _importPlaylist(),
-            icon: Icon(
+            icon: const Icon(
               Iconsax.import_2_outline,
-              color: isDarkMode ? Colors.white : Colors.grey,
+              color: Colors.white,
               size: 24,
             ),
           ),
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Iconsax.add_square_outline,
-              color: isDarkMode ? Colors.white : Colors.grey,
+              color: Colors.white,
               size: 24,
             ),
-            onPressed: () => _showCreatePlaylistDialog(isDarkMode),
+            onPressed: () => _showCreatePlaylistDialog(),
           ),
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: isDarkMode ? Colors.white : Colors.black87,
-          unselectedLabelColor: isDarkMode ? Colors.grey[400] : Colors.grey,
-          indicatorColor: isDarkMode ? Colors.white : Colors.black87,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.grey[400],
+          indicatorColor: Colors.white,
           tabs: const [
             Tab(text: 'Playlists'),
             Tab(text: 'Álbumes'),
@@ -287,15 +284,15 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildPlaylistsView(isDarkMode),
-          _buildAlbumsView(isDarkMode),
-          _buildArtistsView(isDarkMode),
+          _buildPlaylistsView(),
+          _buildAlbumsView(),
+          _buildArtistsView(),
         ],
       ),
     );
   }
 
-  Widget _buildPlaylistsView(bool isDarkMode) {
+  Widget _buildPlaylistsView() {
     return Consumer(
       builder: (context, ref, child) {
         final playlistState = ref.watch(playlistProvider);
@@ -308,19 +305,19 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
           return Center(
             child: Text(
               playlistState.errorMessage!,
-              style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black87,
+              style: const TextStyle(
+                color: Colors.white,
               ),
             ),
           );
         }
   
         if (playlistState.playlists.isEmpty) {
-          return Center(
+          return const Center(
             child: Text(
               'No hay playlists creadas',
               style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black87,
+                color: Colors.white,
                 fontSize: 16,
               ),
             ),
@@ -363,9 +360,7 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
                     color: Colors.transparent,
                     boxShadow: [
                       BoxShadow(
-                        color: isDarkMode 
-                          ? Colors.black.withOpacity(0.4)
-                          : Colors.black.withOpacity(0.2),
+                        color: Colors.black.withOpacity(0.4),
                         blurRadius: 8.0,
                         offset: const Offset(0, 4),
                       ),
@@ -384,7 +379,7 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
                           width: double.infinity,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => Container(
-                            color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                            color: Colors.grey[900],
                             child: Image.asset(
                               defaultPoster,
                               fit: BoxFit.cover,
@@ -439,11 +434,11 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
     );
   }
 
-  Widget _buildAlbumsView(bool isDarkMode) {
+  Widget _buildAlbumsView() {
     return Container(); // TODO: Implementación futura
   }
 
-  Widget _buildArtistsView(bool isDarkMode) {
+  Widget _buildArtistsView() {
     return Container(); // TODO: Implementación futura
   }
 }

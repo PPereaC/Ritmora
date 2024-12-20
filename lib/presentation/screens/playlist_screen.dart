@@ -2,7 +2,6 @@
 
 import 'dart:io';
 import 'package:apolo/presentation/providers/playlist/playlist_provider.dart';
-import 'package:apolo/presentation/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -197,7 +196,6 @@ class PlaylistHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textStyle = Theme.of(context).textTheme;
-    final isDarkMode = ref.watch(isDarkmodeProvider);
 
     Future<void> updateThumbnail() async {
       bool isGranted = await PermissionsHelper.storagePermission();
@@ -299,7 +297,7 @@ class PlaylistHeader extends ConsumerWidget {
                   width: 260,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Container(
-                    color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                    color: Colors.grey[900],
                     child: Image.asset(
                       defaultPoster,
                       fit: BoxFit.cover,

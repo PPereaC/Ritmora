@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 
-import '../providers/theme/theme_provider.dart';
-
 class Navbar extends ConsumerStatefulWidget {
   const Navbar({super.key});
 
@@ -35,16 +33,12 @@ class BottomNavBarState extends ConsumerState<Navbar> {
 
   @override
   Widget build(BuildContext context) {
-
-    final themeProvider = ref.watch(themeNotifierProvider);
-    final isDarkMode = themeProvider.isDarkmode;
-
     return NavigationBarTheme(
       data: NavigationBarThemeData(
         labelTextStyle: WidgetStateProperty.all(
-          TextStyle(
+          const TextStyle(
             fontWeight: FontWeight.bold,
-            color: themeProvider.isDarkmode ? Colors.white : Colors.grey
+            color: Colors.white 
           ),
         ),
         indicatorColor: Colors.blue,
@@ -61,16 +55,14 @@ class BottomNavBarState extends ConsumerState<Navbar> {
             elevation: 0,
             selectedIndex: selectedIndex,
             onDestinationSelected: (index) => onItemTapped(index),
-            backgroundColor: themeProvider.isDarkmode ? Colors.grey[900] : Colors.white,
+            backgroundColor: Colors.grey[900],
             destinations: [
               NavigationDestination(
                 icon: Icon(
                   Iconsax.home_2_outline,
                   color: selectedIndex == 0
                       ? Colors.white
-                      : isDarkMode
-                          ? Colors.white
-                          : Colors.grey,
+                      : Colors.white
                 ),
                 label: 'Inicio',
               ),
@@ -79,9 +71,7 @@ class BottomNavBarState extends ConsumerState<Navbar> {
                   Iconsax.search_normal_1_outline,
                   color: selectedIndex == 2
                       ? Colors.white
-                      : isDarkMode
-                          ? Colors.white
-                          : Colors.grey,
+                      : Colors.white
                 ),
                 label: 'Buscar',
               ),
@@ -90,9 +80,7 @@ class BottomNavBarState extends ConsumerState<Navbar> {
                   Iconsax.music_playlist_outline,
                   color: selectedIndex == 1
                       ? Colors.white
-                      : isDarkMode
-                          ? Colors.white
-                          : Colors.grey,
+                      : Colors.white
                 ),
                 label: 'Biblioteca',
               ),

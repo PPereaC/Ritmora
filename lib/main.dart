@@ -33,7 +33,7 @@ class MainApp extends ConsumerWidget {
     return MaterialApp.router(
       routerConfig: appRouter,
       debugShowCheckedModeBanner: false,
-      theme: AppTheme(selectedColor: appTheme.selectedColor, isDarkmode: appTheme.isDarkmode).getTheme(),
+      theme: AppTheme(selectedColor: appTheme.selectedColor).getTheme(),
     );
   }
 }

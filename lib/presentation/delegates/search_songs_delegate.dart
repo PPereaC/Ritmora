@@ -9,14 +9,12 @@ typedef SearchSongsCallback = Future<List<Song>> Function(String query, {String 
 
 class SearchSongsDelegate extends SearchDelegate<Song?> {
   final SearchSongsCallback searchSongs;
-  final bool isDarkMode;
   final ValueNotifier<String> _queryNotifier = ValueNotifier<String>('');
   final ValueNotifier<String> _filterNotifier = ValueNotifier<String>('songs');
   Timer? _searchTimer;
 
   SearchSongsDelegate({
     required this.searchSongs,
-    required this.isDarkMode,
   }) : super(
     searchFieldLabel: 'Buscar canciones o videos',
     searchFieldStyle: const TextStyle(color: Colors.white, fontSize: 20),
@@ -77,7 +75,7 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
 
   Widget buildResultsAndSuggestions() {
     return Container(
-      color: isDarkMode ? Colors.grey[900] : Colors.white,
+      color: Colors.grey[900],
       child: Column(
         children: [
           Padding(
@@ -90,20 +88,20 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
                     Expanded(
                       child: FilledButton.icon(
                         onPressed: () => _onFilterChanged('songs'),
-                        icon: Icon(
+                        icon: const Icon(
                           Iconsax.music_square_outline,
-                          color: isDarkMode ? Colors.white : Colors.black,
+                          color: Colors.white,
                         ),
-                        label: Text(
+                        label: const Text(
                           'Canciones',
                           style: TextStyle(
-                            color: isDarkMode ? Colors.white : Colors.black,
+                            color: Colors.white,
                           ),
                         ),
                         style: FilledButton.styleFrom(
                           backgroundColor: filter == 'songs'
-                              ? (isDarkMode ? Colors.blue[700] : Colors.blue)
-                              : (isDarkMode ? Colors.grey[800] : Colors.grey[300]),
+                              ? (Colors.blue[700])
+                              : (Colors.grey[800]),
                         ),
                       ),
                     ),
@@ -111,20 +109,20 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
                     Expanded(
                       child: FilledButton.icon(
                         onPressed: () => _onFilterChanged('videos'),
-                        icon: Icon(
+                        icon: const Icon(
                           Iconsax.video_play_outline,
-                          color: isDarkMode ? Colors.white : Colors.black,
+                          color: Colors.white,
                         ),
-                        label: Text(
+                        label: const Text(
                           'Videos',
                           style: TextStyle(
-                            color: isDarkMode ? Colors.white : Colors.black,
+                            color: Colors.white,
                           ),
                         ),
                         style: FilledButton.styleFrom(
                           backgroundColor: filter == 'videos'
-                              ? (isDarkMode ? Colors.blue[700] : Colors.blue)
-                              : (isDarkMode ? Colors.grey[800] : Colors.grey[300]),
+                              ? (Colors.blue[700])
+                              : (Colors.grey[800]),
                         ),
                       ),
                     ),
@@ -142,11 +140,11 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
                   valueListenable: _filterNotifier,
                   builder: (context, filter, _) {
                     if (query.isEmpty) {
-                      return Center(
+                      return const Center(
                         child: Text(
                           'Ingresa una búsqueda para ver resultados',
                           style: TextStyle(
-                            color: isDarkMode ? Colors.white : Colors.grey,
+                            color: Colors.white,
                           ),
                         ),
                       );
@@ -163,17 +161,17 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
                           return Center(
                             child: Text(
                               'Error: ${snapshot.error}',
-                              style: TextStyle(
-                                color: isDarkMode ? Colors.white70 : Colors.black87,
+                              style: const TextStyle(
+                                color: Colors.white70,
                               ),
                             ),
                           );
                         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                          return Center(
+                          return const Center(
                             child: Text(
                               'No se encontraron resultados',
                               style: TextStyle(
-                                color: isDarkMode ? Colors.white70 : Colors.black87,
+                                color: Colors.white70,
                               ),
                             ),
                           );

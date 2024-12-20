@@ -23,7 +23,6 @@ class QueueScreenState extends ConsumerState<QueueScreen> {
     List<Song> queue = ref.watch(songPlayerProvider).queue;
     final currentSong = ref.watch(songPlayerProvider).currentSong;
     final textStyle = Theme.of(context).textTheme;
-    final isDarkMode = ref.watch(isDarkmodeProvider);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -71,19 +70,19 @@ class QueueScreenState extends ConsumerState<QueueScreen> {
                   color: Colors.black,
                   child: Row(
                     children: [              
-                                            Container(
+                      Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
                           boxShadow: [
                             BoxShadow(
-                              color: isDarkMode ? Colors.black.withOpacity(0.3) : Colors.grey.withOpacity(0.3),
+                              color: Colors.black.withOpacity(0.3),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),
-                            BoxShadow(
-                              color: isDarkMode ? Colors.white12 : Colors.white,
+                            const BoxShadow(
+                              color: Colors.white12,
                               blurRadius: 3,
-                              offset: const Offset(0, -1),
+                              offset: Offset(0, -1),
                             ),
                           ],
                         ),
@@ -92,7 +91,7 @@ class QueueScreenState extends ConsumerState<QueueScreen> {
                           child: Container(
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: isDarkMode ? Colors.white12 : Colors.black12,
+                                color: Colors.white12,
                                 width: 0.5,
                               ),
                             ),
@@ -102,7 +101,7 @@ class QueueScreenState extends ConsumerState<QueueScreen> {
                               height: 50,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) => Container(
-                                color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                                color: Colors.grey[900],
                                 child: Image.asset(
                                   defaultPoster,
                                   fit: BoxFit.cover,

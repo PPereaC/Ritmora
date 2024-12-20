@@ -19,11 +19,10 @@ class BottomSheetBarWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
-    final isDarkMode = ref.watch(isDarkmodeProvider);
     final textStyle = Theme.of(context).textTheme;
 
     return Container(
-      color: isDarkMode ? Colors.grey[900] : Colors.white,
+      color: Colors.grey[900],
       height: MediaQuery.of(context).size.height * 0.44,
       child: Column(
         children: [
@@ -34,7 +33,7 @@ class BottomSheetBarWidget extends ConsumerWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: isDarkMode ? Colors.white : Colors.grey,
+              color: Colors.white,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -55,7 +54,7 @@ class BottomSheetBarWidget extends ConsumerWidget {
                       loadingBuilder: (context, child, loadingProgress) => 
                         FadeIn(child: child),
                       errorBuilder: (context, error, _) => Container(
-                        color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                        color: Colors.grey[900],
                         child: Image.asset(
                           defaultPoster,
                           fit: BoxFit.cover,
@@ -73,7 +72,7 @@ class BottomSheetBarWidget extends ConsumerWidget {
                     children: [
                       Text(
                         song.title,
-                        style: textStyle.bodyLarge!.copyWith(color: isDarkMode ? Colors.white : Colors.black),
+                        style: textStyle.bodyLarge!.copyWith(color: Colors.white),
                       ),
                       Text(
                         song.author,
@@ -92,7 +91,6 @@ class BottomSheetBarWidget extends ConsumerWidget {
                 _buildListOption(
                   Iconsax.music_filter_outline,
                   'Añadir a la cola',
-                  isDarkMode,
                   textStyle,
                   () {
                     ref.read(songPlayerProvider).addToQueue(song);
@@ -102,7 +100,6 @@ class BottomSheetBarWidget extends ConsumerWidget {
                 _buildListOption(
                   Iconsax.play_circle_outline,
                   'Añadir a continuación',
-                  isDarkMode,
                   textStyle,
                   () {
                     ref.read(songPlayerProvider).addNext(song);
@@ -112,7 +109,6 @@ class BottomSheetBarWidget extends ConsumerWidget {
                 _buildListOption(
                   Iconsax.music_playlist_outline,
                   'Añadir a una playlist',
-                  isDarkMode,
                   textStyle,
                   () async {
 
@@ -140,14 +136,12 @@ class BottomSheetBarWidget extends ConsumerWidget {
                 _buildListOption(
                   Iconsax.voice_square_outline,
                   'Ecualizador',
-                  isDarkMode,
                   textStyle,
                   () {},
                 ),
                 _buildListOption(
                   Iconsax.cd_outline,
                   'Ver álbum',
-                  isDarkMode,
                   textStyle,
                   () {},
                 ),
@@ -159,16 +153,16 @@ class BottomSheetBarWidget extends ConsumerWidget {
     );
   }
 
-  Widget _buildListOption(IconData icon, String title, bool isDarkMode, TextTheme textStyle, Function onPressed) {
+  Widget _buildListOption(IconData icon, String title, TextTheme textStyle, Function onPressed) {
     return ListTile(
       leading: Icon(
         icon,
         size: 28,
-        color: isDarkMode ? Colors.grey : Colors.black,
+        color: Colors.grey,
       ),
       title: Text(
         title,
-        style: textStyle.titleLarge!.copyWith(color: isDarkMode ? Colors.white : Colors.black),
+        style: textStyle.titleLarge!.copyWith(color: Colors.white),
       ),
       onTap: () => onPressed(),
     );

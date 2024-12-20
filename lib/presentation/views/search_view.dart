@@ -10,7 +10,6 @@ class SearchView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDarkMode = ref.watch(isDarkmodeProvider);
     final genres = [
       {'name': 'Rock', 'icon': Icons.music_note_rounded},
       {'name': 'Pop', 'icon': Icons.music_note},
@@ -23,12 +22,12 @@ class SearchView extends ConsumerWidget {
     ];
 
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[50],
+      backgroundColor: Colors.grey[900],
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
             floating: true,
-            backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
+            backgroundColor: Colors.grey[900],
             elevation: 0,
             expandedHeight: 100,
             flexibleSpace: FlexibleSpaceBar(
@@ -44,17 +43,16 @@ class SearchView extends ConsumerWidget {
                       context: context,
                       delegate: SearchSongsDelegate(
                         searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery,
-                        isDarkMode: isDarkMode,
                       )
                     );
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: isDarkMode ? Colors.grey[850] : Colors.grey[100],
+                      color: Colors.grey[850],
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
+                        color: Colors.grey[800]!,
                       ),
                     ),
                     height: 50,
@@ -62,14 +60,14 @@ class SearchView extends ConsumerWidget {
                       children: [
                         Icon(
                           Iconsax.search_normal_1_outline,
-                          color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                          color: Colors.grey[400],
                           size: 24,
                         ),
                         const SizedBox(width: 12),
                         Text(
                           'Buscar canciones, artistas o álbumes',
                           style: TextStyle(
-                            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                            color: Colors.grey[400],
                             fontSize: 16,
                           ),
                         ),
@@ -80,21 +78,21 @@ class SearchView extends ConsumerWidget {
               ),
             ),
           ),
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Descubrir por género',
                     style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black87,
+                      color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                 ],
               ),
             ),
@@ -116,13 +114,11 @@ class SearchView extends ConsumerWidget {
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: isDarkMode 
-                          ? [Colors.grey[850]!, Colors.grey[900]!]
-                          : [Colors.grey[100]!, Colors.grey[200]!],
+                        colors: [Colors.grey[850]!, Colors.grey[900]!]
                       ),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
+                        color: Colors.grey[800]!,
                       ),
                     ),
                     child: Material(
@@ -138,13 +134,13 @@ class SearchView extends ConsumerWidget {
                             Icon(
                               genre['icon'] as IconData,
                               size: 32,
-                              color: isDarkMode ? Colors.white : Colors.black87,
+                              color: Colors.white,
                             ),
                             const SizedBox(height: 8),
                             Text(
                               genre['name'] as String,
-                              style: TextStyle(
-                                color: isDarkMode ? Colors.white : Colors.black87,
+                              style: const TextStyle(
+                                color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
                               ),

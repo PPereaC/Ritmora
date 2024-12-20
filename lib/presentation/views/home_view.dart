@@ -4,8 +4,7 @@ import 'package:apolo/presentation/providers/trending_songs_provider.dart';
 import 'package:apolo/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../providers/providers.dart';
+import 'package:icons_plus/icons_plus.dart';
 
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
@@ -25,34 +24,23 @@ class HomeViewState extends ConsumerState<HomeView> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = ref.watch(isDarkmodeProvider);
-    final themeProvider = ref.watch(themeNotifierProvider.notifier);
+    final colors = Theme.of(context).colorScheme;
 
     // Estados de las diferentes listas
     final trendingSongs = ref.watch(trendingSongsProvider);
 
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[900] : Colors.grey[100],
+      backgroundColor: colors.surface,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
-        title: Text(
-          'Inicio',
-          style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black87,
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
         actions: [
-          IconButton(
-            onPressed: () => themeProvider.toggleDarkmode(),
-            icon: Icon(
-              isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-              color: isDarkMode ? Colors.white : Colors.grey,
-              size: 24,
-            ),
-          ),
+          IconButton.filled(
+            onPressed: () {
+
+            },
+            icon: const Icon(Iconsax.search_normal_1_outline),
+            color: colors.secondary,
+          )
         ],
       ),
       body: CustomScrollView(

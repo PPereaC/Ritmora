@@ -29,7 +29,6 @@ class SongListTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
-    final isDarkMode = ref.watch(isDarkmodeProvider);
     final textStyles = Theme.of(context).textTheme;
     final size = MediaQuery.of(context).size;
 
@@ -87,7 +86,7 @@ class SongListTile extends ConsumerWidget {
                       ),
                     ),
                     errorWidget: (context, url, error) => Container(
-                      color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                      color: Colors.grey[900],
                       child: Image.asset(
                         defaultPoster,
                         fit: isVideo ? BoxFit.contain : BoxFit.cover,
@@ -120,7 +119,7 @@ class SongListTile extends ConsumerWidget {
                     },
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                        color: Colors.grey[900],
                         child: Image.asset(
                           defaultPoster,
                           fit: isVideo ? BoxFit.contain : BoxFit.cover,
@@ -145,7 +144,7 @@ class SongListTile extends ConsumerWidget {
                   Text(
                     song.title,
                     style: textStyles.titleMedium!.copyWith(
-                      color: isDarkMode ? Colors.white : Colors.black
+                      color: Colors.white
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -171,7 +170,7 @@ class SongListTile extends ConsumerWidget {
                   Iconsax.more_square_outline,
                   size: 23,
                 ),
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: Colors.white,
                 padding: const EdgeInsets.only(left: 25),
                 constraints: const BoxConstraints(),
               ),

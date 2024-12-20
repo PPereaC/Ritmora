@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../config/utils/constants.dart';
 import '../../domain/entities/song.dart';
 import '../../infrastructure/services/song_player_service.dart';
-import '../providers/theme/theme_provider.dart';
 
 class PlayerControlWidget extends ConsumerWidget {
   final Song currentSong;
@@ -25,16 +24,13 @@ class PlayerControlWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
-    final isDarkMode = ref.watch(themeNotifierProvider).isDarkmode;
     final textStyles = Theme.of(context).textTheme;
     final size = MediaQuery.of(context).size;
 
     return SizedBox(
       height: 68,
       child: Container(
-        color: isDarkMode 
-          ? Colors.grey[900]
-          : Colors.grey,
+        color:Colors.grey[900],
         child: ClipRRect(
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(20),
@@ -45,10 +41,7 @@ class PlayerControlWidget extends ConsumerWidget {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
-                  isDarkMode ? Colors.grey[800]! : Colors.grey[400]!,
-                ],
+                colors: [Colors.grey[800]!,Colors.grey[800]!],
               ),
             ),
             child: GestureDetector(
@@ -69,7 +62,7 @@ class PlayerControlWidget extends ConsumerWidget {
                         loadingBuilder: (context, child, loadingProgress) => 
                           FadeIn(child: child),
                         errorBuilder: (context, error, _) => Container(
-                          color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                          color: Colors.grey[900],
                           child: Image.asset(
                             defaultPoster,
                             fit: BoxFit.cover,
@@ -86,7 +79,7 @@ class PlayerControlWidget extends ConsumerWidget {
                 title: Text(
                   currentSong.title,
                   style: textStyles.bodyLarge!.copyWith(
-                    color: isDarkMode ? Colors.white : Colors.black,
+                    color: Colors.white,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -107,7 +100,7 @@ class PlayerControlWidget extends ConsumerWidget {
                     isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
                     size: 30,
                   ),
-                  color: isDarkMode ? Colors.white : Colors.black,
+                  color: Colors.white
                 ),
               ),
             ),

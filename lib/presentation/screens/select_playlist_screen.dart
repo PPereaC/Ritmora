@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:animate_do/animate_do.dart';
-import 'package:apolo/presentation/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -35,25 +34,24 @@ class _SelectPlaylistScreenState extends ConsumerState<SelectPlaylistScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = ref.watch(isDarkmodeProvider);
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black87 : colors.surface,
+      backgroundColor: Colors.black87,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: isDarkMode ? colors.onSurface : colors.onSurface,
+            color: colors.onSurface,
           ),
           onPressed: () => context.pop(),
         ),
         title: Text(
           'Añadir a lista',
           style: TextStyle(
-            color: isDarkMode ? colors.onSurface : colors.onSurface,
+            color: colors.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -71,7 +69,7 @@ class _SelectPlaylistScreenState extends ConsumerState<SelectPlaylistScreen> {
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
-                    color: isDarkMode ? colors.surface : colors.surface,
+                    color: colors.surface,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
@@ -92,13 +90,11 @@ class _SelectPlaylistScreenState extends ConsumerState<SelectPlaylistScreen> {
                           children: [
                             _PlaylistImage(
                               thumbnailUrl: playlist.thumbnailUrl,
-                              isDarkMode: isDarkMode,
                             ),
                             const SizedBox(width: 16),
                             Expanded(
                               child: _PlaylistInfo(
                                 playlist: playlist,
-                                isDarkMode: isDarkMode,
                               ),
                             ),
                             IconButton(
@@ -153,11 +149,9 @@ class _SelectPlaylistScreenState extends ConsumerState<SelectPlaylistScreen> {
 
 class _PlaylistImage extends StatelessWidget {
   final String? thumbnailUrl;
-  final bool isDarkMode;
 
   const _PlaylistImage({
     required this.thumbnailUrl,
-    required this.isDarkMode,
   });
 
   @override
@@ -175,20 +169,20 @@ class _PlaylistImage extends StatelessWidget {
               errorBuilder: (context, error, stackTrace) => Container(
                 width: 56,
                 height: 56,
-                color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                color: Colors.grey[800],
                 child: Icon(
                   Icons.error_outline,
-                  color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+                  color: Colors.grey[600],
                 ),
               ),
             )
           : Container(
               width: 56,
               height: 56,
-              color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+              color: Colors.grey[800],
               child: Icon(
                 Icons.music_note,
-                color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+                color: Colors.grey[600],
               ),
             ),
     );
@@ -197,11 +191,9 @@ class _PlaylistImage extends StatelessWidget {
 
 class _PlaylistInfo extends StatelessWidget {
   final Playlist playlist;
-  final bool isDarkMode;
 
   const _PlaylistInfo({
     required this.playlist,
-    required this.isDarkMode,
   });
 
   @override
@@ -211,10 +203,10 @@ class _PlaylistInfo extends StatelessWidget {
       children: [
         Text(
           playlist.title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: isDarkMode ? Colors.white : Colors.black87,
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: 4),
@@ -222,7 +214,7 @@ class _PlaylistInfo extends StatelessWidget {
           '${playlist.songs.length} canciones',
           style: TextStyle(
             fontSize: 14,
-            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            color: Colors.grey[400],
           ),
         ),
       ],
