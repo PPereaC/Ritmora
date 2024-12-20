@@ -1,11 +1,11 @@
 // ignore_for_file: unused_element
 
 import 'package:apolo/presentation/providers/trending_songs_provider.dart';
+import 'package:apolo/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/providers.dart';
-import '../widgets/song_horizontal_listview_widget.dart';
 
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
@@ -64,45 +64,8 @@ class HomeViewState extends ConsumerState<HomeView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
-                    // Canciones en tendencia
-                    const _SectionTitle('En Tendencia'),
-
-                    const SizedBox(height: 10),
-
-                    if (trendingSongs.isEmpty)
-                      const Center(child: CircularProgressIndicator())
-                    else
-                      SongHorizontalListview(songs: trendingSongs),
-
-                    const SizedBox(height: 20),
-
-                    // // Nuevos lanzamientos
-                    // _SectionTitle('Nuevos Lanzamientos'),
-                    // if (newReleases.isEmpty)
-                    //   const Center(child: CircularProgressIndicator())
-                    // else
-                    //   SongHorizontalListview(
-                    //     songs: newReleases,
-                    //     title: 'Nuevos',
-                    //     subTitle: 'Recién añadidos',
-                    //   ),
-
-                    // const SizedBox(height: 20)
-                    // // Lista con los nombres de las canciones
-                    // ListView.builder(
-                    //   shrinkWrap: true,
-                    //   physics: const NeverScrollableScrollPhysics(),
-                    //   itemCount: trendingSongs.length,
-                    //   itemBuilder: (context, index) {
-                    //     final song = trendingSongs[index];
-                    //     return SongListTile(
-                    //       song: song, 
-                    //       onSongOptions: () {}, 
-                    //       isPlaylist: false, 
-                    //       isVideo: true
-                    //     );
-                    //   },
-                    // ),
+                    SongsSlideshow(songs: trendingSongs),
+                    
                   ],
                 );
               },
