@@ -24,14 +24,37 @@ class CustomDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+  
     return AlertDialog(
-      title: Text(title),
+      backgroundColor: colors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+        side: BorderSide(
+          color: colors.primary.withOpacity(0.5),
+          width: 2,
+        ),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(color: Colors.white),
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: controller,
-            decoration: InputDecoration(hintText: hintText),
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: hintText,
+              hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: colors.primary),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: colors.primary),
+              ),
+            ),
           ),
           if (imageWidget != null) 
             Padding(
@@ -43,11 +66,17 @@ class CustomDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: onCancel,
-          child: Text(cancelButtonText),
+          child: Text(
+            cancelButtonText,
+            style: TextStyle(color: colors.primary, fontSize: 18),
+          ),
         ),
         TextButton(
           onPressed: () => onConfirm(controller.text),
-          child: Text(confirmButtonText),
+          child: Text(
+            confirmButtonText,
+            style: TextStyle(color: colors.primary, fontSize: 18),
+          ),
         ),
       ],
     );

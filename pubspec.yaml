@@ -54,6 +54,6 @@ flutter:
 
   # Fonts
   fonts:
-    - family: Appbar
+    - family: Titulo
       fonts:
         - asset: assets/fonts/Pacifico-Regular.ttf

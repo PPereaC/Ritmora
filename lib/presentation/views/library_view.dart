@@ -54,19 +54,41 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
     String cancelButtonText,
     String confirmButtonText,
   ) async {
+    final colors = Theme.of(context).colorScheme;
+    
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(content),
+        backgroundColor: colors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+          side: BorderSide(
+            color: colors.primary.withOpacity(0.5),
+            width: 2,
+          ),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          content,
+          style: const TextStyle(color: Colors.white),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(cancelButtonText),
+            child: Text(
+              cancelButtonText,
+              style: TextStyle(color: colors.primary, fontSize: 18),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(confirmButtonText),
+            child: Text(
+              confirmButtonText,
+              style: TextStyle(color: colors.primary, fontSize: 18),
+            ),
           ),
         ],
       ),
@@ -238,55 +260,135 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final size = MediaQuery.of(context).size;
+  
     return Scaffold(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: colors.surface,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        backgroundColor: Colors.grey[900],
         title: const Text(
           'Biblioteca',
           style: TextStyle(
+            fontFamily: 'Titulo',
             color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
+            fontSize: 30
           ),
         ),
         actions: [
-          IconButton(
-            onPressed: () => _importPlaylist(),
-            icon: const Icon(
-              Iconsax.import_2_outline,
-              color: Colors.white,
-              size: 24,
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: Row(
+              children: [
+                IconButton.filled(
+                  onPressed: () => _importPlaylist(),
+                  icon: const Icon(Iconsax.import_2_outline),
+                  color: Colors.white,
+                  style: IconButton.styleFrom(
+                    backgroundColor: colors.secondary.withOpacity(0.5),
+                    padding: const EdgeInsets.all(10),
+                  ),
+                ),
+                const SizedBox(width: 3),
+                IconButton.filled(
+                  onPressed: () => _showCreatePlaylistDialog(),
+                  icon: const Icon(Iconsax.add_square_outline),
+                  color: Colors.white,
+                  style: IconButton.styleFrom(
+                    backgroundColor: colors.secondary.withOpacity(0.5),
+                    padding: const EdgeInsets.all(10),
+                  ),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+      body: Stack(
+        children: [
+
+          // Gradiente
+          Positioned(
+            left: -50,
+            top: -50,
+            child: Container(
+              height: size.height * 0.8,
+              width: size.width * 1.5,
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment.topLeft,
+                  radius: 1.5,
+                  colors: [
+                    colors.primary.withOpacity(0.7),
+                    colors.primary.withOpacity(0.3),
+                    Colors.transparent,
+                  ],
+                  stops: const [0.0, 0.4, 0.9],
+                ),
+              ),
             ),
           ),
-          IconButton(
-            icon: const Icon(
-              Iconsax.add_square_outline,
-              color: Colors.white,
-              size: 24,
+  
+          // Contenido Principal
+          SafeArea(
+            child: Column(
+              children: [
+
+                // TabBar
+                _tabBar(colors),
+  
+                // TabBarView
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildPlaylistsView(),
+                      _buildAlbumsView(),
+                      _buildArtistsView(),
+                    ],
+                  ),
+                ),
+                
+              ],
             ),
-            onPressed: () => _showCreatePlaylistDialog(),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.grey[400],
-          indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: 'Playlists'),
-            Tab(text: 'Álbumes'),
-            Tab(text: 'Artistas'),
-          ],
+      ),
+    );
+  }
+
+  Widget _tabBar(ColorScheme colors) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: colors.secondary,
+            width: 2,
+          ),
         ),
       ),
-      body: TabBarView(
+      child: TabBar(
         controller: _tabController,
-        children: [
-          _buildPlaylistsView(),
-          _buildAlbumsView(),
-          _buildArtistsView(),
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white,
+        indicatorColor: colors.primary,
+        indicatorWeight: 2,
+        indicatorSize: TabBarIndicatorSize.label,
+        labelStyle: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+        ),
+        labelPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        tabs: const [
+          Text('Playlists'),
+          Text('Álbumes'),
+          Text('Artistas'),
         ],
       ),
     );
