@@ -1,7 +1,6 @@
 // ignore_for_file: unused_element
 
 import 'package:apolo/presentation/providers/trending_songs_provider.dart';
-import 'package:apolo/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
@@ -25,41 +24,89 @@ class HomeViewState extends ConsumerState<HomeView> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final size = MediaQuery.of(context).size;
 
     // Estados de las diferentes listas
-    final trendingSongs = ref.watch(trendingSongsProvider);
+    // final trendingSongs = ref.watch(trendingSongsProvider);
 
     return Scaffold(
       backgroundColor: colors.surface,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         elevation: 0,
+        backgroundColor: Colors.transparent,
         actions: [
-          IconButton.filled(
-            onPressed: () {
-
-            },
-            icon: const Icon(Iconsax.search_normal_1_outline),
-            color: colors.secondary,
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: Row(
+              children: [
+                IconButton.filled(
+                  onPressed: () {},
+                  icon: const Icon(Iconsax.search_normal_1_outline),
+                  color: Colors.white,
+                  style: IconButton.styleFrom(
+                    backgroundColor: colors.secondary.withOpacity(0.5),
+                    padding: const EdgeInsets.all(10),
+                  ),
+                ),
+                const SizedBox(width: 3),
+                IconButton.filled(
+                  onPressed: () {},
+                  icon: const Icon(Iconsax.notification_outline),
+                  color: Colors.white,
+                  style: IconButton.styleFrom(
+                    backgroundColor: colors.secondary.withOpacity(0.5),
+                    padding: const EdgeInsets.all(10),
+                  ),
+                ),
+              ],
+            ),
           )
         ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+      body: Stack(
+        children: [
 
-                    SongsSlideshow(songs: trendingSongs),
-                    
+          // Gradiente
+          Positioned(
+            left: -50,
+            top: -50,
+            child: Container(
+              height: size.height * 0.8,
+              width: size.width * 1.5,
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment.topLeft,
+                  radius: 1.5,
+                  colors: [
+                    colors.primary.withOpacity(0.7),
+                    colors.primary.withOpacity(0.3),
+                    Colors.transparent,
                   ],
-                );
-              },
-              childCount: 1
-            )
-          )
+                  stops: const [0.0, 0.4, 0.9],
+                ),
+              ),
+            ),
+          ),
+          
+          // Contenido original
+          CustomScrollView(
+            slivers: [
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    return const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        
+                      ],
+                    );
+                  },
+                  childCount: 1
+                )
+              )
+            ],
+          ),
         ],
       ),
     );
