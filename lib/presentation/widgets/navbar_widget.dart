@@ -41,7 +41,7 @@ class BottomNavBarState extends ConsumerState<Navbar> {
       child: SafeArea(
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          margin: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -51,7 +51,6 @@ class BottomNavBarState extends ConsumerState<Navbar> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: const BorderRadius.all(Radius.circular(28)),
             boxShadow: [
               BoxShadow(
                 color: colors.shadow.withOpacity(0.2),

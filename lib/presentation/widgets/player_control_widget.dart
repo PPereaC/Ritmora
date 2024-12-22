@@ -1,4 +1,3 @@
-import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -24,86 +23,115 @@ class PlayerControlWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
+    final colors = Theme.of(context).colorScheme;
     final textStyles = Theme.of(context).textTheme;
     final size = MediaQuery.of(context).size;
 
-    return SizedBox(
-      height: 68,
-      child: Container(
-        color:Colors.grey[900],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 5),
+      child: SizedBox(
+        height: 60,
         child: ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
+          borderRadius: BorderRadius.circular(8),
           child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.grey[800]!,Colors.grey[800]!],
-              ),
-            ),
-            child: GestureDetector(
-              onTap: () {
-                context.push('/full-player');
-              },
-              child: ListTile(
-                // Imagen de la canción
-                leading: SizedBox(
-                  width: size.width * 0.12,
-                  child: AspectRatio(
-                    aspectRatio: 1, // Forzar forma cuadrada
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image.network(
-                        currentSong.thumbnailUrl,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) => 
-                          FadeIn(child: child),
-                        errorBuilder: (context, error, _) => Container(
-                          color: Colors.grey[900],
-                          child: Image.asset(
-                            defaultPoster,
+            color: colors.secondary,
+            child: InkWell(
+              onTap: () => context.push('/full-player'),
+              onLongPress: () => context.push('/queue'),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
+                child: Row(
+                  children: [
+
+                    // Thumbnail
+                    SizedBox(
+                      width: size.width * 0.12,
+                      child: AspectRatio(
+                        aspectRatio: 1,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.network(
+                            currentSong.thumbnailUrl,
                             fit: BoxFit.cover,
                             width: double.infinity,
                             height: double.infinity,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) {
+                                return child;
+                              } else {
+                                return Center(
+                                  child: Image.asset(
+                                    defaultLoader,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
+                                );
+                              }
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[900],
+                                child: Image.asset(
+                                  defaultPoster,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                )
+                              );
+                            },
                           )
+                          
                         ),
                       ),
                     ),
-                  ),
-                ),
-              
-                // Título y autor
-                title: Text(
-                  currentSong.title,
-                  style: textStyles.bodyLarge!.copyWith(
-                    color: Colors.white,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Text(
-                  currentSong.author,
-                  style: textStyles.bodyMedium!.copyWith(
-                    color: Colors.grey,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              
-                // Botón play/pause
-                trailing: IconButton(
-                  onPressed: onPlayPause,
-                  icon: Icon(
-                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                    size: 30,
-                  ),
-                  color: Colors.white
+                    
+                    const SizedBox(width: 10),
+                    
+                    // Título y autor
+                    SizedBox(
+                      width: size.width * 0.6,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            currentSong.title,
+                            style: textStyles.titleMedium!.copyWith(
+                              color: Colors.white
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            currentSong.author,
+                            style: textStyles.bodyLarge!.copyWith(
+                              color: Colors.white60
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const Spacer(),
+
+                    // Botón de opciones
+                    IconButton(
+                      onPressed: onPlayPause,
+                      icon: Icon(
+                        isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                        size: 30,
+                      ),
+                      color: Colors.white,
+                      constraints: const BoxConstraints(),
+                    ),
+
+                  ],
                 ),
               ),
-            ),
+            )
           ),
         ),
       ),

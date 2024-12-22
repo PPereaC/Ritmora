@@ -16,6 +16,7 @@ class RootScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isMobile = Responsive.isMobile(context);
     final SongPlayerService playerService = ref.read(songPlayerProvider);
+    final navbarHeight = isMobile ? kBottomNavigationBarHeight : 0;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -29,25 +30,28 @@ class RootScreen extends ConsumerWidget {
             Expanded(
               child: navigationShell,
             ),
-            StreamBuilder<Song?>(
-              stream: playerService.currentSongStream,
-              builder: (context, songSnapshot) {
-                final currentSong = songSnapshot.data;
-                if (currentSong == null) {
-                  return const SizedBox.shrink();
-                }
-                return StreamBuilder<bool>(
-                  stream: playerService.playingStream,
-                  builder: (context, playingSnapshot) {
-                    return PlayerControlWidget(
-                      currentSong: currentSong,
-                      playerService: playerService,
-                      isPlaying: playingSnapshot.data ?? false,
-                      onPlayPause: () => playerService.togglePlay(),
-                    );
-                  },
-                );
-              },
+            Padding(
+              padding: EdgeInsets.only(bottom: navbarHeight.toDouble() + 15),
+              child: StreamBuilder<Song?>(
+                stream: playerService.currentSongStream,
+                builder: (context, songSnapshot) {
+                  final currentSong = songSnapshot.data;
+                  if (currentSong == null) {
+                    return const SizedBox.shrink();
+                  }
+                  return StreamBuilder<bool>(
+                    stream: playerService.playingStream,
+                    builder: (context, playingSnapshot) {
+                      return PlayerControlWidget(
+                        currentSong: currentSong,
+                        playerService: playerService,
+                        isPlaying: playingSnapshot.data ?? false,
+                        onPlayPause: () => playerService.togglePlay(),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),
