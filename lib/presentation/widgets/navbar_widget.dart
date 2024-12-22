@@ -38,40 +38,40 @@ class BottomNavBarState extends ConsumerState<Navbar> {
   
     return Container(
       color: Colors.transparent,
-      child: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-          margin: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color.lerp(colors.onSurface, colors.primary, 0.1) ?? colors.onSurface,
-                Color.lerp(colors.onSurface, colors.secondary, 0.2) ?? colors.onSurface,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: colors.shadow.withOpacity(0.2),
-                offset: const Offset(0, 10),
-                blurRadius: 24,
-                spreadRadius: 0,
-              ),
-              BoxShadow(
-                color: colors.primary.withOpacity(0.05),
-                offset: const Offset(0, 4),
-                blurRadius: 12,
-                spreadRadius: 0,
-              ),
-              BoxShadow(
-                color: Colors.white.withOpacity(0.1),
-                offset: const Offset(0, -2),
-                blurRadius: 8,
-                spreadRadius: 0,
-              ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.lerp(colors.onSurface, colors.primary, 0.1) ?? colors.onSurface,
+              Color.lerp(colors.onSurface, colors.secondary, 0.2) ?? colors.onSurface,
             ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: colors.shadow.withOpacity(0.2),
+              offset: const Offset(0, 10),
+              blurRadius: 24,
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: colors.primary.withOpacity(0.05),
+              offset: const Offset(0, 4),
+              blurRadius: 12,
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: Colors.white.withOpacity(0.1),
+              offset: const Offset(0, -2),
+              blurRadius: 8,
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 5),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(
