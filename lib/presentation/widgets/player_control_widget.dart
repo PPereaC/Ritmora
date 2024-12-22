@@ -26,6 +26,7 @@ class PlayerControlWidget extends ConsumerWidget {
     final colors = Theme.of(context).colorScheme;
     final textStyles = Theme.of(context).textTheme;
     final size = MediaQuery.of(context).size;
+    var isFullPlayerOpened = false;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 5),
@@ -36,8 +37,15 @@ class PlayerControlWidget extends ConsumerWidget {
           child: Container(
             color: colors.secondary,
             child: InkWell(
-              onTap: () => context.push('/full-player'),
-              onLongPress: () => context.push('/queue'),
+              onTap: () {
+                if (!isFullPlayerOpened) {
+                  context.push('/full-player');
+                  isFullPlayerOpened = true;
+                } else {
+                  context.pushNamed('/full-player');
+                }
+              },
+              onLongPress: () => context.push('/full-player'),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
                 child: Row(
