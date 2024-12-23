@@ -1,6 +1,7 @@
 // ignore_for_file: unused_element
 
 import 'package:apolo/presentation/providers/trending_songs_provider.dart';
+import 'package:apolo/presentation/widgets/song_horizontal_listview_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
@@ -31,7 +32,7 @@ class HomeViewState extends ConsumerState<HomeView> {
     final size = MediaQuery.of(context).size;
 
     // Estados de las diferentes listas
-    // final trendingSongs = ref.watch(trendingSongsProvider);
+    final trendingSongs = ref.watch(trendingSongsProvider);
 
     return Scaffold(
       backgroundColor: colors.surface,
@@ -111,11 +112,18 @@ class HomeViewState extends ConsumerState<HomeView> {
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    return const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        
-                      ],
+                    return SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const _SectionTitle('En tendencia', verticalPadding: 12),
+                            const SizedBox(height: 15),
+                            SongHorizontalListview(songs: trendingSongs)
+                          ],
+                        ),
+                      ),
                     );
                   },
                   childCount: 1
@@ -142,61 +150,42 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final textStyle = Theme.of(context).textTheme;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            // TODO: Implementar navegación
-          },
-          borderRadius: BorderRadius.circular(10.0),
-          child: Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(
-              vertical: verticalPadding, 
-              horizontal: horizontalPadding
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: textStyle.titleLarge?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  colors.primary,
-                  colors.primary.withOpacity(0.8),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 4.0,
-                  offset: Offset(0, 2),
-                ),
-              ],
-              borderRadius: BorderRadius.circular(10.0),
-            ),
+          ),
+          InkWell(
+            onTap: () {
+              // TODO: Implementar navegación
+            },
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  title,
-                  style: textStyle.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                  'Ver todo',
+                  style: textStyle.bodyLarge?.copyWith(
+                    color: Colors.white
                   ),
                 ),
+                const SizedBox(width: 5),
                 const Icon(
                   Icons.arrow_forward_ios_rounded,
-                  color: Colors.white,
-                  size: 24,
+                  size: 16,
+                  color: Colors.white
                 ),
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }

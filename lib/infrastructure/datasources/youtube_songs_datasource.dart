@@ -7,7 +7,6 @@ import 'package:apolo/infrastructure/mappers/youtube_search_songs_response.dart'
 import 'package:dio/dio.dart';
 
 import '../../config/utils/constants.dart';
-import '../models/youtube_trending_response.dart';
 
 class YoutubeSongsDatasource extends SongsDatasource {
 
@@ -38,6 +37,7 @@ class YoutubeSongsDatasource extends SongsDatasource {
   Future<List<Song>> _jsonToSongs(Map<String, dynamic> json) async {
     final response = YoutubeSearchSongsResponse.fromJson(json);
     final sections = response.contents.tabbedSearchResultsRenderer.tabs.first.tabRenderer.content.sectionListRenderer.contents;
+    printINFO('Sections: ${sections.length}');
     final List<Song> songs = [];
 
     for (var section in sections) {
@@ -151,56 +151,47 @@ class YoutubeSongsDatasource extends SongsDatasource {
   }
 
   Future<List<Song>> _jsonToTrendingSongs(Map<String, dynamic> json) async {
-    final response = YoutubeTrendingResponse.fromJson(json);
-    final sections = response.contents.singleColumnBrowseResultsRenderer.tabs.first.tabRenderer.content.sectionListRenderer.contents;
-    final List<Song> songs = [];
-    
-    for (final section in sections) {
-      if (section.musicCarouselShelfRenderer != null && 
-          section.musicCarouselShelfRenderer.contents != null && 
-          section.musicCarouselShelfRenderer.contents.isNotEmpty) {
-        
-        // Iteramos sobre todos los contents de la sección
-        for (final content in section.musicCarouselShelfRenderer.contents) {
-          if (content.musicTwoRowItemRenderer == null) continue;
+    List<Song> songs = [];
   
-          try {
-            final item = content.musicTwoRowItemRenderer;
-            
-            // Título
-            final title = item.title.runs.first.text;
-            
-            // Artista
-            final artist = item.subtitle.runs.first.text;
-            
-            // VideoId
-            final videoId = item.navigationEndpoint.watchEndpoint.videoId;
-            
-            // Verificar que los datos no sean null o vacíos
-            if (title.isEmpty || artist.isEmpty || videoId.isEmpty) {
-              continue;
+    try {
+      // Navegamos hasta llegar a la lista de canciones
+      final contents = json['contents']['singleColumnBrowseResultsRenderer']['tabs'][0]['tabRenderer']['content']['sectionListRenderer']['contents'];
+      for (var section in contents) {
+        final items = section['musicCarouselShelfRenderer']?['contents'];
+        if (items != null) {
+          for (var item in items) {
+            final songJson = item['musicTwoRowItemRenderer'];
+            if (songJson != null) {
+              final title = songJson['title']['runs'][0]['text'] ?? '';
+              final artist = songJson['subtitle']['runs'][0]['text'] ?? '';
+              final videoId = songJson['navigationEndpoint']['watchEndpoint']['videoId'] ?? '';
+              final duration = songJson['lengthText']?['runs']?[0]?['text'] ?? '';
+              final endUrl = '/watch?v=$videoId';
+              final thumbnailUrl = _getHighQualityThumbnail(videoId);
+  
+              // Solo agregar si tenemos los datos mínimos necesarios
+              if (title.isNotEmpty && artist.isNotEmpty && videoId.isNotEmpty) {
+                songs.add(
+                  Song(
+                    title: title,
+                    author: artist,
+                    thumbnailUrl: thumbnailUrl,
+                    streamUrl: '',
+                    endUrl: endUrl,
+                    songId: videoId,
+                    duration: duration
+                  )
+                );
+              }
             }
-            
-            songs.add(
-              Song(
-                title: title,
-                author: artist, 
-                thumbnailUrl: _getHighQualityThumbnail(videoId),
-                streamUrl: '',
-                endUrl: '/watch?v=$videoId',
-                songId: videoId,
-                duration: '',
-              )
-            );
-          } catch (e) {
-            // Si ocurre un error, continuar con la siguiente canción
-            continue;
           }
         }
       }
+    } catch (e) {
+      print('Error extracting song data: $e');
     }
   
     return songs;
   }
-
+  
 }
