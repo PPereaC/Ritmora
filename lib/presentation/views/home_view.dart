@@ -2,6 +2,7 @@
 
 import 'package:apolo/presentation/providers/trending_songs_provider.dart';
 import 'package:apolo/presentation/widgets/song_horizontal_listview_widget.dart';
+import 'package:apolo/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
@@ -9,6 +10,7 @@ import 'package:icons_plus/icons_plus.dart';
 import '../../domain/entities/song.dart';
 import '../delegates/search_songs_delegate.dart';
 import '../providers/providers.dart';
+import '../providers/quick_picks_provider.dart';
 
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
@@ -24,6 +26,7 @@ class HomeViewState extends ConsumerState<HomeView> {
     
     // Cargar datos iniciales
     ref.read(trendingSongsProvider.notifier).loadSongs();
+    ref.read(quickPicksProvider.notifier).loadSongs();
   }
 
   @override
@@ -33,6 +36,7 @@ class HomeViewState extends ConsumerState<HomeView> {
 
     // Estados de las diferentes listas
     final trendingSongs = ref.watch(trendingSongsProvider);
+    final quickPicks = ref.watch(quickPicksProvider);
 
     return Scaffold(
       backgroundColor: colors.surface,
@@ -106,7 +110,7 @@ class HomeViewState extends ConsumerState<HomeView> {
             ),
           ),
           
-          // Contenido original
+          // Contenido principal
           CustomScrollView(
             slivers: [
               SliverList(
@@ -118,9 +122,17 @@ class HomeViewState extends ConsumerState<HomeView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+
+                            const _SectionTitle('Selecciones rápidas', verticalPadding: 12, showViewAll: false),
+                            const SizedBox(height: 15),
+                            SongGridHorizontalListview(songs: quickPicks),
+
+                            const SizedBox(height: 20),
+
                             const _SectionTitle('En tendencia', verticalPadding: 12),
                             const SizedBox(height: 15),
-                            SongHorizontalListview(songs: trendingSongs)
+                            SongHorizontalListview(songs: trendingSongs),
+
                           ],
                         ),
                       ),
@@ -141,11 +153,13 @@ class _SectionTitle extends StatelessWidget {
   final String title;
   final double verticalPadding;
   final double horizontalPadding;
+  final bool showViewAll;
   
   const _SectionTitle(
     this.title, {
     this.verticalPadding = 8.0,
     this.horizontalPadding = 12.0,
+    this.showViewAll = true
   });
 
   @override
@@ -164,27 +178,29 @@ class _SectionTitle extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          InkWell(
-            onTap: () {
-              // TODO: Implementar navegación
-            },
-            child: Row(
-              children: [
-                Text(
-                  'Ver todo',
-                  style: textStyle.bodyLarge?.copyWith(
+
+          if (showViewAll)
+            InkWell(
+              onTap: () {
+                // TODO: Implementar navegación
+              },
+              child: Row(
+                children: [
+                  Text(
+                    'Ver todo',
+                    style: textStyle.bodyLarge?.copyWith(
+                      color: Colors.white
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 16,
                     color: Colors.white
                   ),
-                ),
-                const SizedBox(width: 5),
-                const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 16,
-                  color: Colors.white
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );

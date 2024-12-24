@@ -188,10 +188,61 @@ class YoutubeSongsDatasource extends SongsDatasource {
         }
       }
     } catch (e) {
-      print('Error extracting song data: $e');
+      printERROR('Error extracting song data: $e');
     }
   
     return songs;
+  }
+
+  @override
+  Future<List<Song>> getQuickPicks() async {
+    final body = getBody(2);
+    body['browseId'] = 'FEmusic_home';
+    final response = await _sendRequest('browse', body);
+    return await _jsonToQuickPicks(response.data);
+  }
+
+  Future<List<Song>> _jsonToQuickPicks(Map<String, dynamic> json) async {
+    List<Song> quickPicks = [];
+
+    try {
+      final sections = json['contents']['singleColumnBrowseResultsRenderer']['tabs'][0]['tabRenderer']['content']['sectionListRenderer']['contents'];
+
+      for (var section in sections) {
+        if (section.containsKey('musicCarouselShelfRenderer')) {
+          final headerTitle = section['musicCarouselShelfRenderer']['header']['musicCarouselShelfBasicHeaderRenderer']['title']['runs'][0]['text'].toLowerCase();
+          if (headerTitle.contains('selecciones') && headerTitle.contains('rápidas')) { // Asegúrate de ajustar según el idioma y la exactitud del texto
+            final items = section['musicCarouselShelfRenderer']['contents'];
+
+            for (var item in items) {
+              if (item.containsKey('musicResponsiveListItemRenderer')) {
+                final songJson = item['musicResponsiveListItemRenderer'];
+                final title = songJson['flexColumns'][0]['musicResponsiveListItemFlexColumnRenderer']['text']['runs'][0]['text'];
+                final artist = songJson['flexColumns'][1]['musicResponsiveListItemFlexColumnRenderer']['text']['runs'][0]['text'];
+                final videoId = songJson['overlay']['musicItemThumbnailOverlayRenderer']['content']['musicPlayButtonRenderer']['playNavigationEndpoint']['watchEndpoint']['videoId'];
+
+                final thumbnailUrl = _getHighQualityThumbnail(videoId);
+
+                quickPicks.add(Song(
+                  title: title,
+                  author: artist,
+                  thumbnailUrl: thumbnailUrl,
+                  streamUrl: '',
+                  endUrl: '/watch?v=$videoId',
+                  songId: videoId,
+                  duration: ''
+                ));
+              }
+            }
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      printERROR('Error extracting Quick Picks songs: $e');
+    }
+
+    return quickPicks;
   }
   
 }

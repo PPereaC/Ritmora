@@ -17,5 +17,10 @@ class SongRepositoryImpl extends SongsRepository {
   Future<List<Song>> getTrendingSongs() {
     return datasource.getTrendingSongs();
   }
+  
+  @override
+  Future<List<Song>> getQuickPicks() {
+    return datasource.getQuickPicks();
+  }
 
 }
