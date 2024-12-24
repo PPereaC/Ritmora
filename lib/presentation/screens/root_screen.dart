@@ -30,29 +30,31 @@ class RootScreen extends ConsumerWidget {
             Expanded(
               child: navigationShell,
             ),
-            Padding(
-              padding: EdgeInsets.only(bottom: navbarHeight.toDouble() + 15),
-              child: StreamBuilder<Song?>(
-                stream: playerService.currentSongStream,
-                builder: (context, songSnapshot) {
-                  final currentSong = songSnapshot.data;
-                  if (currentSong == null) {
-                    return const SizedBox.shrink();
-                  }
-                  return StreamBuilder<bool>(
-                    stream: playerService.playingStream,
-                    builder: (context, playingSnapshot) {
-                      return PlayerControlWidget(
-                        currentSong: currentSong,
-                        playerService: playerService,
-                        isPlaying: playingSnapshot.data ?? false,
-                        onPlayPause: () => playerService.togglePlay(),
-                      );
-                    },
-                  );
-                },
+
+            if (playerService.currentSong != null)
+              Padding(
+                padding: EdgeInsets.only(bottom: navbarHeight.toDouble() + 15),
+                child: StreamBuilder<Song?>(
+                  stream: playerService.currentSongStream,
+                  builder: (context, songSnapshot) {
+                    final currentSong = songSnapshot.data;
+                    if (currentSong == null) {
+                      return const SizedBox.shrink();
+                    }
+                    return StreamBuilder<bool>(
+                      stream: playerService.playingStream,
+                      builder: (context, playingSnapshot) {
+                        return PlayerControlWidget(
+                          currentSong: currentSong,
+                          playerService: playerService,
+                          isPlaying: playingSnapshot.data ?? false,
+                          onPlayPause: () => playerService.togglePlay(),
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-            ),
           ],
         ),
       ),
