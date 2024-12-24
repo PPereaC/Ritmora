@@ -179,7 +179,8 @@ class YoutubeSongsDatasource extends SongsDatasource {
                     streamUrl: '',
                     endUrl: endUrl,
                     songId: videoId,
-                    duration: duration
+                    duration: duration,
+                    isVideo: true
                   )
                 );
               }

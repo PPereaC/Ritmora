@@ -2,9 +2,9 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/entities/song.dart';
-import '../providers/providers.dart';
-import 'widgets.dart';
+import '../../../domain/entities/song.dart';
+import '../../providers/providers.dart';
+import '../widgets.dart';
 
 class SongHorizontalListview extends StatefulWidget {
   final List<Song> songs;
@@ -67,39 +67,35 @@ class _Slide extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textStyles = Theme.of(context).textTheme;
-    const double containerWidth = 120.0;
+    double containerWidth = song.isVideo ? 220 : 120;
     final songPlayer = ref.watch(songPlayerProvider);
+    final colors = Theme.of(context).colorScheme;
 
     return Material(
       color: Colors.transparent,
       child: SizedBox(
         width: containerWidth,
+        height: song.isVideo ? containerWidth + 60 : 0,
         child: InkWell(
-          onTap: () {
-            songPlayer.playSong(song);
-          },
+          onTap: () => songPlayer.playSong(song),
           onLongPress: () {
             showModalBottomSheet(
               context: context,
-              builder: (context) {
-                return BottomSheetBarWidget(
-                  song: song,
-                );
-              },
+              builder: (context) => BottomSheetBarWidget(song: song),
             );
           },
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-                
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
                   song.thumbnailUrl,
                   width: containerWidth,
-                  height: containerWidth,
+                  height: song.isVideo ? 120 : containerWidth,
                   fit: BoxFit.cover,
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress != null) {
@@ -120,25 +116,25 @@ class _Slide extends ConsumerWidget {
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       width: containerWidth,
-                      height: containerWidth,
+                      height: song.isVideo ? 120 : containerWidth,
                       decoration: BoxDecoration(
-                        color: Colors.grey[800],
+                        color: colors.secondary,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
-                        Icons.music_note_rounded,
+                      child: const Icon(
+                        Icons.nearby_error_outlined,
                         size: 40,
-                        color: Colors.grey[700],
+                        color: Colors.white,
                       ),
                     );
                   },
                 ),
               ),
-                
-              // Información
+              
               Padding(
-                padding: const EdgeInsets.only(top: 8, left: 4),
+                padding: const EdgeInsets.only(top: 4, left: 4),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -150,7 +146,6 @@ class _Slide extends ConsumerWidget {
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
                     Text(
                       song.author,
                       style: textStyles.bodySmall?.copyWith(

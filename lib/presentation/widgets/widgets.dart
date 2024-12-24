@@ -6,4 +6,4 @@ export 'bottom_sheet_bar_widget.dart';
 export 'song_list_tile_widget.dart';
 export 'custom_snackbar_widget.dart';
 export 'songs_slideshow.dart';
-export 'song_grid_horizontal_listview_widget.dart';
+export 'home/song_grid_horizontal_listview_widget.dart';
