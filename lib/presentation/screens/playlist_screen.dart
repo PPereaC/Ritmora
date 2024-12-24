@@ -33,10 +33,14 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: colors.surface,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.grey[900],
+        backgroundColor: Colors.transparent,
         iconTheme: const IconThemeData(color: Colors.white),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
@@ -60,25 +64,36 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
           ),
         ],
       ),
-      body: FutureBuilder<Playlist>(
-        future: getPlaylistByID(widget.playlistID),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) return const CircularProgressIndicator();
-          
-          final playlist = snapshot.data!;
-          return CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: PlaylistHeader(
-                  title: playlist.title,
-                  thumbnail: playlist.thumbnailUrl,
-                  playlistID: playlist.id,
-                ),
-              ),
-              _PlaylistSongsList(songs: playlist.songs),
-            ],
-          );
-        },
+      body: Stack(
+        children: [
+
+          const GradientWidget(),
+
+          SafeArea(
+            child: FutureBuilder<Playlist>(
+              future: getPlaylistByID(widget.playlistID),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const CircularProgressIndicator();
+                
+                final playlist = snapshot.data!;
+                return CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: PlaylistHeader(
+                        title: playlist.title,
+                        thumbnail: playlist.thumbnailUrl,
+                        playlistID: playlist.id,
+                      ),
+                    ),
+                    _PlaylistSongsList(songs: playlist.songs),
+                  ],
+                );
+              },
+            ),
+          ),
+
+        ]
+        
       ),
     );
   }
@@ -104,7 +119,7 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
     final textStyle = Theme.of(context).textTheme;
 
     return SliverPadding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 5),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
@@ -139,7 +154,9 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
                     if (index == 0) 
                       Text(
                         'Posición',
-                        style: textStyle.bodyLarge,
+                        style: textStyle.bodyLarge!.copyWith(
+                          color: Colors.white
+                        ),
                       ),
 
                     const Spacer(),
@@ -147,7 +164,7 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
                     // Botón de búsqueda
                     if (index == 0)
                       IconButton(
-                        icon: const Icon(Iconsax.search_normal_1_outline, size: 22),
+                        icon: const Icon(Iconsax.search_normal_1_outline, size: 22, color: Colors.white),
                         onPressed: () { // Acción de búsqueda de canciones
                           
                         },
@@ -196,6 +213,7 @@ class PlaylistHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textStyle = Theme.of(context).textTheme;
+    final colors = Theme.of(context).colorScheme;
 
     Future<void> updateThumbnail() async {
       bool isGranted = await PermissionsHelper.storagePermission();
@@ -242,7 +260,7 @@ class PlaylistHeader extends ConsumerWidget {
                 backgroundColor: Colors.transparent,
                 builder: (context) => Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).scaffoldBackgroundColor,
+                    color: colors.surface,
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                   ),
                   child: SafeArea(
@@ -254,25 +272,29 @@ class PlaylistHeader extends ConsumerWidget {
                           height: 4,
                           margin: const EdgeInsets.symmetric(vertical: 8),
                           decoration: BoxDecoration(
-                            color: Colors.grey[600],
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
                         ListTile(
-                          leading: const Icon(Iconsax.edit_outline, size: 28),
+                          leading: const Icon(Iconsax.edit_outline, size: 28, color: Colors.white),
                           title: Text(
                             'Cambiar nombre',
-                            style: textStyle.titleLarge,
+                            style: textStyle.titleLarge!.copyWith(
+                              color: Colors.white
+                            ),
                           ),
                           onTap: () {
                             context.pop();
                           },
                         ),
                         ListTile(
-                          leading: const Icon(Iconsax.gallery_edit_outline, size: 28),
+                          leading: const Icon(Iconsax.gallery_edit_outline, size: 28, color: Colors.white),
                           title: Text(
                             'Cambiar imagen',
-                            style: textStyle.titleLarge,
+                            style: textStyle.titleLarge!.copyWith(
+                              color: Colors.white
+                            ),
                           ),
                           onTap: () {
                             context.pop();
