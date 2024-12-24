@@ -98,7 +98,7 @@ class HomeViewState extends ConsumerState<HomeView> {
                   (context, index) {
                     return SafeArea(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
