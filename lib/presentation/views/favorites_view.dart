@@ -1,38 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:icons_plus/icons_plus.dart';
 
+import '../widgets/widgets.dart';
+
 class FavoritesView extends StatelessWidget {
   const FavoritesView({super.key});
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       body: Stack(
         children: [
           // Gradiente
-          Positioned(
-            left: -50,
-            top: -50,
-            child: Container(
-              height: size.height * 0.8,
-              width: size.width * 1.5,
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment.topLeft,
-                  radius: 1.5,
-                  colors: [
-                    colors.primary.withOpacity(0.7),
-                    colors.primary.withOpacity(0.3),
-                    Colors.transparent,
-                  ],
-                  stops: const [0.0, 0.4, 0.9],
-                ),
-              ),
-            ),
-          ),
+          const GradientWidget(),
 
           // Contenido principal
           SafeArea(
