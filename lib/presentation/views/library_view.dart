@@ -268,14 +268,14 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Biblioteca',
-          style: TextStyle(
-            fontFamily: 'Titulo',
-            color: Colors.white,
-            fontSize: 30
-          ),
-        ),
+        // title: const Text(
+        //   'Biblioteca',
+        //   style: TextStyle(
+        //     fontFamily: 'Titulo',
+        //     color: Colors.white,
+        //     fontSize: 30
+        //   ),
+        // ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 10),
