@@ -39,7 +39,7 @@ class _SongGridHorizontalListviewState extends State<SongGridHorizontalListview>
   @override
   Widget build(BuildContext context) {
     final groupedSongs = _getGroupedSongs();
-    const double containerHeight = 80.0; // Altura por canción
+    const double containerHeight = 75.0; // Altura por canción
     const totalHeight = containerHeight * 3; // 3 canciones por columna
 
     return SizedBox(
@@ -77,12 +77,15 @@ class _SongColumn extends ConsumerWidget {
     return SizedBox(
       width: containerWidth,
       child: Column(
-        children: songs.map((song) => 
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: _Slide(song: song),
-          )
-        ).toList(),
+        children: List.generate(songs.length, (index) {
+          final song = songs[index];
+          final isLastItem = index == songs.length - 1;
+          
+          return _Slide(
+            song: song,
+            isLastItem: isLastItem,
+          );
+        }),
       ),
     );
   }
@@ -90,7 +93,9 @@ class _SongColumn extends ConsumerWidget {
 
 class _Slide extends ConsumerWidget {
   final Song song;
-  const _Slide({required this.song});
+  final bool isLastItem;
+
+  const _Slide({required this.song, this.isLastItem = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -111,7 +116,10 @@ class _Slide extends ConsumerWidget {
         splashColor: Colors.transparent,
         highlightColor: Colors.transparent,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
+          padding: EdgeInsets.only(
+            top: 4,
+            bottom: isLastItem ? 0 : 4,
+          ),
           child: Row(
             children: [
               // Imagen

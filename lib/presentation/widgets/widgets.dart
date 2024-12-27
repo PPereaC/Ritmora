@@ -8,3 +8,4 @@ export 'custom_snackbar_widget.dart';
 export 'songs_slideshow.dart';
 export 'home/song_grid_horizontal_listview_widget.dart';
 export 'gradient_widget.dart';
+export 'home/playlist_horizontal_listview_widget.dart';

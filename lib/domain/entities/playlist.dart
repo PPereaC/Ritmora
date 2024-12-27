@@ -10,6 +10,7 @@ class Playlist {
   final String title;
   final String author;
   String thumbnailUrl;
+  String playlistId;
 
   @Ignore()
   List<Song> songs = [];
@@ -22,5 +23,6 @@ class Playlist {
     required this.title,
     required this.author,
     required this.thumbnailUrl,
+    this.playlistId = '',
   });
 }

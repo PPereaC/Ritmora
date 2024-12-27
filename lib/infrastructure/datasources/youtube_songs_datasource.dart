@@ -7,6 +7,7 @@ import 'package:apolo/infrastructure/mappers/youtube_search_songs_response.dart'
 import 'package:dio/dio.dart';
 
 import '../../config/utils/constants.dart';
+import '../../domain/entities/playlist.dart';
 
 class YoutubeSongsDatasource extends SongsDatasource {
 
@@ -244,6 +245,78 @@ class YoutubeSongsDatasource extends SongsDatasource {
     }
 
     return quickPicks;
+  }
+
+  @override
+  Future<List<Playlist>> getPlaylistsHits() async {
+    final body = getBody(2);
+    body['browseId'] = 'FEmusic_home';
+    final response = await _sendRequest('browse', body);
+    return await _jsonToPlaylistsHits(response.data);
+  }
+
+  Future<List<Playlist>> _jsonToPlaylistsHits(Map<String, dynamic> json) async {
+    List<Playlist> greatestHits = [];
+  
+    try {
+
+      final List sections = json.containsKey('musicCarouselShelfRenderer')
+          ? [json['musicCarouselShelfRenderer']]
+          : json['contents']?['singleColumnBrowseResultsRenderer']?['tabs']?[0]
+                  ?['tabRenderer']?['content']?['sectionListRenderer']?['contents'] ??
+              [];
+  
+      for (var section in sections) {
+        if (section.containsKey('musicCarouselShelfRenderer')) {
+          final header = section['musicCarouselShelfRenderer']?['header']
+              ?['musicCarouselShelfBasicHeaderRenderer'];
+          
+          String headerTitle = '';
+          final straplineRuns = header?['strapline']?['runs'];
+          if (straplineRuns != null && straplineRuns.isNotEmpty) {
+            headerTitle = straplineRuns[0]?['text']?.toString().toLowerCase() ?? '';
+          }
+  
+          if (headerTitle.contains('grande') || headerTitle.contains('éxito') || 
+              headerTitle.contains('hit') || headerTitle.contains('exito')) {
+            final items = section['musicCarouselShelfRenderer']?['contents'] ?? [];
+            
+            for (var item in items) {
+              try {
+                if (item.containsKey('musicTwoRowItemRenderer')) {
+                  final playlistJson = item['musicTwoRowItemRenderer'];
+                  final title = playlistJson['title']?['runs']?[0]?['text'];
+                  final playlistId = playlistJson['navigationEndpoint']?['browseEndpoint']?['browseId'];
+                  final thumbnailUrl = playlistJson['thumbnailRenderer']?['musicThumbnailRenderer']
+                      ?['thumbnail']?['thumbnails']?[0]?['url'];
+                  final author = playlistJson['subtitle']?['runs']?[0]?['text'];
+  
+                  // Validar que tengamos todos los datos necesarios
+                  if (title != null && playlistId != null && thumbnailUrl != null && author != null) {
+                    greatestHits.add(
+                      Playlist(
+                        playlistId: playlistId,
+                        title: title,
+                        author: author,
+                        thumbnailUrl: thumbnailUrl,
+                      )
+                    );
+                  }
+                }
+              } catch (itemError) {
+                continue; // Continuar con el siguiente item si hay error
+              }
+            }
+          }
+        }
+      }
+    } catch (e, stackTrace) {
+      printERROR('Error extracting Greatest Hits playlists: $e');
+      printERROR('Stack trace: $stackTrace');
+    }
+  
+    printINFO('Greatest Hits Playlists: ${greatestHits.length}');
+    return greatestHits;
   }
   
 }

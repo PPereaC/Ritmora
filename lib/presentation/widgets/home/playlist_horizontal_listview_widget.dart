@@ -2,23 +2,21 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../domain/entities/song.dart';
-import '../../providers/providers.dart';
-import '../widgets.dart';
+import '../../../domain/entities/playlist.dart';
 
-class SongHorizontalListview extends StatefulWidget {
-  final List<Song> songs;
+class PlaylistHorizontalListview extends StatefulWidget {
+  final List<Playlist> playlists;
 
-  const SongHorizontalListview({
+  const PlaylistHorizontalListview({
     super.key, 
-    required this.songs,
+    required this.playlists,
   });
 
   @override
-  State<SongHorizontalListview> createState() => _SongHorizontalListviewState();
+  State<PlaylistHorizontalListview> createState() => _PlaylistHorizontalListviewState();
 }
 
-class _SongHorizontalListviewState extends State<SongHorizontalListview> {
+class _PlaylistHorizontalListviewState extends State<PlaylistHorizontalListview> {
   final scrollController = ScrollController();
 
   @override
@@ -30,25 +28,25 @@ class _SongHorizontalListviewState extends State<SongHorizontalListview> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 180,
+      height: 250,
       child: Column(
         children: [
           Expanded(
             child: ListView.builder(
               controller: scrollController,
-              itemCount: widget.songs.length,
+              itemCount: widget.playlists.length,
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
               itemBuilder: (context, index) {
-                final song = widget.songs[index];
+                final playlist = widget.playlists[index];
                 // Padding específico según la posición
                 return Padding(
                   padding: EdgeInsets.only(
                     left: index == 0 ? 10 : 8,
-                    right: index == widget.songs.length - 1 ? 10 : 0,
+                    right: index == widget.playlists.length - 1 ? 10 : 0,
                   ),
                   child: FadeInRight(
-                    child: _Slide(song: song)
+                    child: _Slide(playlist: playlist)
                   ),
                 );
               },
@@ -61,29 +59,22 @@ class _SongHorizontalListviewState extends State<SongHorizontalListview> {
 }
 
 class _Slide extends ConsumerWidget {
-  final Song song;
-  const _Slide({required this.song});
+  final Playlist playlist;
+  const _Slide({required this.playlist});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textStyles = Theme.of(context).textTheme;
-    double containerWidth = song.isVideo ? 220 : 120;
-    final songPlayer = ref.watch(songPlayerProvider);
+    double containerWidth = 120;
+    // final songPlayer = ref.watch(songPlayerProvider);
     final colors = Theme.of(context).colorScheme;
 
     return Material(
       color: Colors.transparent,
       child: SizedBox(
         width: containerWidth,
-        height: song.isVideo ? containerWidth + 60 : 0,
         child: InkWell(
-          onTap: () => songPlayer.playSong(song),
-          onLongPress: () {
-            showModalBottomSheet(
-              context: context,
-              builder: (context) => BottomSheetBarWidget(song: song),
-            );
-          },
+          onTap: () => {},
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
           child: Column(
@@ -93,15 +84,15 @@ class _Slide extends ConsumerWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
-                  song.thumbnailUrl,
+                  playlist.thumbnailUrl,
                   width: containerWidth,
-                  height: song.isVideo ? 120 : containerWidth,
+                  height: containerWidth,
                   fit: BoxFit.cover,
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress != null) {
                       return Container(
                         width: containerWidth,
-                        height: song.isVideo ? 120 : containerWidth,
+                        height: containerWidth,
                         decoration: BoxDecoration(
                           color: Colors.grey[800],
                           borderRadius: BorderRadius.circular(12),
@@ -116,7 +107,7 @@ class _Slide extends ConsumerWidget {
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       width: containerWidth,
-                      height: song.isVideo ? 120 : containerWidth,
+                      height: containerWidth,
                       decoration: BoxDecoration(
                         color: colors.secondary,
                         borderRadius: BorderRadius.circular(12),
@@ -138,7 +129,7 @@ class _Slide extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      song.title,
+                      playlist.title,
                       maxLines: 1,
                       style: textStyles.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
@@ -147,7 +138,7 @@ class _Slide extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      song.author,
+                      playlist.author,
                       style: textStyles.bodySmall?.copyWith(
                         color: Colors.grey[400],
                       ),

@@ -1,6 +1,5 @@
 // ignore_for_file: unused_element
 
-import 'package:apolo/presentation/providers/trending_songs_provider.dart';
 import 'package:apolo/presentation/widgets/home/song_horizontal_listview_widget.dart';
 import 'package:apolo/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +9,6 @@ import 'package:icons_plus/icons_plus.dart';
 import '../../domain/entities/song.dart';
 import '../delegates/search_songs_delegate.dart';
 import '../providers/providers.dart';
-import '../providers/quick_picks_provider.dart';
 
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
@@ -27,6 +25,7 @@ class HomeViewState extends ConsumerState<HomeView> {
     // Cargar datos iniciales
     ref.read(trendingSongsProvider.notifier).loadSongs();
     ref.read(quickPicksProvider.notifier).loadSongs();
+    ref.read(playlistsHitsProvider.notifier).loadSongs();
   }
 
   @override
@@ -36,85 +35,83 @@ class HomeViewState extends ConsumerState<HomeView> {
     // Estados de las diferentes listas
     final trendingSongs = ref.watch(trendingSongsProvider);
     final quickPicks = ref.watch(quickPicksProvider);
+    final playlistsHits = ref.watch(playlistsHitsProvider);
 
     return Scaffold(
       backgroundColor: colors.surface,
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: Row(
-              children: [
-                IconButton.filled(
-                  onPressed: () async {
-                    final searchQuery = ref.read(searchQueryProvider);
-                    
-                    // ignore: unused_local_variable
-                    final song = await showSearch<Song?>(
-                      query: searchQuery,
-                      context: context,
-                      delegate: SearchSongsDelegate(
-                        searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery,
-                        colors: colors,
-                      )
-                    );
-                  },
-                  icon: const Icon(Iconsax.search_normal_1_outline),
-                  color: Colors.white,
-                  style: IconButton.styleFrom(
-                    backgroundColor: colors.secondary.withOpacity(0.5),
-                    padding: const EdgeInsets.all(10),
-                  ),
-                ),
-                const SizedBox(width: 3),
-                IconButton.filled(
-                  onPressed: () {},
-                  icon: const Icon(Iconsax.notification_outline),
-                  color: Colors.white,
-                  style: IconButton.styleFrom(
-                    backgroundColor: colors.secondary.withOpacity(0.5),
-                    padding: const EdgeInsets.all(10),
-                  ),
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
       body: Stack(
         children: [
-
-          // Gradiente
           const GradientWidget(),
           
-          // Contenido principal
           CustomScrollView(
             slivers: [
+              SliverAppBar(
+                pinned: true,
+                floating: false,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: Row(
+                      children: [
+                        IconButton.filled(
+                          onPressed: () async {
+                            final searchQuery = ref.read(searchQueryProvider);
+                            // ignore: unused_local_variable
+                            final song = await showSearch<Song?>(
+                              query: searchQuery,
+                              context: context,
+                              delegate: SearchSongsDelegate(
+                                searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery,
+                                colors: colors,
+                              )
+                            );
+                          },
+                          icon: const Icon(Iconsax.search_normal_1_outline),
+                          color: Colors.white,
+                          style: IconButton.styleFrom(
+                            backgroundColor: colors.secondary.withOpacity(0.5),
+                            padding: const EdgeInsets.all(10),
+                          ),
+                        ),
+                        const SizedBox(width: 3),
+                        IconButton.filled(
+                          onPressed: () {},
+                          icon: const Icon(Iconsax.notification_outline),
+                          color: Colors.white,
+                          style: IconButton.styleFrom(
+                            backgroundColor: colors.secondary.withOpacity(0.5),
+                            padding: const EdgeInsets.all(10),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+    
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    return SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-
-                            const _SectionTitle('Selecciones rápidas', verticalPadding: 12, showViewAll: false),
-                            const SizedBox(height: 15),
-                            SongGridHorizontalListview(songs: quickPicks),
-
-                            const SizedBox(height: 20),
-
-                            const _SectionTitle('En tendencia', verticalPadding: 12),
-                            const SizedBox(height: 15),
-                            SongHorizontalListview(songs: trendingSongs),
-
-                          ],
-                        ),
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const _SectionTitle('Selecciones rápidas', showViewAll: false),
+                          const SizedBox(height: 10),
+                          SongGridHorizontalListview(songs: quickPicks),
+    
+                          const _SectionTitle('En tendencia'),
+                          const SizedBox(height: 10),
+                          SongHorizontalListview(songs: trendingSongs),
+    
+                          const _SectionTitle('Grandes Éxitos', showViewAll: false),
+                          const SizedBox(height: 10),
+                          PlaylistHorizontalListview(playlists: playlistsHits)
+                        ],
                       ),
                     );
                   },
@@ -131,14 +128,10 @@ class HomeViewState extends ConsumerState<HomeView> {
 
 class _SectionTitle extends StatelessWidget {
   final String title;
-  final double verticalPadding;
-  final double horizontalPadding;
   final bool showViewAll;
   
   const _SectionTitle(
     this.title, {
-    this.verticalPadding = 8.0,
-    this.horizontalPadding = 12.0,
     this.showViewAll = true
   });
 
