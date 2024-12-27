@@ -37,28 +37,33 @@ const SongSchema = CollectionSchema(
       name: r'isLiked',
       type: IsarType.bool,
     ),
-    r'songId': PropertySchema(
+    r'isVideo': PropertySchema(
       id: 4,
+      name: r'isVideo',
+      type: IsarType.bool,
+    ),
+    r'songId': PropertySchema(
+      id: 5,
       name: r'songId',
       type: IsarType.string,
     ),
     r'streamUrl': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'streamUrl',
       type: IsarType.string,
     ),
     r'thumbnailUrl': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'thumbnailUrl',
       type: IsarType.string,
     ),
     r'title': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'title',
       type: IsarType.string,
     ),
     r'videoId': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'videoId',
       type: IsarType.string,
     )
@@ -111,11 +116,12 @@ void _songSerialize(
   writer.writeString(offsets[1], object.duration);
   writer.writeString(offsets[2], object.endUrl);
   writer.writeBool(offsets[3], object.isLiked);
-  writer.writeString(offsets[4], object.songId);
-  writer.writeString(offsets[5], object.streamUrl);
-  writer.writeString(offsets[6], object.thumbnailUrl);
-  writer.writeString(offsets[7], object.title);
-  writer.writeString(offsets[8], object.videoId);
+  writer.writeBool(offsets[4], object.isVideo);
+  writer.writeString(offsets[5], object.songId);
+  writer.writeString(offsets[6], object.streamUrl);
+  writer.writeString(offsets[7], object.thumbnailUrl);
+  writer.writeString(offsets[8], object.title);
+  writer.writeString(offsets[9], object.videoId);
 }
 
 Song _songDeserialize(
@@ -129,11 +135,12 @@ Song _songDeserialize(
     duration: reader.readString(offsets[1]),
     endUrl: reader.readString(offsets[2]),
     isLiked: reader.readBoolOrNull(offsets[3]) ?? false,
-    songId: reader.readString(offsets[4]),
-    streamUrl: reader.readString(offsets[5]),
-    thumbnailUrl: reader.readString(offsets[6]),
-    title: reader.readString(offsets[7]),
-    videoId: reader.readStringOrNull(offsets[8]) ?? '',
+    isVideo: reader.readBoolOrNull(offsets[4]) ?? false,
+    songId: reader.readString(offsets[5]),
+    streamUrl: reader.readString(offsets[6]),
+    thumbnailUrl: reader.readString(offsets[7]),
+    title: reader.readString(offsets[8]),
+    videoId: reader.readStringOrNull(offsets[9]) ?? '',
   );
   object.id = id;
   return object;
@@ -155,7 +162,7 @@ P _songDeserializeProp<P>(
     case 3:
       return (reader.readBoolOrNull(offset) ?? false) as P;
     case 4:
-      return (reader.readString(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 5:
       return (reader.readString(offset)) as P;
     case 6:
@@ -163,6 +170,8 @@ P _songDeserializeProp<P>(
     case 7:
       return (reader.readString(offset)) as P;
     case 8:
+      return (reader.readString(offset)) as P;
+    case 9:
       return (reader.readStringOrNull(offset) ?? '') as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -699,6 +708,15 @@ extension SongQueryFilter on QueryBuilder<Song, Song, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'isLiked',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterFilterCondition> isVideoEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isVideo',
         value: value,
       ));
     });
@@ -1415,6 +1433,18 @@ extension SongQuerySortBy on QueryBuilder<Song, Song, QSortBy> {
     });
   }
 
+  QueryBuilder<Song, Song, QAfterSortBy> sortByIsVideo() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isVideo', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterSortBy> sortByIsVideoDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isVideo', Sort.desc);
+    });
+  }
+
   QueryBuilder<Song, Song, QAfterSortBy> sortBySongId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'songId', Sort.asc);
@@ -1537,6 +1567,18 @@ extension SongQuerySortThenBy on QueryBuilder<Song, Song, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Song, Song, QAfterSortBy> thenByIsVideo() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isVideo', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Song, Song, QAfterSortBy> thenByIsVideoDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isVideo', Sort.desc);
+    });
+  }
+
   QueryBuilder<Song, Song, QAfterSortBy> thenBySongId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'songId', Sort.asc);
@@ -1626,6 +1668,12 @@ extension SongQueryWhereDistinct on QueryBuilder<Song, Song, QDistinct> {
     });
   }
 
+  QueryBuilder<Song, Song, QDistinct> distinctByIsVideo() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isVideo');
+    });
+  }
+
   QueryBuilder<Song, Song, QDistinct> distinctBySongId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1690,6 +1738,12 @@ extension SongQueryProperty on QueryBuilder<Song, Song, QQueryProperty> {
   QueryBuilder<Song, bool, QQueryOperations> isLikedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isLiked');
+    });
+  }
+
+  QueryBuilder<Song, bool, QQueryOperations> isVideoProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isVideo');
     });
   }
 
