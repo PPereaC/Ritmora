@@ -96,39 +96,37 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
 
           const GradientWidget(),
 
-          SafeArea(
-            child: FutureBuilder<Playlist>(
-              future: getPlaylistByID(widget.playlistID),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData || snapshot.data!.songs.isEmpty) {
-                  return const Scaffold(
-                    body: Stack(
-                      children: [
-                        GradientWidget(),
-                        Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      ],
-                    )
-                  );
-                } 
-
-                final playlistLocal = snapshot.data!;
-                return CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: PlaylistHeader(
-                        title: isLocalPlaylist ? playlistLocal.title : widget.playlist!.title,
-                        thumbnail: isLocalPlaylist ? playlistLocal.thumbnailUrl : widget.playlist!.thumbnailUrl,
-                        playlistID: playlistLocal.id,
-                        isLocalPlaylist: isLocalPlaylist
+          FutureBuilder<Playlist>(
+            future: getPlaylistByID(widget.playlistID),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData || snapshot.data!.songs.isEmpty) {
+                return const Scaffold(
+                  body: Stack(
+                    children: [
+                      GradientWidget(),
+                      Center(
+                        child: CircularProgressIndicator(),
                       ),
-                    ),
-                    _PlaylistSongsList(songs: playlistLocal.songs, isLocalPlaylist: widget.isLocalPlaylist),
-                  ],
+                    ],
+                  )
                 );
-              },
-            ),
+              } 
+          
+              final playlistLocal = snapshot.data!;
+              return CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: PlaylistHeader(
+                      title: isLocalPlaylist ? playlistLocal.title : widget.playlist!.title,
+                      thumbnail: isLocalPlaylist ? playlistLocal.thumbnailUrl : widget.playlist!.thumbnailUrl,
+                      playlistID: playlistLocal.id,
+                      isLocalPlaylist: isLocalPlaylist
+                    ),
+                  ),
+                  _PlaylistSongsList(songs: playlistLocal.songs, isLocalPlaylist: widget.isLocalPlaylist),
+                ],
+              );
+            },
           ),
 
         ]
@@ -293,92 +291,95 @@ class PlaylistHeader extends ConsumerWidget {
       }
     }
 
-    return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: MouseRegion(
-            child: GestureDetector(
-              onLongPress: () {
-                showModalBottomSheet(
-                  context: context,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) => Container(
-                    decoration: BoxDecoration(
-                      color: colors.surface,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                    ),
-                    child: SafeArea(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 4,
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          ListTile(
-                            leading: const Icon(Iconsax.edit_outline, size: 28, color: Colors.white),
-                            title: Text(
-                              'Cambiar nombre',
-                              style: textStyle.titleLarge!.copyWith(
-                                color: Colors.white
+    return Padding(
+      padding: const EdgeInsets.only(top: 85),
+      child: Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: MouseRegion(
+              child: GestureDetector(
+                onLongPress: () {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => Container(
+                      decoration: BoxDecoration(
+                        color: colors.surface,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                      ),
+                      child: SafeArea(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 4,
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            onTap: () {
-                              context.pop();
-                            },
-                          ),
-                          ListTile(
-                            leading: const Icon(Iconsax.gallery_edit_outline, size: 28, color: Colors.white),
-                            title: Text(
-                              'Cambiar imagen',
-                              style: textStyle.titleLarge!.copyWith(
-                                color: Colors.white
+                            ListTile(
+                              leading: const Icon(Iconsax.edit_outline, size: 28, color: Colors.white),
+                              title: Text(
+                                'Cambiar nombre',
+                                style: textStyle.titleLarge!.copyWith(
+                                  color: Colors.white
+                                ),
                               ),
+                              onTap: () {
+                                context.pop();
+                              },
                             ),
-                            onTap: () {
-                              context.pop();
-                              updateThumbnail();
-                            },
-                          ),
-                        ],
+                            ListTile(
+                              leading: const Icon(Iconsax.gallery_edit_outline, size: 28, color: Colors.white),
+                              title: Text(
+                                'Cambiar imagen',
+                                style: textStyle.titleLarge!.copyWith(
+                                  color: Colors.white
+                                ),
+                              ),
+                              onTap: () {
+                                context.pop();
+                                updateThumbnail();
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                child: Center( 
-                  child: SizedBox(
-                    width: 260,
-                    height: 260,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20.0),
-                      child: Image(
-                        image: isLocalPlaylist 
-                          ? (thumbnail.startsWith('assets/')
-                              ? AssetImage(thumbnail)
-                              : FileImage(File(thumbnail)) as ImageProvider)
-                          : NetworkImage(thumbnail) as ImageProvider,
-                        height: 260,
-                        width: 260,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  child: Center( 
+                    child: SizedBox(
+                      width: 260,
+                      height: 260,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20.0),
+                        child: Image(
+                          image: isLocalPlaylist 
+                            ? (thumbnail.startsWith('assets/')
+                                ? AssetImage(thumbnail)
+                                : FileImage(File(thumbnail)) as ImageProvider)
+                            : NetworkImage(thumbnail) as ImageProvider,
                           height: 260,
                           width: 260,
-                          color: Colors.grey[900],
-                          child: Image.asset(
-                            defaultPoster,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                          )
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            height: 260,
+                            width: 260,
+                            color: Colors.grey[900],
+                            child: Image.asset(
+                              defaultPoster,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                            )
+                          ),
                         ),
                       ),
                     ),
@@ -387,45 +388,45 @@ class PlaylistHeader extends ConsumerWidget {
               ),
             ),
           ),
-        ),
-        const SizedBox(height: 16.0),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 24.0,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+          const SizedBox(height: 16.0),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 24.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 16.0),
-        // Botones de play y shuffle
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            FilledButton(
-              onPressed: () {},
-              child: const Row(
-                children: [
-                  Icon(Icons.play_arrow_rounded, size: 32),
-                  SizedBox(width: 8),
-                  Text('Reproducir', style: TextStyle(fontSize: 16)),
-                ],
+          const SizedBox(height: 16.0),
+          // Botones de play y shuffle
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              FilledButton(
+                onPressed: () {},
+                child: const Row(
+                  children: [
+                    Icon(Icons.play_arrow_rounded, size: 32),
+                    SizedBox(width: 8),
+                    Text('Reproducir', style: TextStyle(fontSize: 16)),
+                  ],
+                ),
               ),
-            ),
-            FilledButton(
-              onPressed: () {},
-              child: const Row(
-                children: [
-                  Icon(Icons.shuffle_rounded, size: 32),
-                  SizedBox(width: 8),
-                  Text('Aleatorio', style: TextStyle(fontSize: 16)),
-                ],
+              FilledButton(
+                onPressed: () {},
+                child: const Row(
+                  children: [
+                    Icon(Icons.shuffle_rounded, size: 32),
+                    SizedBox(width: 8),
+                    Text('Aleatorio', style: TextStyle(fontSize: 16)),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
