@@ -7,5 +7,6 @@ abstract class SongsRepository {
   Future<List<Song>> getTrendingSongs();
   Future<List<Song>> getQuickPicks();
   Future<List<Playlist>> getPlaylistsHits();
+  Future<Playlist> getPlaylistWSongs(String playlistID);
 
 }

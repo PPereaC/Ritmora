@@ -4,6 +4,7 @@ import 'package:apolo/presentation/widgets/home/song_horizontal_listview_widget.
 import 'package:apolo/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 
 import '../../domain/entities/song.dart';
@@ -110,7 +111,15 @@ class HomeViewState extends ConsumerState<HomeView> {
     
                           const _SectionTitle('Grandes Éxitos', showViewAll: false),
                           const SizedBox(height: 10),
-                          PlaylistHorizontalListview(playlists: playlistsHits)
+                          PlaylistHorizontalListview (
+                            onTap: (playlist) {
+                              context.go(
+                                '/library/playlist/1/${playlist.playlistId}',
+                                extra: playlist
+                              );
+                            },
+                            playlists: playlistsHits
+                          )
                         ],
                       ),
                     );

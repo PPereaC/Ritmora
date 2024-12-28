@@ -287,8 +287,19 @@ class YoutubeSongsDatasource extends SongsDatasource {
                   final playlistJson = item['musicTwoRowItemRenderer'];
                   final title = playlistJson['title']?['runs']?[0]?['text'];
                   final playlistId = playlistJson['navigationEndpoint']?['browseEndpoint']?['browseId'];
-                  final thumbnailUrl = playlistJson['thumbnailRenderer']?['musicThumbnailRenderer']
-                      ?['thumbnail']?['thumbnails']?[0]?['url'];
+                  final thumbnails = playlistJson['thumbnailRenderer']?['musicThumbnailRenderer']
+                    ?['thumbnail']?['thumbnails'] as List?;
+                  
+                  final thumbnailsList = thumbnails
+                      ?.map((t) => {
+                        'url': t['url'],
+                        'area': (t['height'] ?? 0) * (t['width'] ?? 0),
+                      })
+                      .toList();
+                  
+                  thumbnailsList?.sort((a, b) => b['area'].compareTo(a['area']));
+                  
+                  final thumbnailUrl = thumbnailsList?.first['url'] ?? '';
                   final author = playlistJson['subtitle']?['runs']?[0]?['text'];
   
                   // Validar que tengamos todos los datos necesarios
@@ -317,6 +328,51 @@ class YoutubeSongsDatasource extends SongsDatasource {
   
     printINFO('Greatest Hits Playlists: ${greatestHits.length}');
     return greatestHits;
+  }
+  
+  @override
+  Future<Playlist> getPlaylistWSongs(String playlistID) async {
+    final body = getBody(2);
+    body['browseId'] = playlistID;
+    final response = await _sendRequest('browse', body);
+    final playlistSongs = _jsonToPlaylistWSongs(response.data);
+    final playlist = Playlist(title: 'Prueba', author: '', thumbnailUrl: '', playlistId: playlistID);
+    playlist.songs = await playlistSongs;
+    return playlist;
+  }
+
+  Future<List<Song>> _jsonToPlaylistWSongs(Map<String, dynamic> json) async {
+    List<Song> songs = [];
+
+    try {
+      // Navegamos hasta la estructura de la playlist
+      final contents = json['contents']['twoColumnBrowseResultsRenderer']['secondaryContents']['sectionListRenderer']['contents'][0]['musicPlaylistShelfRenderer']['contents'];
+      for (var item in contents) {
+        if (item.containsKey('musicResponsiveListItemRenderer')) {
+          final songJson = item['musicResponsiveListItemRenderer'];
+          final title = songJson['flexColumns'][0]['musicResponsiveListItemFlexColumnRenderer']['text']['runs'][0]['text'];
+          final artist = songJson['flexColumns'][1]['musicResponsiveListItemFlexColumnRenderer']['text']['runs'][0]['text'];
+          final videoId = songJson['overlay']['musicItemThumbnailOverlayRenderer']['content']['musicPlayButtonRenderer']['playNavigationEndpoint']['watchEndpoint']['videoId'];
+          final duration = songJson['fixedColumns'][0]['musicResponsiveListItemFixedColumnRenderer']['text']['runs'][0]['text'];
+
+          songs.add(
+            Song(
+              title: title,
+              author: artist,
+              thumbnailUrl: _getHighQualityThumbnail(videoId),
+              streamUrl: '',
+              endUrl: '/watch?v=$videoId',
+              songId: videoId,
+              duration: duration,
+            )
+          );
+        }
+      }
+    } catch (e) {
+      printERROR('Error extracting songs from playlist: $e');
+    }
+
+    return songs;
   }
   
 }

@@ -2,6 +2,7 @@
 
 import 'dart:io';
 import 'package:apolo/presentation/providers/playlist/playlist_provider.dart';
+import 'package:apolo/presentation/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -16,8 +17,15 @@ import '../widgets/widgets.dart';
 
 class PlaylistScreen extends ConsumerStatefulWidget {
   final String playlistID;
+  final String isLocalPlaylist;
+  final Playlist? playlist;
 
-  const PlaylistScreen({super.key, required this.playlistID});
+  const PlaylistScreen({
+    super.key,
+    required this.playlistID,
+    required this.isLocalPlaylist,
+    this.playlist
+  });
 
   @override
   ConsumerState<PlaylistScreen> createState() => _PlaylistScreenState();
@@ -26,15 +34,29 @@ class PlaylistScreen extends ConsumerStatefulWidget {
 class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
 
   Future<Playlist> getPlaylistByID(String playlistID) async {
-    final pID = int.parse(playlistID);
-    final playlist = await ref.read(playlistProvider.notifier).getPlaylistByID(pID);
-    return playlist;
+    try {
+      if (widget.isLocalPlaylist == '0') {
+        final pID = int.parse(playlistID);
+        return await ref.read(playlistProvider.notifier).getPlaylistByID(pID);
+      }
+      
+      // Para playlists de YouTube
+      await ref.read(playlistSongsProvider(playlistID).notifier).loadPlaylist();
+      return ref.read(playlistSongsProvider(playlistID));
+    } catch (e) {
+      return Playlist(
+        title: 'Error',
+        author: '',
+        thumbnailUrl: ''
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
 
     final colors = Theme.of(context).colorScheme;
+    bool isLocalPlaylist = widget.isLocalPlaylist == '0';
 
     return Scaffold(
       backgroundColor: colors.surface,
@@ -45,7 +67,12 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () {
-            Navigator.of(context).pop();
+            if (widget.isLocalPlaylist == '0') {
+              context.go('/library');
+            } else {
+              ref.read(playlistSongsProvider(widget.playlistID)).songs = [];
+              context.go('/');
+            }
           },
         ),
         actions: [
@@ -73,19 +100,31 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
             child: FutureBuilder<Playlist>(
               future: getPlaylistByID(widget.playlistID),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return const CircularProgressIndicator();
-                
-                final playlist = snapshot.data!;
+                if (!snapshot.hasData || snapshot.data!.songs.isEmpty) {
+                  return const Scaffold(
+                    body: Stack(
+                      children: [
+                        GradientWidget(),
+                        Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ],
+                    )
+                  );
+                } 
+
+                final playlistLocal = snapshot.data!;
                 return CustomScrollView(
                   slivers: [
                     SliverToBoxAdapter(
                       child: PlaylistHeader(
-                        title: playlist.title,
-                        thumbnail: playlist.thumbnailUrl,
-                        playlistID: playlist.id,
+                        title: isLocalPlaylist ? playlistLocal.title : widget.playlist!.title,
+                        thumbnail: isLocalPlaylist ? playlistLocal.thumbnailUrl : widget.playlist!.thumbnailUrl,
+                        playlistID: playlistLocal.id,
+                        isLocalPlaylist: isLocalPlaylist
                       ),
                     ),
-                    _PlaylistSongsList(songs: playlist.songs),
+                    _PlaylistSongsList(songs: playlistLocal.songs, isLocalPlaylist: widget.isLocalPlaylist),
                   ],
                 );
               },
@@ -100,10 +139,12 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
 }
 
 class _PlaylistSongsList extends StatefulWidget {
+  final String isLocalPlaylist;
   final List<Song> songs;
   
   const _PlaylistSongsList({
     required this.songs,
+    required this.isLocalPlaylist,
   });
 
   @override
@@ -185,7 +226,7 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
                       },
                     );
                   },
-                  isPlaylist: true,
+                  isPlaylist: widget.isLocalPlaylist == '0' ? true : false,
                   isVideo: widget.songs[songIndex].author.contains('Video') || widget.songs[songIndex].author.contains('Episode'),
                 ),
               ],
@@ -202,12 +243,14 @@ class PlaylistHeader extends ConsumerWidget {
   final String title;
   final String thumbnail;
   final int playlistID;
+  final bool isLocalPlaylist;
 
   const PlaylistHeader({
     super.key,
     required this.title, 
     required this.thumbnail,
-    required this.playlistID
+    required this.playlistID,
+    required this.isLocalPlaylist
   });
 
   @override
@@ -252,80 +295,93 @@ class PlaylistHeader extends ConsumerWidget {
 
     return Column(
       children: [
-        MouseRegion(
-          child: GestureDetector(
-            onLongPress: () {
-              showModalBottomSheet(
-                context: context,
-                backgroundColor: Colors.transparent,
-                builder: (context) => Container(
-                  decoration: BoxDecoration(
-                    color: colors.surface,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                  ),
-                  child: SafeArea(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 4,
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        ListTile(
-                          leading: const Icon(Iconsax.edit_outline, size: 28, color: Colors.white),
-                          title: Text(
-                            'Cambiar nombre',
-                            style: textStyle.titleLarge!.copyWith(
-                              color: Colors.white
+        SizedBox(
+          width: double.infinity,
+          child: MouseRegion(
+            child: GestureDetector(
+              onLongPress: () {
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => Container(
+                    decoration: BoxDecoration(
+                      color: colors.surface,
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    child: SafeArea(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 4,
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          onTap: () {
-                            context.pop();
-                          },
-                        ),
-                        ListTile(
-                          leading: const Icon(Iconsax.gallery_edit_outline, size: 28, color: Colors.white),
-                          title: Text(
-                            'Cambiar imagen',
-                            style: textStyle.titleLarge!.copyWith(
-                              color: Colors.white
+                          ListTile(
+                            leading: const Icon(Iconsax.edit_outline, size: 28, color: Colors.white),
+                            title: Text(
+                              'Cambiar nombre',
+                              style: textStyle.titleLarge!.copyWith(
+                                color: Colors.white
+                              ),
                             ),
+                            onTap: () {
+                              context.pop();
+                            },
                           ),
-                          onTap: () {
-                            context.pop();
-                            updateThumbnail();
-                          },
-                        ),
-                      ],
+                          ListTile(
+                            leading: const Icon(Iconsax.gallery_edit_outline, size: 28, color: Colors.white),
+                            title: Text(
+                              'Cambiar imagen',
+                              style: textStyle.titleLarge!.copyWith(
+                                color: Colors.white
+                              ),
+                            ),
+                            onTap: () {
+                              context.pop();
+                              updateThumbnail();
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 5),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20.0),
-                child: Image(
-                  image: thumbnail.startsWith('assets/')
-                      ? AssetImage(thumbnail)
-                      : FileImage(File(thumbnail)) as ImageProvider,
-                  height: 260,
-                  width: 260,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: Colors.grey[900],
-                    child: Image.asset(
-                      defaultPoster,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                    )
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                child: Center( 
+                  child: SizedBox(
+                    width: 260,
+                    height: 260,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20.0),
+                      child: Image(
+                        image: isLocalPlaylist 
+                          ? (thumbnail.startsWith('assets/')
+                              ? AssetImage(thumbnail)
+                              : FileImage(File(thumbnail)) as ImageProvider)
+                          : NetworkImage(thumbnail) as ImageProvider,
+                        height: 260,
+                        width: 260,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          height: 260,
+                          width: 260,
+                          color: Colors.grey[900],
+                          child: Image.asset(
+                            defaultPoster,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                          )
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),

@@ -11,6 +11,7 @@ class Playlist {
   final String author;
   String thumbnailUrl;
   String playlistId;
+  final bool isLocal;
 
   @Ignore()
   List<Song> songs = [];
@@ -24,5 +25,6 @@ class Playlist {
     required this.author,
     required this.thumbnailUrl,
     this.playlistId = '',
+    this.isLocal = true
   });
 }

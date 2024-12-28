@@ -40,11 +40,17 @@ final appRouter = GoRouter(
               builder: (context, state) => const LibraryView(),
               routes: [
                 GoRoute(
-                  path: '/playlist/:id',
+                  path: '/playlist/:local/:id',
                   builder: (context, state) {
                     // Obtenemos el ID de la playlist a través de la ruta
                     final playlistID = state.pathParameters['id'] ?? 'no-id';
-                    return PlaylistScreen(playlistID: playlistID);
+                    final isLocalPlaylist = state.pathParameters['local'] ?? 'no-local';
+                    final playlist = state.extra as Playlist;
+                    return PlaylistScreen (
+                      playlistID: playlistID,
+                      isLocalPlaylist: isLocalPlaylist,
+                      playlist: playlist
+                    );
                   },
                 )
               ]

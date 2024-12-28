@@ -7,5 +7,6 @@ abstract class SongsDatasource {
   Future<List<Song>> getTrendingSongs();
   Future<List<Song>> getQuickPicks();
   Future<List<Playlist>> getPlaylistsHits();
+  Future<Playlist> getPlaylistWSongs(String playlistID);
 
 }

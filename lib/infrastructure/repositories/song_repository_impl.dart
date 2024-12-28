@@ -28,5 +28,10 @@ class SongRepositoryImpl extends SongsRepository {
   Future<List<Playlist>> getPlaylistsHits() {
     return datasource.getPlaylistsHits();
   }
+  
+  @override
+  Future<Playlist> getPlaylistWSongs(String playlistID) {
+    return datasource.getPlaylistWSongs(playlistID);
+  }
 
 }

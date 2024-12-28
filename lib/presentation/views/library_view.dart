@@ -420,7 +420,10 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
             return MouseRegion(
               child: InkWell(
                 onTap: () { // Acción al tocar la playlist
-                  context.go('/library/playlist/${playlist.id}');
+                  context.go(
+                    '/library/playlist/0/${playlist.id}',
+                    extra: playlist,
+                  );
                 },
                 onLongPress: () async { // Acción al mantener presionado la playlist (borrar)
                   final shouldDelete = await showConfirmationDialog(
