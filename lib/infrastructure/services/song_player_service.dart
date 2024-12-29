@@ -24,8 +24,23 @@ class SongPlayerService {
         playNext();
       }
     });
+
+    // Listener para cambios de índice en la cola de reproducción (playlist)
+    _justAudioPlayer.currentIndexStream.listen((index) {
+      if (index != null && _playlist.length > index) {
+        final mediaItem = _playlist.sequence[index].tag as MediaItem;
+        final currentSongIndex = _queue.indexWhere((song) => song.songId == mediaItem.id);
+        
+        if (currentSongIndex != -1) {
+          _currentSong = _queue[currentSongIndex];
+          _songController.add(_currentSong);
+          _queue.removeAt(currentSongIndex);
+          _queueController.add(_queue);
+        }
+      }
+    });
   
-    // Configurar los controles multimedia
+    // Configuración de los controles multimedia
     AudioSession.instance.then((session) async {
       await session.configure(const AudioSessionConfiguration(
         androidAudioAttributes: AndroidAudioAttributes(
@@ -241,11 +256,13 @@ class SongPlayerService {
 
   // Reproducir siguiente canción
   Future<void> playNext() async {
-    if (_queue.isNotEmpty) {
+    if (_justAudioPlayer.hasNext) {
+      await _justAudioPlayer.seekToNext();
+      await _justAudioPlayer.play();
+    } else if (_queue.isNotEmpty) {
       final nextSong = _queue.removeAt(0);
       await playSong(nextSong);
     } else {
-      // No hay más canciones en la cola
       await _justAudioPlayer.stop();
       _isPlaying = false;
     }
@@ -254,15 +271,16 @@ class SongPlayerService {
 
   // Reproducir canción anterior
   Future<void> playPrevious() async {
-    if (_history.isNotEmpty) {
+    if (_justAudioPlayer.hasPrevious) {
+      await _justAudioPlayer.seekToPrevious();
+      await _justAudioPlayer.play();
+    } else if (_history.isNotEmpty) {
       final previousSong = _history.removeLast();
-      // Añadir la canción actual al inicio de la cola para no perderla
       if (_currentSong != null) {
         _queue.insert(0, _currentSong!);
       }
       await playSong(previousSong);
     } else {
-      // No hay canción anterior, reiniciar la canción actual
       await _justAudioPlayer.seek(Duration.zero);
       await resume();
     }
