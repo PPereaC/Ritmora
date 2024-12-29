@@ -206,6 +206,39 @@ class SongPlayerService {
     }
   }
 
+  Future<void> setQueue(List<Song> songs) async {
+    // Limpiar la cola actual
+    await _playlist.clear();
+    _queue.clear();
+
+    // Agregar las canciones a la cola
+    for (var song in songs) {
+      // Obtener el stream URL si es necesario
+      if(song.streamUrl.isEmpty) {
+        song.streamUrl = (await getStreamUrlInBackground(song.songId)) ?? '';
+      }
+
+      // Agregar a la cola de canciones
+      _queue.add(song);
+
+      // Agregar al playlist de reproducción
+      await _playlist.add(
+        AudioSource.uri(
+          Uri.parse(song.streamUrl),
+          tag: MediaItem(
+            id: song.songId,
+            title: song.title,
+            artist: song.author,
+            artUri: Uri.parse(song.thumbnailUrl),
+            duration: Duration.zero,
+          ),
+        ),
+      );
+    }
+
+    _queueController.add(_queue);
+  }
+
   // Añadir canción siguiente en la cola
   Future<void> addNext(Song song) async {
     if (!_queue.contains(song)) {

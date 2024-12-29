@@ -120,7 +120,8 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                       title: isLocalPlaylist ? playlistLocal.title : widget.playlist!.title,
                       thumbnail: isLocalPlaylist ? playlistLocal.thumbnailUrl : widget.playlist!.thumbnailUrl,
                       playlistID: playlistLocal.id,
-                      isLocalPlaylist: isLocalPlaylist
+                      isLocalPlaylist: isLocalPlaylist,
+                      songs: playlistLocal.songs,
                     ),
                   ),
                   _PlaylistSongsList(songs: playlistLocal.songs, isLocalPlaylist: widget.isLocalPlaylist),
@@ -237,18 +238,21 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
   }
 }
 
+// ignore: must_be_immutable
 class PlaylistHeader extends ConsumerWidget {
   final String title;
   final String thumbnail;
   final int playlistID;
   final bool isLocalPlaylist;
+  List<Song> songs;
 
-  const PlaylistHeader({
+  PlaylistHeader({
     super.key,
     required this.title, 
     required this.thumbnail,
     required this.playlistID,
-    required this.isLocalPlaylist
+    required this.isLocalPlaylist,
+    required this.songs,
   });
 
   @override
@@ -414,7 +418,12 @@ class PlaylistHeader extends ConsumerWidget {
                 ),
               ),
               FilledButton(
-                onPressed: () {},
+                onPressed: () {
+                  songs = songs..shuffle();
+                  final playerProvider = ref.read(songPlayerProvider);
+                  playerProvider.playSong(songs.first);
+                  playerProvider.setQueue(songs);
+                },
                 child: const Row(
                   children: [
                     Icon(Icons.shuffle_rounded, size: 32),
