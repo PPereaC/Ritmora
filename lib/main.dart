@@ -22,9 +22,13 @@ void main() async {
     androidNotificationChannelId: 'com.example.apolo.channel.audio',
     androidNotificationChannelName: 'Reproducción de audio',
     androidNotificationOngoing: true,
-    preloadArtwork: true,
+    androidShowNotificationBadge: true,
+    androidStopForegroundOnPause: true,
+    androidNotificationIcon: 'mipmap/ic_launcher',
+    fastForwardInterval: const Duration(seconds: 10),
+    rewindInterval: const Duration(seconds: 10),
   );
-  
+
   runApp(
     const ProviderScope(child: MainApp())
   );
