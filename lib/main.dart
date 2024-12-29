@@ -1,6 +1,7 @@
 import 'package:apolo/presentation/providers/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -17,6 +18,13 @@ void main() async {
   // ignore: unused_local_variable
   final path = join(databasesPath, 'cache.db');
 
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.example.apolo.channel.audio',
+    androidNotificationChannelName: 'Reproducción de audio',
+    androidNotificationOngoing: true,
+    preloadArtwork: true,
+  );
+  
   runApp(
     const ProviderScope(child: MainApp())
   );

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:apolo/config/utils/pretty_print.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 
 import '../../config/utils/background_tasks.dart';
 import '../../domain/entities/song.dart';
@@ -76,7 +77,17 @@ class SongPlayerService {
     }
 
     try {
-      await _justAudioPlayer.setUrl(song.streamUrl);
+      await _justAudioPlayer.setAudioSource(
+        AudioSource.uri(
+          Uri.parse(song.streamUrl),
+          tag: MediaItem(
+            id: song.songId,
+            title: song.title,
+            artist: song.author,
+            artUri: Uri.parse(song.thumbnailUrl),
+          ),
+        ),
+      );
       await _justAudioPlayer.play();
       _isPlaying = true;
       _queueController.add(_queue);
