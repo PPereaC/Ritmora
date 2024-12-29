@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:apolo/config/utils/pretty_print.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
@@ -12,6 +13,7 @@ class SongPlayerService {
   final _songController = StreamController<Song?>.broadcast();
   final _queueController = StreamController<List<Song>>.broadcast();
   StreamSubscription? _playerStateListener;
+  final _playlist = ConcatenatingAudioSource(children: []);
   Song? _currentSong;
   bool _isPlaying = false;
 
@@ -22,10 +24,22 @@ class SongPlayerService {
         playNext();
       }
     });
+  
+    // Configurar los controles multimedia
+    AudioSession.instance.then((session) async {
+      await session.configure(const AudioSessionConfiguration(
+        androidAudioAttributes: AndroidAudioAttributes(
+          contentType: AndroidAudioContentType.music,
+          usage: AndroidAudioUsage.media,
+        ),
+        androidWillPauseWhenDucked: true,
+      ));
+      await session.setActive(true);
+    });
   }
 
   // Historial y cola de reproducción
-  final List<Song> _history = []; // Añadimos esta lista para el historial
+  final List<Song> _history = [];
   final List<Song> _queue = [];
 
   // Getters
@@ -77,17 +91,44 @@ class SongPlayerService {
     }
 
     try {
-      await _justAudioPlayer.setAudioSource(
-        AudioSource.uri(
-          Uri.parse(song.streamUrl),
-          tag: MediaItem(
-            id: song.songId,
-            title: song.title,
-            artist: song.author,
-            artUri: Uri.parse(song.thumbnailUrl),
-          ),
+      // Crear el MediaSource para la canción actual
+      final currentSource = AudioSource.uri(
+        Uri.parse(song.streamUrl),
+        tag: MediaItem(
+          id: song.songId,
+          title: song.title,
+          artist: song.author,
+          artUri: Uri.parse(song.thumbnailUrl),
+          duration: _justAudioPlayer.duration,
+          displayTitle: song.title,
+          displaySubtitle: song.author,
         ),
       );
+
+      // Limpiar la cola actual
+      await _playlist.clear();
+      
+      // Agregar la canción actual y la cola
+      await _playlist.add(currentSource);
+      
+      // Agregar el resto de canciones en la cola
+      for (var queuedSong in _queue) {
+        await _playlist.add(
+          AudioSource.uri(
+            Uri.parse(queuedSong.streamUrl),
+            tag: MediaItem(
+              id: queuedSong.songId,
+              title: queuedSong.title,
+              artist: queuedSong.author,
+              artUri: Uri.parse(queuedSong.thumbnailUrl),
+              duration: Duration.zero,
+            ),
+          ),
+        );
+      }
+
+      // Establecer la fuente de audio como la playlist
+      await _justAudioPlayer.setAudioSource(_playlist);
       await _justAudioPlayer.play();
       _isPlaying = true;
       _queueController.add(_queue);
@@ -124,8 +165,28 @@ class SongPlayerService {
   // Añadir canción al final de la cola
   Future<void> addToQueue(Song song) async {
     if (!_queue.contains(song)) {
-      song.streamUrl = (await getStreamUrlInBackground(song.songId)) ?? '';
+      // Obtener URL si es necesario
+      if(song.streamUrl.isEmpty) {
+        song.streamUrl = (await getStreamUrlInBackground(song.songId)) ?? '';
+      }
+      
+      // Agregar a la cola de canciones
       _queue.add(song);
+      
+      // Agregar al playlist de reproducción
+      await _playlist.add(
+        AudioSource.uri(
+          Uri.parse(song.streamUrl),
+          tag: MediaItem(
+            id: song.songId,
+            title: song.title,
+            artist: song.author,
+            artUri: Uri.parse(song.thumbnailUrl),
+            duration: Duration.zero,
+          ),
+        ),
+      );
+      
       _queueController.add(_queue);
     }
   }
@@ -133,9 +194,38 @@ class SongPlayerService {
   // Añadir canción siguiente en la cola
   Future<void> addNext(Song song) async {
     if (!_queue.contains(song)) {
-      song.streamUrl = (await getStreamUrlInBackground(song.songId))!;
-      _queue.insert(0, song);
-      _queueController.add(_queue);
+      // Obtener la stream URL si es necesario
+      if(song.streamUrl.isEmpty) {
+        song.streamUrl = (await getStreamUrlInBackground(song.songId)) ?? '';
+      }
+  
+      try {
+        // Obtener el índice actual de reproducción
+        final currentIndex = _justAudioPlayer.currentIndex ?? 0;
+        
+        // Agregar al inicio de la cola
+        _queue.insert(0, song);
+        
+        // Crear el AudioSource para la nueva canción
+        final audioSource = AudioSource.uri(
+          Uri.parse(song.streamUrl),
+          tag: MediaItem(
+            id: song.songId,
+            title: song.title,
+            artist: song.author,
+            artUri: Uri.parse(song.thumbnailUrl),
+            duration: Duration.zero,
+          ),
+        );
+  
+        // Insertar después de la canción actual
+        await _playlist.insert(currentIndex + 1, audioSource);
+        
+        // Notificar cambios en la cola
+        _queueController.add(_queue);
+      } catch (e) {
+        printERROR('Error al agregar siguiente canción: $e');
+      }
     }
   }
 
@@ -172,7 +262,7 @@ class SongPlayerService {
       }
       await playSong(previousSong);
     } else {
-      // No hay canción anterior; reiniciar la canción actual
+      // No hay canción anterior, reiniciar la canción actual
       await _justAudioPlayer.seek(Duration.zero);
       await resume();
     }
