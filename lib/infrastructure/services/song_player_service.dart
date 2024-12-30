@@ -106,6 +106,10 @@ class SongPlayerService {
       _history.add(_currentSong!);
     }
 
+    // Limpiar cola actual
+    _queue.clear();
+    _queueController.add(_queue);
+
     _currentSong = song;
     _songController.add(song);
 
