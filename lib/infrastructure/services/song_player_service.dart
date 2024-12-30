@@ -34,8 +34,6 @@ class SongPlayerService {
         if (currentSongIndex != -1) {
           _currentSong = _queue[currentSongIndex];
           _songController.add(_currentSong);
-          _queue.removeAt(currentSongIndex);
-          _queueController.add(_queue);
         }
       }
     });
@@ -79,31 +77,37 @@ class SongPlayerService {
   // Reproducir una canción
   Future<void> playSong(Song song, [int retryCount = 0]) async {
 
-    // Máximo número de intentos
-    const maxRetries = 3;
-
-    // Si excedemos los intentos, lanzar error
-    if (retryCount >= maxRetries) {
-      printERROR('Número máximo de intentos excedido');
+    // Verificar URL primero
+    if(song.streamUrl.isEmpty) {
+      final streamUrl = await getStreamUrlInBackground(song.songId);
+      if (streamUrl == null || streamUrl.isEmpty) {
+        // Remover la canción de la cola si está en ella
+        final songIndex = _queue.indexWhere((s) => s.songId == song.songId);
+        if (songIndex != -1) {
+          _queue.removeAt(songIndex);
+          _queueController.add(_queue);
+        }
+        
+        // Pasar a la siguiente sin añadir al historial
+        if (_queue.isNotEmpty) {
+          final nextSong = _queue[0];
+          await playSong(nextSong);
+        } else {
+          await _justAudioPlayer.stop();
+          _isPlaying = false;
+        }
+        return;
+      }
+      song.streamUrl = streamUrl;
     }
 
-    // Si hay una canción actual, moverla al historial
+    // Si llegamos aquí, la canción tiene URL válida
     if (_currentSong != null) {
       _history.add(_currentSong!);
     }
 
     _currentSong = song;
     _songController.add(song);
-
-    // Cargar y reproducir la canción
-    if(song.streamUrl.isEmpty) {
-      final streamUrl = await getStreamUrlInBackground(song.songId);
-      if (streamUrl == null || streamUrl.isEmpty) {
-        // Incrementar contador y reintentar
-        return playSong(song, retryCount + 1);
-      }
-      song.streamUrl = streamUrl;
-    }
 
     try {
       // Crear el MediaSource para la canción actual
@@ -114,41 +118,43 @@ class SongPlayerService {
           title: song.title,
           artist: song.author,
           artUri: Uri.parse(song.thumbnailUrl),
-          duration: _justAudioPlayer.duration,
-          displayTitle: song.title,
-          displaySubtitle: song.author,
+          duration: Duration.zero,
         ),
       );
 
-      // Limpiar la cola actual
-      await _playlist.clear();
-      
-      // Agregar la canción actual y la cola
-      await _playlist.add(currentSource);
+      final sources = [currentSource];
       
       // Agregar el resto de canciones en la cola
       for (var queuedSong in _queue) {
-        await _playlist.add(
-          AudioSource.uri(
-            Uri.parse(queuedSong.streamUrl),
-            tag: MediaItem(
-              id: queuedSong.songId,
-              title: queuedSong.title,
-              artist: queuedSong.author,
-              artUri: Uri.parse(queuedSong.thumbnailUrl),
-              duration: Duration.zero,
+        if (queuedSong.songId != song.songId) {
+          sources.add(
+            AudioSource.uri(
+              Uri.parse(queuedSong.streamUrl.isEmpty ? 
+                'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' : 
+                queuedSong.streamUrl),
+              tag: MediaItem(
+                id: queuedSong.songId,
+                title: queuedSong.title,
+                artist: queuedSong.author,
+                artUri: Uri.parse(queuedSong.thumbnailUrl),
+                duration: Duration.zero,
+              ),
             ),
-          ),
-        );
+          );
+        }
       }
 
-      // Establecer la fuente de audio como la playlist
+      await _playlist.clear();
+      await _playlist.addAll(sources);
       await _justAudioPlayer.setAudioSource(_playlist);
       await _justAudioPlayer.play();
       _isPlaying = true;
-      _queueController.add(_queue);
     } catch (e) {
       printERROR('Error al reproducir la canción: $e');
+      if (_queue.isNotEmpty) {
+        final nextSong = _queue.removeAt(0);
+        await playSong(nextSong);
+      }
     }
     
   }
@@ -180,15 +186,18 @@ class SongPlayerService {
   // Añadir canción al final de la cola
   Future<void> addToQueue(Song song) async {
     if (!_queue.contains(song)) {
-      // Obtener URL si es necesario
+      // Obtener URL si es necesario y validar
       if(song.streamUrl.isEmpty) {
-        song.streamUrl = (await getStreamUrlInBackground(song.songId)) ?? '';
+        final streamUrl = await getStreamUrlInBackground(song.songId);
+        if (streamUrl == null || streamUrl.isEmpty) {
+          return; // No añadir si no hay URL válida
+        }
+        song.streamUrl = streamUrl;
       }
       
-      // Agregar a la cola de canciones
+      // Solo añadir si hay URL válida
       _queue.add(song);
       
-      // Agregar al playlist de reproducción
       await _playlist.add(
         AudioSource.uri(
           Uri.parse(song.streamUrl),
@@ -206,55 +215,55 @@ class SongPlayerService {
     }
   }
 
-  Future<void> setQueue(List<Song> songs) async {
-    // Limpiar la cola actual
-    await _playlist.clear();
-    _queue.clear();
-
-    // Agregar las canciones a la cola
+  // Añadir una lista de canciones a la cola
+  Future<void> addSongsToQueue(List<Song> songs) async {
     for (var song in songs) {
-      // Obtener el stream URL si es necesario
-      if(song.streamUrl.isEmpty) {
-        song.streamUrl = (await getStreamUrlInBackground(song.songId)) ?? '';
-      }
-
-      // Agregar a la cola de canciones
-      _queue.add(song);
-
-      // Agregar al playlist de reproducción
-      await _playlist.add(
-        AudioSource.uri(
-          Uri.parse(song.streamUrl),
-          tag: MediaItem(
-            id: song.songId,
-            title: song.title,
-            artist: song.author,
-            artUri: Uri.parse(song.thumbnailUrl),
-            duration: Duration.zero,
+      if (!_queue.contains(song)) {
+        if(song.streamUrl.isEmpty) {
+          final streamUrl = await getStreamUrlInBackground(song.songId);
+          if (streamUrl == null || streamUrl.isEmpty) {
+            continue; // Saltar a la siguiente si no hay una URL válida
+          }
+          song.streamUrl = streamUrl;
+        }
+        
+        _queue.add(song);
+        
+        await _playlist.add(
+          AudioSource.uri(
+            Uri.parse(song.streamUrl),
+            tag: MediaItem(
+              id: song.songId,
+              title: song.title,
+              artist: song.author,
+              artUri: Uri.parse(song.thumbnailUrl),
+              duration: Duration.zero,
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
-
+    
     _queueController.add(_queue);
   }
 
   // Añadir canción siguiente en la cola
   Future<void> addNext(Song song) async {
     if (!_queue.contains(song)) {
-      // Obtener la stream URL si es necesario
+      // Obtener y validar URL primero
       if(song.streamUrl.isEmpty) {
-        song.streamUrl = (await getStreamUrlInBackground(song.songId)) ?? '';
+        final streamUrl = await getStreamUrlInBackground(song.songId);
+        if (streamUrl == null || streamUrl.isEmpty) {
+          return; // No añadir si no hay una URL válida
+        }
+        song.streamUrl = streamUrl;
       }
   
       try {
-        // Obtener el índice actual de reproducción
         final currentIndex = _justAudioPlayer.currentIndex ?? 0;
         
-        // Agregar al inicio de la cola
         _queue.insert(0, song);
         
-        // Crear el AudioSource para la nueva canción
         final audioSource = AudioSource.uri(
           Uri.parse(song.streamUrl),
           tag: MediaItem(
@@ -266,10 +275,7 @@ class SongPlayerService {
           ),
         );
   
-        // Insertar después de la canción actual
         await _playlist.insert(currentIndex + 1, audioSource);
-        
-        // Notificar cambios en la cola
         _queueController.add(_queue);
       } catch (e) {
         printERROR('Error al agregar siguiente canción: $e');
@@ -290,10 +296,21 @@ class SongPlayerService {
   // Reproducir siguiente canción
   Future<void> playNext() async {
     if (_justAudioPlayer.hasNext) {
+      final nextIndex = (_justAudioPlayer.currentIndex ?? -1) + 1;
+      if (nextIndex < _queue.length) {
+        final nextSong = _queue[nextIndex];
+        if (nextSong.streamUrl.isEmpty || nextSong.streamUrl == 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3') {
+          // Si la siguiente no tiene URL, eliminarla y probar con la siguiente
+          _queue.removeAt(nextIndex);
+          _queueController.add(_queue);
+          await playNext();
+          return;
+        }
+      }
       await _justAudioPlayer.seekToNext();
       await _justAudioPlayer.play();
     } else if (_queue.isNotEmpty) {
-      final nextSong = _queue.removeAt(0);
+      final nextSong = _queue[0];
       await playSong(nextSong);
     } else {
       await _justAudioPlayer.stop();

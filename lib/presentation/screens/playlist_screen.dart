@@ -422,7 +422,7 @@ class PlaylistHeader extends ConsumerWidget {
                   songs = songs..shuffle();
                   final playerProvider = ref.read(songPlayerProvider);
                   playerProvider.playSong(songs.first);
-                  playerProvider.setQueue(songs);
+                  playerProvider.addSongsToQueue(songs);
                 },
                 child: const Row(
                   children: [
