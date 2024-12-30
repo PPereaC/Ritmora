@@ -34,24 +34,25 @@ class _SelectPlaylistScreenState extends ConsumerState<SelectPlaylistScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.black87,
+      backgroundColor: colors.surface,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: colors.onSurface,
+            color: Colors.white,
           ),
           onPressed: () => context.pop(),
         ),
-        title: Text(
+        title: const Text(
           'Añadir a lista',
           style: TextStyle(
-            color: colors.onSurface,
+            color: Colors.white,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -110,9 +111,9 @@ class _SelectPlaylistScreenState extends ConsumerState<SelectPlaylistScreen> {
                                     )
                                   : FadeIn(
                                     duration: const Duration(milliseconds: 200),
-                                    child: Icon(
+                                    child: const Icon(
                                         Icons.circle_outlined,
-                                        color: colors.onSurfaceVariant,
+                                        color: Colors.white,
                                         size: 28,
                                       ),
                                   ),
@@ -129,18 +130,23 @@ class _SelectPlaylistScreenState extends ConsumerState<SelectPlaylistScreen> {
               },
             ),
           ),
-          _BottomButton(
-            selectedPlaylists: selectedPlaylists,
-            onPressed: selectedPlaylists.isNotEmpty
-                ? () {
-                    final selectedIds = selectedPlaylists
-                      .map((playlist) => playlist.id.toString())
-                      .toList();
 
-                    context.pop(selectedIds);
-                  }
-                : null,
-          ),
+          if (selectedPlaylists.isNotEmpty)
+            FadeIn(
+              child: _BottomButton(
+                selectedPlaylists: selectedPlaylists,
+                onPressed: selectedPlaylists.isNotEmpty
+                    ? () {
+                        final selectedIds = selectedPlaylists
+                          .map((playlist) => playlist.id.toString())
+                          .toList();
+              
+                        context.pop(selectedIds);
+                      }
+                    : null,
+              ),
+            ),
+            
         ],
       ),
     );
