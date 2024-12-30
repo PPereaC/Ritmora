@@ -32,6 +32,29 @@ class PlaylistScreen extends ConsumerStatefulWidget {
 }
 
 class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
+  final ScrollController _scrollController = ScrollController();
+  final ValueNotifier<double> _opacity = ValueNotifier(0.0);
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override 
+  void dispose() {
+    _scrollController.dispose();
+    _opacity.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.offset > 400) {
+      _opacity.value = 1.0;
+    } else {
+      _opacity.value = 0.0;
+    }
+  }
 
   Future<Playlist> getPlaylistByID(String playlistID) async {
     try {
@@ -61,35 +84,51 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
     return Scaffold(
       backgroundColor: colors.surface,
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: const IconThemeData(color: Colors.white),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () {
-            if (widget.isLocalPlaylist == '0') {
-              context.go('/library');
-            } else {
-              ref.read(playlistSongsProvider(widget.playlistID)).songs = [];
-              context.go('/');
-            }
-          },
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 5.0),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Iconsax.setting_2_outline, color: Colors.white),
-                  onPressed: () {
-                    // Acción de más opciones
-                  },
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: ValueListenableBuilder(
+          valueListenable: _opacity,
+          builder: (context, double opacity, _) {
+            return AppBar(
+              elevation: 0,
+              backgroundColor: colors.secondary.withOpacity(opacity),
+              title: Opacity(
+                opacity: opacity,
+                child: Text(
+                  isLocalPlaylist ? widget.playlist?.title ?? '' : widget.playlist?.title ?? '',
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+              iconTheme: const IconThemeData(color: Colors.white),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                onPressed: () {
+                  if (widget.isLocalPlaylist == '0') {
+                    context.go('/library');
+                  } else {
+                    ref.read(playlistSongsProvider(widget.playlistID)).songs = [];
+                    context.go('/');
+                  }
+                },
+              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 5.0),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Iconsax.setting_2_outline, color: Colors.white),
+                        onPressed: () {
+                          // Acción de más opciones
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ],
-            ),
-          ),
-        ],
+            );
+          }
+        ),
       ),
       body: Stack(
         children: [
@@ -114,6 +153,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
           
               final playlistLocal = snapshot.data!;
               return CustomScrollView(
+                controller: _scrollController,
                 slivers: [
                   SliverToBoxAdapter(
                     child: PlaylistHeader(
