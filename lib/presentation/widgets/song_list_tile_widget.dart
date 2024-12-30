@@ -56,6 +56,7 @@ class SongListTile extends ConsumerWidget {
           ref.read(songPlayerProvider).playSong(song);
         }
       },
+      onLongPress: () => onSongOptions(),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
         child: Row(
@@ -162,17 +163,18 @@ class SongListTile extends ConsumerWidget {
             ),
 
             // Botón de opciones
-            Container(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                onPressed: () => onSongOptions(),
-                icon: const Icon(
-                  Iconsax.more_square_outline,
-                  size: 23,
-                ),
-                color: Colors.white,
+            InkWell(
+              onTap: () => onSongOptions(),
+              child: Padding(
                 padding: const EdgeInsets.only(left: 25),
-                constraints: const BoxConstraints(),
+                child: Container(
+                  alignment: Alignment.centerRight,
+                  child: const Icon(
+                    Iconsax.more_square_outline,
+                    size: 23,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ],

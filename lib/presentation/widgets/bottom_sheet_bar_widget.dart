@@ -19,10 +19,11 @@ class BottomSheetBarWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
+    final colors = Theme.of(context).colorScheme;
     final textStyle = Theme.of(context).textTheme;
 
     return Container(
-      color: Colors.grey[900],
+      color: colors.surface,
       height: MediaQuery.of(context).size.height * 0.44,
       child: Column(
         children: [
@@ -43,24 +44,33 @@ class BottomSheetBarWidget extends ConsumerWidget {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: SizedBox(
-                    width: 55,
-                    height: 55,
-                    child: Image.network(
-                      song.thumbnailUrl,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) => 
-                        FadeIn(child: child),
-                      errorBuilder: (context, error, _) => Container(
-                        color: Colors.grey[900],
-                        child: Image.asset(
-                          defaultPoster,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
-                        )
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.grey.withOpacity(0.3),
+                      width: 2,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: SizedBox(
+                      width: 55,
+                      height: 55,
+                      child: Image.network(
+                        song.thumbnailUrl,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) => 
+                          FadeIn(child: child),
+                        errorBuilder: (context, error, _) => Container(
+                          color: Colors.grey[900],
+                          child: Image.asset(
+                            defaultPoster,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                          )
+                        ),
                       ),
                     ),
                   ),
@@ -73,10 +83,14 @@ class BottomSheetBarWidget extends ConsumerWidget {
                       Text(
                         song.title,
                         style: textStyle.bodyLarge!.copyWith(color: Colors.white),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                       Text(
                         song.author,
                         style: textStyle.bodyMedium!.copyWith(color: Colors.grey),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ],
                   ),
@@ -86,66 +100,69 @@ class BottomSheetBarWidget extends ConsumerWidget {
           ),
           const Divider(height: 1),
           Expanded(
-            child: ListView(
-              children: [
-                _buildListOption(
-                  Iconsax.music_filter_outline,
-                  'Añadir a la cola',
-                  textStyle,
-                  () {
-                    ref.read(songPlayerProvider).addToQueue(song);
-                    context.pop();
-                  },
-                ),
-                _buildListOption(
-                  Iconsax.play_circle_outline,
-                  'Añadir a continuación',
-                  textStyle,
-                  () {
-                    ref.read(songPlayerProvider).addNext(song);
-                    context.pop();
-                  },
-                ),
-                _buildListOption(
-                  Iconsax.music_playlist_outline,
-                  'Añadir a una playlist',
-                  textStyle,
-                  () async {
-
-                    // Obtener las playlists
-                    final playlists = await ref.read(playlistRepositoryProvider).getPlaylists();
-
-                    // Navegar y obtener el resultado (lista de ids de las playlists seleccionadas)
-                    final selectedIds = await context.push<List<String>>(
-                      '/select-playlist',
-                      extra: playlists,
-                    );
-
-                    if (selectedIds == null) {
-                      // No hacer nada si no se selecciona ninguna playlist
-                    } else {
-                      if (selectedIds.isNotEmpty) {
-                        for (final id in selectedIds) {
-                          await ref.read(playlistRepositoryProvider).addSongToPlaylist(context, int.parse(id), song);
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildListOption(
+                    Iconsax.music_filter_outline,
+                    'Añadir a la cola',
+                    textStyle,
+                    () {
+                      ref.read(songPlayerProvider).addToQueue(song);
+                      context.pop();
+                    },
+                  ),
+                  _buildListOption(
+                    Iconsax.play_circle_outline,
+                    'Añadir a continuación',
+                    textStyle,
+                    () {
+                      ref.read(songPlayerProvider).addNext(song);
+                      context.pop();
+                    },
+                  ),
+                  _buildListOption(
+                    Iconsax.music_playlist_outline,
+                    'Añadir a una playlist',
+                    textStyle,
+                    () async {
+              
+                      // Obtener las playlists
+                      final playlists = await ref.read(playlistRepositoryProvider).getPlaylists();
+              
+                      // Navegar y obtener el resultado (lista de ids de las playlists seleccionadas)
+                      final selectedIds = await context.push<List<String>>(
+                        '/select-playlist',
+                        extra: playlists,
+                      );
+              
+                      if (selectedIds == null) {
+                        // No hacer nada si no se selecciona ninguna playlist
+                      } else {
+                        if (selectedIds.isNotEmpty) {
+                          for (final id in selectedIds) {
+                            await ref.read(playlistRepositoryProvider).addSongToPlaylist(context, int.parse(id), song);
+                          }
                         }
                       }
-                    }
-                      
-                  },
-                ),
-                _buildListOption(
-                  Iconsax.voice_square_outline,
-                  'Ecualizador',
-                  textStyle,
-                  () {},
-                ),
-                _buildListOption(
-                  Iconsax.cd_outline,
-                  'Ver álbum',
-                  textStyle,
-                  () {},
-                ),
-              ],
+                        
+                    },
+                  ),
+                  _buildListOption(
+                    Iconsax.heart_outline,
+                    'Añadir a canciones que te gustan',
+                    textStyle,
+                    () {},
+                  ),
+                  _buildListOption(
+                    Iconsax.cd_outline,
+                    'Ver álbum',
+                    textStyle,
+                    () {},
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -155,14 +172,19 @@ class BottomSheetBarWidget extends ConsumerWidget {
 
   Widget _buildListOption(IconData icon, String title, TextTheme textStyle, Function onPressed) {
     return ListTile(
+      dense: true,
+      contentPadding: const EdgeInsets.symmetric(vertical: 3, horizontal: 16),
       leading: Icon(
         icon,
-        size: 28,
+        size: 24,
         color: Colors.grey,
       ),
       title: Text(
         title,
-        style: textStyle.titleLarge!.copyWith(color: Colors.white),
+        style: textStyle.bodyLarge!.copyWith(
+          color: Colors.white,
+          fontSize: 18
+        ),
       ),
       onTap: () => onPressed(),
     );
