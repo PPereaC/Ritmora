@@ -122,7 +122,6 @@ class SongPlayerService {
           title: song.title,
           artist: song.author,
           artUri: Uri.parse(song.thumbnailUrl),
-          duration: Duration.zero,
         ),
       );
 
@@ -141,7 +140,6 @@ class SongPlayerService {
                 title: queuedSong.title,
                 artist: queuedSong.author,
                 artUri: Uri.parse(queuedSong.thumbnailUrl),
-                duration: Duration.zero,
               ),
             ),
           );
@@ -150,7 +148,7 @@ class SongPlayerService {
 
       await _playlist.clear();
       await _playlist.addAll(sources);
-      await _justAudioPlayer.setAudioSource(_playlist);
+      await _justAudioPlayer.setAudioSource(_playlist, initialPosition: Duration.zero);
       await _justAudioPlayer.play();
       _isPlaying = true;
     } catch (e) {
@@ -194,28 +192,31 @@ class SongPlayerService {
       if(song.streamUrl.isEmpty) {
         final streamUrl = await getStreamUrlInBackground(song.songId);
         if (streamUrl == null || streamUrl.isEmpty) {
-          return; // No añadir si no hay URL válida
+          return;
         }
         song.streamUrl = streamUrl;
       }
       
-      // Solo añadir si hay URL válida
       _queue.add(song);
       
-      await _playlist.add(
-        AudioSource.uri(
-          Uri.parse(song.streamUrl),
-          tag: MediaItem(
-            id: song.songId,
-            title: song.title,
-            artist: song.author,
-            artUri: Uri.parse(song.thumbnailUrl),
-            duration: Duration.zero,
-          ),
+      final audioSource = AudioSource.uri(
+        Uri.parse(song.streamUrl),
+        tag: MediaItem(
+          id: song.songId,
+          title: song.title,
+          artist: song.author,
+          artUri: Uri.parse(song.thumbnailUrl),
+          duration: Duration.zero,
         ),
       );
-      
-      _queueController.add(_queue);
+
+      // Si es la primera canción en la cola y no hay nada reproduciéndose actualmente, reproducir
+      if (_queue.length == 1 && _currentSong == null) {
+        await playSong(song);
+      } else {
+        await _playlist.add(audioSource);
+        _queueController.add(_queue);
+      }
     }
   }
 
