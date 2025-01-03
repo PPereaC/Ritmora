@@ -14,6 +14,7 @@ import 'package:icons_plus/icons_plus.dart';
 
 import '../../config/helpers/permissions_helper.dart';
 import '../../config/utils/constants.dart';
+import '../../config/utils/responsive.dart';
 import '../../domain/entities/playlist.dart';
 import '../../domain/entities/song.dart';
 import '../../infrastructure/mappers/piped_search_songs_mapper.dart';
@@ -408,8 +409,8 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
   
         return GridView.builder(
           padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: Responsive.isMobile(context) ? 2 : Responsive.isDesktop(context) ? 8 : Responsive.isTablet(context) ? 4 : 5,
             childAspectRatio: 1,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
