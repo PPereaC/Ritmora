@@ -94,8 +94,28 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
 
   @override
   Future<Playlist> getPlaylistByID(int playlistID) {
-    // TODO: implement getPlaylistByID
-    throw UnimplementedError();
+    return openDB().then((db) async {
+      // Obtener la playlist por ID
+      final List<Map<String, dynamic>> playlists = await db.query(
+        'playlist',
+        where: 'id = ?',
+        whereArgs: [playlistID]
+      );
+  
+      // Mapear resultados a objetos Playlist
+      if (playlists.isNotEmpty) {
+        return Playlist(
+          id: playlists.first['id'],
+          title: playlists.first['title'],
+          author: playlists.first['author'],
+          thumbnailUrl: playlists.first['thumbnailUrl'],
+          playlistId: playlists.first['playlistId'],
+          isLocal: playlists.first['isLocal']
+        );
+      } else {
+        throw Exception('Playlist not found');
+      }
+    });
   }
 
   @override
@@ -132,6 +152,29 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
   Future<void> updatePlaylistThumbnail(int playlistID, String thumbnailURL) {
     // TODO: implement updatePlaylistThumbnail
     throw UnimplementedError();
+  }
+  
+  @override
+  Future<List<Song>> getSongsFromPlaylist(int playlistID) {
+    return openDB().then((db) async {
+      // Obtener todas las canciones de una playlist
+      final List<Map<String, dynamic>> songs = await db.query(
+        'playlist_song',
+        where: 'id = ?',
+        whereArgs: [playlistID]
+      );
+  
+      // Mapear resultados a objetos Song
+      return songs.map((map) => Song(
+        title: map['title'],
+        author: map['author'],
+        thumbnailUrl: map['thumbnailUrl'],
+        streamUrl: map['streamUrl'],
+        endUrl: map['endUrl'],
+        songId: map['songId'],
+        duration: map['duration'],
+      )).toList();
+    });
   }
 
 }

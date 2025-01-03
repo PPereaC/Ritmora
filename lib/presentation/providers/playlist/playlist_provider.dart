@@ -52,6 +52,15 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
     }
   }
 
+  Future<List<Song>> getSongsFromPlaylist(int playlistID) async {
+    try {
+      final songs = await _repository.getSongsFromPlaylist(playlistID);
+      return songs;
+    } catch (e) {
+      return [];
+    }
+  }
+
   Future<void> addPlaylist(Playlist playlist) async {
     try {
       await _repository.addNewPlaylist(playlist);

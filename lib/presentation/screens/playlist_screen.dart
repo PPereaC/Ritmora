@@ -56,23 +56,25 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
     }
   }
 
-  Future<Playlist> getPlaylistByID(String playlistID) async {
-    try {
-      if (widget.isLocalPlaylist == '0') {
-        final pID = int.parse(playlistID);
-        return await ref.read(playlistProvider.notifier).getPlaylistByID(pID);
-      }
+  Future<List<Song>> getPlaylistSongs(int playlistID) async {
+    return await ref.read(playlistProvider.notifier).getSongsFromPlaylist(playlistID);
+    // try {
+    //   if (widget.isLocalPlaylist == '0') {
+        
+    //   }
+
       
-      // Para playlists de YouTube
-      await ref.read(playlistSongsProvider(playlistID).notifier).loadPlaylist();
-      return ref.read(playlistSongsProvider(playlistID));
-    } catch (e) {
-      return Playlist(
-        title: 'Error',
-        author: '',
-        thumbnailUrl: ''
-      );
-    }
+      
+    //   Para playlists de YouTube
+    //   await ref.read(playlistSongsProvider(playlistID).notifier).loadPlaylist();
+    //   return ref.read(playlistSongsProvider(playlistID));
+    // } catch (e) {
+    //   return Playlist(
+    //     title: 'Error',
+    //     author: '',
+    //     thumbnailUrl: ''
+    //   );
+    // }
   }
 
   @override
@@ -135,40 +137,49 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
 
           const GradientWidget(),
 
-          // FutureBuilder<Playlist>(
-          //   future: getPlaylistByID(widget.playlistID),
-          //   builder: (context, snapshot) {
-          //     if (!snapshot.hasData || snapshot.data!.songs.isEmpty) {
-          //       return const Scaffold(
-          //         body: Stack(
-          //           children: [
-          //             GradientWidget(),
-          //             Center(
-          //               child: CircularProgressIndicator(),
-          //             ),
-          //           ],
-          //         )
-          //       );
-          //     } 
-          
-          //     final playlistLocal = snapshot.data!;
-          //     return CustomScrollView(
-          //       controller: _scrollController,
-          //       slivers: [
-          //         SliverToBoxAdapter(
-          //           child: PlaylistHeader(
-          //             title: isLocalPlaylist ? playlistLocal.title : widget.playlist!.title,
-          //             thumbnail: isLocalPlaylist ? playlistLocal.thumbnailUrl : widget.playlist!.thumbnailUrl,
-          //             playlistID: playlistLocal.id,
-          //             isLocalPlaylist: isLocalPlaylist,
-          //             songs: playlistLocal.songs,
-          //           ),
-          //         ),
-          //         _PlaylistSongsList(songs: playlistLocal.songs, isLocalPlaylist: widget.isLocalPlaylist),
-          //       ],
-          //     );
-          //   },
-          // ),
+          FutureBuilder<List<Song>>(
+            future: getPlaylistSongs(int.parse(widget.playlistID)),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return Center(
+                  child: Text('Error: ${snapshot.error}'),
+                );
+              }
+
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(
+                  child: Text('No hay canciones en esta playlist'),
+                );
+              }
+
+              final songs = snapshot.data!;
+              
+              return CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: PlaylistHeader(
+                      title: widget.playlist?.title ?? '',
+                      thumbnail: widget.playlist?.thumbnailUrl ?? '',
+                      playlistID: int.parse(widget.playlistID),
+                      isLocalPlaylist: widget.isLocalPlaylist == '0',
+                      songs: songs,
+                    ),
+                  ),
+                  _PlaylistSongsList(
+                    songs: songs,
+                    isLocalPlaylist: widget.isLocalPlaylist,
+                  ),
+                ],
+              );
+            },
+          ),
 
         ]
         
