@@ -1,12 +1,4 @@
-import 'package:isar/isar.dart';
-
-import 'playlist.dart';
-part 'song.g.dart';
-
-@collection
 class Song {
-
-  Id id = Isar.autoIncrement;
 
   final String title;
   final String author;
@@ -14,12 +6,11 @@ class Song {
   String streamUrl;
   final String endUrl;
   final String songId;
-  final bool isLiked;
+  final int isLiked;
   final String duration;
   final String videoId;
-  final bool isVideo;
+  final int isVideo;
 
-  @ignore
   Duration get durationParsed {
     final parts = duration.split(':');
     if (parts.length != 2) return const Duration();
@@ -30,8 +21,6 @@ class Song {
     return Duration(minutes: minutes, seconds: seconds);
   }
 
-  final playlist = IsarLink<Playlist>();
-
   Song({
     required this.title,
     required this.author,
@@ -39,9 +28,9 @@ class Song {
     required this.streamUrl,
     required this.endUrl,
     required this.songId,
-    this.isLiked = false,
+    this.isLiked = 0,
     required this.duration,
     this.videoId = '',
-    this.isVideo = false,
+    this.isVideo = 0,
   });
 }

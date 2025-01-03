@@ -67,7 +67,7 @@ class _Slide extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textStyles = Theme.of(context).textTheme;
-    double containerWidth = song.isVideo ? 220 : 120;
+    double containerWidth = song.isVideo == 1 ? 220 : 120;
     final songPlayer = ref.watch(songPlayerProvider);
     final colors = Theme.of(context).colorScheme;
 
@@ -75,7 +75,7 @@ class _Slide extends ConsumerWidget {
       color: Colors.transparent,
       child: SizedBox(
         width: containerWidth,
-        height: song.isVideo ? containerWidth + 60 : 0,
+        height: song.isVideo == 1 ? containerWidth + 60 : 0,
         child: InkWell(
           onTap: () => songPlayer.playSong(song),
           onLongPress: () {
@@ -95,13 +95,13 @@ class _Slide extends ConsumerWidget {
                 child: Image.network(
                   song.thumbnailUrl,
                   width: containerWidth,
-                  height: song.isVideo ? 120 : containerWidth,
+                  height: song.isVideo == 1 ? 120 : containerWidth,
                   fit: BoxFit.cover,
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress != null) {
                       return Container(
                         width: containerWidth,
-                        height: song.isVideo ? 120 : containerWidth,
+                        height: song.isVideo == 1 ? 120 : containerWidth,
                         decoration: BoxDecoration(
                           color: Colors.grey[800],
                           borderRadius: BorderRadius.circular(12),
@@ -116,7 +116,7 @@ class _Slide extends ConsumerWidget {
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       width: containerWidth,
-                      height: song.isVideo ? 120 : containerWidth,
+                      height: song.isVideo == 1 ? 120 : containerWidth,
                       decoration: BoxDecoration(
                         color: colors.secondary,
                         borderRadius: BorderRadius.circular(12),

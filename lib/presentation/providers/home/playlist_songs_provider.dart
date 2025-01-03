@@ -24,7 +24,8 @@ class PlaylistSongsNotifier extends StateNotifier<Playlist> {
       title: '',
       author: '',
       thumbnailUrl: '',
-      isLocal: playlistId.startsWith('PL') || playlistId.startsWith('VL') ? false : true
+      playlistId: '',
+      isLocal: playlistId.startsWith('PL') || playlistId.startsWith('VL') ? 0 : 1,
     )
   ); // Estado inicial: lista vacía
 

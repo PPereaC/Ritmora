@@ -2,8 +2,7 @@ import 'package:apolo/presentation/providers/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'config/router/app_router.dart';
 import 'config/theme/app_theme.dart';
@@ -13,10 +12,11 @@ void main() async {
   // Esto es crucial - asegura que los plugins estén inicializados
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Inicializar la base de datos
-  final databasesPath = await getDatabasesPath();
-  // ignore: unused_local_variable
-  final path = join(databasesPath, 'cache.db');
+  // Inicializar sqflite_ffi
+  sqfliteFfiInit();
+  
+  // Establecer la implementación de la base de datos predeterminada
+  databaseFactory = databaseFactoryFfi;
 
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.example.apolo.channel.audio',

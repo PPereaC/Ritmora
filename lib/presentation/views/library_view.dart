@@ -226,13 +226,13 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
 
             // Agregar todas las canciones a la playlist
             for (final song in songList) {
-              await ref.read(playlistProvider.notifier).addSongToPlaylist(
-                context, 
-                playlist.id, 
-                song,
-                showNotifications: false,
-                reloadPlaylists: false  // Evita recargas innecesarias
-              );
+              // await ref.read(playlistProvider.notifier).addSongToPlaylist(
+              //   context, 
+              //   playlist.id, 
+              //   song,
+              //   showNotifications: false,
+              //   reloadPlaylists: false  // Evita recargas innecesarias
+              // );
             }
 
             // Recargar la lista una sola vez al finalizar
@@ -420,10 +420,10 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
             return MouseRegion(
               child: InkWell(
                 onTap: () { // Acción al tocar la playlist
-                  context.go(
-                    '/library/playlist/0/${playlist.id}',
-                    extra: playlist,
-                  );
+                  // context.go(
+                  //   '/library/playlist/0/${playlist.id}',
+                  //   extra: playlist,
+                  // );
                 },
                 onLongPress: () async { // Acción al mantener presionado la playlist (borrar)
                   final shouldDelete = await showConfirmationDialog(

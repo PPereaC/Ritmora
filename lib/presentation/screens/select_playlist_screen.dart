@@ -137,11 +137,11 @@ class _SelectPlaylistScreenState extends ConsumerState<SelectPlaylistScreen> {
                 selectedPlaylists: selectedPlaylists,
                 onPressed: selectedPlaylists.isNotEmpty
                     ? () {
-                        final selectedIds = selectedPlaylists
-                          .map((playlist) => playlist.id.toString())
-                          .toList();
+                        // final selectedIds = selectedPlaylists
+                        //   .map((playlist) => playlist.id.toString())
+                        //   .toList();
               
-                        context.pop(selectedIds);
+                        // context.pop(selectedIds);
                       }
                     : null,
               ),
@@ -216,13 +216,13 @@ class _PlaylistInfo extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          '${playlist.songs.length} canciones',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[400],
-          ),
-        ),
+        // Text(
+        //   '${playlist.songs.length} canciones',
+        //   style: TextStyle(
+        //     fontSize: 14,
+        //     color: Colors.grey[400],
+        //   ),
+        // ),
       ],
     );
   }

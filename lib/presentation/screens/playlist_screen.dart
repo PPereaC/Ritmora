@@ -106,7 +106,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                   if (widget.isLocalPlaylist == '0') {
                     context.go('/library');
                   } else {
-                    ref.read(playlistSongsProvider(widget.playlistID)).songs = [];
+                    // ref.read(playlistSongsProvider(widget.playlistID)).songs = [];
                     context.go('/');
                   }
                 },
@@ -135,40 +135,40 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
 
           const GradientWidget(),
 
-          FutureBuilder<Playlist>(
-            future: getPlaylistByID(widget.playlistID),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData || snapshot.data!.songs.isEmpty) {
-                return const Scaffold(
-                  body: Stack(
-                    children: [
-                      GradientWidget(),
-                      Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    ],
-                  )
-                );
-              } 
+          // FutureBuilder<Playlist>(
+          //   future: getPlaylistByID(widget.playlistID),
+          //   builder: (context, snapshot) {
+          //     if (!snapshot.hasData || snapshot.data!.songs.isEmpty) {
+          //       return const Scaffold(
+          //         body: Stack(
+          //           children: [
+          //             GradientWidget(),
+          //             Center(
+          //               child: CircularProgressIndicator(),
+          //             ),
+          //           ],
+          //         )
+          //       );
+          //     } 
           
-              final playlistLocal = snapshot.data!;
-              return CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: PlaylistHeader(
-                      title: isLocalPlaylist ? playlistLocal.title : widget.playlist!.title,
-                      thumbnail: isLocalPlaylist ? playlistLocal.thumbnailUrl : widget.playlist!.thumbnailUrl,
-                      playlistID: playlistLocal.id,
-                      isLocalPlaylist: isLocalPlaylist,
-                      songs: playlistLocal.songs,
-                    ),
-                  ),
-                  _PlaylistSongsList(songs: playlistLocal.songs, isLocalPlaylist: widget.isLocalPlaylist),
-                ],
-              );
-            },
-          ),
+          //     final playlistLocal = snapshot.data!;
+          //     return CustomScrollView(
+          //       controller: _scrollController,
+          //       slivers: [
+          //         SliverToBoxAdapter(
+          //           child: PlaylistHeader(
+          //             title: isLocalPlaylist ? playlistLocal.title : widget.playlist!.title,
+          //             thumbnail: isLocalPlaylist ? playlistLocal.thumbnailUrl : widget.playlist!.thumbnailUrl,
+          //             playlistID: playlistLocal.id,
+          //             isLocalPlaylist: isLocalPlaylist,
+          //             songs: playlistLocal.songs,
+          //           ),
+          //         ),
+          //         _PlaylistSongsList(songs: playlistLocal.songs, isLocalPlaylist: widget.isLocalPlaylist),
+          //       ],
+          //     );
+          //   },
+          // ),
 
         ]
         

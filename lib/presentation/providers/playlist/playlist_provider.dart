@@ -84,7 +84,8 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
       return Playlist(
         title: 'Error',
         author: 'Error',
-        thumbnailUrl: ''
+        thumbnailUrl: '',
+        playlistId: '',
       );
     }
   }

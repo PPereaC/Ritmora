@@ -23,7 +23,7 @@ class RootScreen extends ConsumerWidget {
       extendBody: true,
       body: Padding(
         padding: EdgeInsets.only(
-          bottom: isMobile ? kBottomNavigationBarHeight - 50 : 0,
+          bottom: kBottomNavigationBarHeight - 50,
         ),
         child: Column(
           children: [
@@ -61,7 +61,7 @@ class RootScreen extends ConsumerWidget {
           ],
         ),
       ),
-      bottomNavigationBar: isMobile ? const Navbar() : const SizedBox(),
+      bottomNavigationBar: const Navbar(),
     );
   }
 }

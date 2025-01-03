@@ -181,7 +181,7 @@ class YoutubeSongsDatasource extends SongsDatasource {
                     endUrl: endUrl,
                     songId: videoId,
                     duration: duration,
-                    isVideo: true
+                    isVideo: 1
                   )
                 );
               }
@@ -332,12 +332,13 @@ class YoutubeSongsDatasource extends SongsDatasource {
   
   @override
   Future<Playlist> getPlaylistWSongs(String playlistID) async {
-    final body = getBody(2);
-    body['browseId'] = playlistID;
-    final response = await _sendRequest('browse', body);
-    final playlistSongs = _jsonToPlaylistWSongs(response.data);
-    final playlist = Playlist(title: 'Prueba', author: '', thumbnailUrl: '', playlistId: playlistID);
-    playlist.songs = await playlistSongs;
+    // final body = getBody(2);
+    // body['browseId'] = playlistID;
+    // final response = await _sendRequest('browse', body);
+    // final playlistSongs = _jsonToPlaylistWSongs(response.data);
+    // final playlist = Playlist(title: 'Prueba', author: '', thumbnailUrl: '', playlistId: playlistID);
+    // playlist.songs = await playlistSongs;
+    final playlist = Playlist(title: '', author: '', thumbnailUrl: '', playlistId: '');
     return playlist;
   }
 
