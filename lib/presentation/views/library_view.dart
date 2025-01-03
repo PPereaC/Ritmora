@@ -227,13 +227,13 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
 
             // Agregar todas las canciones a la playlist
             for (final song in songList) {
-              // await ref.read(playlistProvider.notifier).addSongToPlaylist(
-              //   context, 
-              //   playlist.id, 
-              //   song,
-              //   showNotifications: false,
-              //   reloadPlaylists: false  // Evita recargas innecesarias
-              // );
+              await ref.read(playlistProvider.notifier).addSongToPlaylist(
+                context, 
+                playlist.id, 
+                song,
+                showNotifications: false,
+                reloadPlaylists: false  // Evita recargas innecesarias
+              );
             }
 
             // Recargar la lista una sola vez al finalizar

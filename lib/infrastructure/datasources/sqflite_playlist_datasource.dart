@@ -23,7 +23,7 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
         await db.execute(
           '''
           CREATE TABLE playlist (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY,
             title TEXT NOT NULL,
             author TEXT NOT NULL,
             thumbnailUrl TEXT,
@@ -65,6 +65,7 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
         await txn.rawInsert(
           '''
           INSERT INTO playlist (
+            id,
             title,
             author,
             thumbnailUrl,
@@ -73,6 +74,7 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
           ) VALUES (?, ?, ?, ?, ?)
           ''',
           [
+            playlist.id,
             playlist.title,
             playlist.author,
             playlist.thumbnailUrl,
@@ -104,6 +106,7 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
   
       // Mapear resultados a objetos Playlist
       return playlists.map((map) => Playlist(
+        id: map['id'],
         title: map['title'],
         author: map['author'],
         thumbnailUrl: map['thumbnailUrl'],
