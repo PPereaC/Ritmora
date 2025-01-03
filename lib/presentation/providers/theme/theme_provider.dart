@@ -2,8 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../config/theme/app_theme.dart';
 
-final isDarkmodeProvider = StateProvider((ref) => false);
-
 // Listado de colores inmutable
 final colorListProvider = Provider((ref) => colorList);
 
@@ -11,21 +9,22 @@ final colorListProvider = Provider((ref) => colorList);
 final selectedColorProvider = StateProvider((ref) => 0);
 
 // Un objeto de tipo AppTheme (custom)
-final themeNotifierProvider = StateNotifierProvider<ThemeNotifier, AppTheme>(
-  (ref) => ThemeNotifier(),
-);
+final themeNotifierProvider = StateNotifierProvider<ThemeNotifier, AppTheme>((ref) {
+  return ThemeNotifier(ref);
+});
 
 class ThemeNotifier extends StateNotifier<AppTheme> {
+  final Ref ref;
 
-  // STATE = Estado = new AppTheme();
-  ThemeNotifier(): super(AppTheme());
+  ThemeNotifier(this.ref) : super(AppTheme()) {
+    _loadTheme();
+  }
 
-  void toggleDarkmode() {
-    state = state.copyWith(isDarkmode: !state.isDarkmode);
+  Future<void> _loadTheme() async {
+    state = AppTheme();
   }
 
   void changeColorIndex(int colorIndex) {
     state = state.copyWith(selectedColor: colorIndex);
   }
-
 }

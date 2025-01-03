@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:icons_plus/icons_plus.dart';
 
-import '../providers/theme/theme_provider.dart';
+import '../../config/data/nav_bar_items.dart';
 
 class Navbar extends ConsumerStatefulWidget {
   const Navbar({super.key});
@@ -15,83 +14,102 @@ class Navbar extends ConsumerStatefulWidget {
 class BottomNavBarState extends ConsumerState<Navbar> {
   int selectedIndex = 0;
 
-  void onItemTapped(int index) {
+  void onItemTapped(int index) async {
     setState(() {
       selectedIndex = index;
     });
 
-    switch (index) {
+    switch (index){
       case 0:
         context.go('/');
         break;
       case 1:
-        context.go('/search');
+        context.go('/favorites');
         break;
       case 2:
         context.go('/library');
-        break;
-      case 3:
-        context.go('/favorite-songs');
         break;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-
-    final themeProvider = ref.watch(themeNotifierProvider);
-
-    return NavigationBarTheme(
-      data: NavigationBarThemeData(
-        labelTextStyle: WidgetStateProperty.all(
-          TextStyle(
-            fontWeight: FontWeight.bold,
-            color: themeProvider.isDarkmode ? Colors.white : Colors.grey
+    final colors = Theme.of(context).colorScheme;
+  
+    return Container(
+      color: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.lerp(colors.onSurface, colors.primary, 0.1) ?? colors.onSurface,
+              Color.lerp(colors.onSurface, colors.secondary, 0.2) ?? colors.onSurface,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: colors.shadow.withOpacity(0.2),
+              offset: const Offset(0, 10),
+              blurRadius: 24,
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: colors.primary.withOpacity(0.05),
+              offset: const Offset(0, 4),
+              blurRadius: 12,
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: Colors.white.withOpacity(0.1),
+              offset: const Offset(0, -2),
+              blurRadius: 8,
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 5),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(
+              bottomNavItems.length,
+              (index) {
+                final isSelected = selectedIndex == index;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  child: InkWell(
+                    onTap: () => onItemTapped(index),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          margin: const EdgeInsets.only(bottom: 8),
+                          height: 5,
+                          width: isSelected ? 20 : 0,
+                          decoration: BoxDecoration(
+                            color: colors.primary,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        Icon(
+                          bottomNavItems[index].icon,
+                          size: 28,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ),
-        indicatorColor: Colors.blue,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            height: 1,
-            color: Colors.grey,
-          ),
-          NavigationBar(
-            height: 70,
-            elevation: 0,
-            selectedIndex: selectedIndex,
-            onDestinationSelected: (index) => onItemTapped(index),
-            backgroundColor: themeProvider.isDarkmode ? Colors.grey[900] : Colors.white,
-            destinations: [
-              NavigationDestination(
-                icon: Icon(
-                  Iconsax.home_2_outline, color: selectedIndex == 0 ? Colors.white : Colors.grey
-                ),
-                label: 'Inicio'
-              ),
-              NavigationDestination(
-                icon: Icon(
-                  Iconsax.search_normal_1_outline, color: selectedIndex == 1 ? Colors.white : Colors.grey
-                ),
-                label: 'Buscar'
-              ),
-              NavigationDestination(
-                icon: Icon(
-                  Iconsax.music_playlist_outline, color: selectedIndex == 2 ? Colors.white : Colors.grey
-                ),
-                label: 'Biblioteca'
-              ),
-              NavigationDestination(
-                icon: Icon(
-                  Iconsax.musicnote_outline, color: selectedIndex == 3 ? Colors.white : Colors.grey
-                ),
-                label: 'Canciones'
-              ),
-            ]
-          ),
-        ],
       ),
     );
   }

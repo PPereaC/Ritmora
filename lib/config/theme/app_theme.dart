@@ -1,63 +1,95 @@
 import 'package:flutter/material.dart';
 
 const List<Color> colorList = [
-  Color.fromARGB(255, 0, 119, 216),
-  Colors.teal,
-  Colors.green,
-  Colors.red,
-  Colors.purple,
-  Colors.deepPurple,
-  Colors.orange,
-  Colors.pink,
-  Colors.pinkAccent
+  Color.fromRGBO(50, 15, 224, 1)
 ];
 
-class AppTheme {
+class ThemeColors {
+  final Color primary;
+  final Color secondary;
+  final Color surface;
+  final Color error;
+  final Color onPrimary;
+  final Color onSecondary;
+  final Color onSurface;
+  final Color onError;
 
+  ThemeColors({
+    required this.primary,
+    required this.secondary,
+    required this.surface,
+    required this.error,
+    required this.onPrimary,
+    required this.onSecondary,
+    required this.onSurface,
+    required this.onError,
+  });
+}
+
+class AppTheme {
   final int selectedColor;
-  final bool isDarkmode;
+  final ThemeColors? customColors;
 
   AppTheme({
     this.selectedColor = 0,
-    this.isDarkmode = false,
-  }): assert(selectedColor >= 0, 'El color de tema seleccionado debe de ser mayor a 0'),
-      assert(selectedColor < colorList.length, 'El color de tema seleccionado debe de ser menor o igual a ${colorList.length - 1}');
+    this.customColors,
+  }) : assert(selectedColor >= 0, 'El color de tema seleccionado debe de ser mayor a 0'),
+       assert(selectedColor < colorList.length, 'El color de tema seleccionado debe de ser menor o igual a ${colorList.length - 1}');
 
-  ColorScheme _getColorScheme(Color color) {
-    return ColorScheme(
-      primary: color,
-      secondary: color.withOpacity(0.7), // Ajusta la opacidad para hacer el color más claro,
-      surface: isDarkmode ? Colors.grey[800]! : Colors.white,
-      error: Colors.red,
+  ThemeColors _getDefaultColors(Color primaryColor) {
+    return ThemeColors(
+      primary: primaryColor,
+      secondary: const Color(0xFF697586),
+      surface: Colors.black,
+      error: Colors.red[800]!,
       onPrimary: Colors.white,
-      onSecondary: Colors.black,
-      onSurface: isDarkmode ? Colors.white : Colors.black,
-      surfaceContainerLowest: isDarkmode ? Colors.grey[900]! : Colors.white,
-      onError: Colors.white,
-      brightness: isDarkmode ? Brightness.dark : Brightness.light,
+      onSecondary: Colors.white,
+      onSurface: Colors.grey[900]!,
+      onError: Colors.black,
+    );
+  }
+
+  ColorScheme _getColorScheme() {
+    final baseColor = colorList[selectedColor];
+    final colors = customColors ?? _getDefaultColors(baseColor);
+
+    return ColorScheme(
+      brightness: Brightness.dark,
+      primary: colors.primary,
+      secondary: colors.secondary,
+      surface: colors.surface,
+      error: colors.error,
+      onPrimary: colors.onPrimary,
+      onSecondary: colors.onSecondary,
+      onSurface: colors.onSurface,
+      onError: colors.onError,
     );
   }
 
   ThemeData getTheme() {
-    final colorScheme = _getColorScheme(colorList[selectedColor]);
+    final colorScheme = _getColorScheme();
+    final colors = customColors ?? _getDefaultColors(colorList[selectedColor]);
 
     return ThemeData(
       useMaterial3: true,
-      brightness: isDarkmode ? Brightness.dark : Brightness.light,
+      brightness: Brightness.dark,
       colorScheme: colorScheme,
       appBarTheme: const AppBarTheme(
-        centerTitle: false
-      )
+        centerTitle: false,
+      ),
+      scaffoldBackgroundColor: colors.surface,
+      textTheme: const TextTheme().apply(
+        bodyColor: Colors.white,
+        displayColor: Colors.white,
+      ),
     );
-
-  } 
+  }
 
   AppTheme copyWith({
     int? selectedColor,
-    bool? isDarkmode
+    ThemeColors? customColors,
   }) => AppTheme(
     selectedColor: selectedColor ?? this.selectedColor,
-    isDarkmode: isDarkmode ?? this.isDarkmode,
+    customColors: customColors ?? this.customColors,
   );
-
 }
