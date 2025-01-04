@@ -37,7 +37,7 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
         await db.execute(
           '''
           CREATE TABLE playlist_song (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY,
             playlistId INTEGER,
             title TEXT NOT NULL,
             author TEXT NOT NULL,
@@ -71,7 +71,7 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
             thumbnailUrl,
             playlistId,
             isLocal
-          ) VALUES (?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?)
           ''',
           [
             playlist.id,
@@ -88,8 +88,40 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
 
   @override
   Future<void> addSongToPlaylist(BuildContext context, int playlistID, Song song, {bool showNotifications = true, bool reloadPlaylists = true}) {
-    // TODO: implement addSongToPlaylist
-    throw UnimplementedError();
+    return openDB().then((db) async {
+      await db.transaction((txn) async {
+        await txn.rawInsert(
+          '''
+          INSERT INTO playlist_song (
+            id,
+            title,
+            author,
+            thumbnailUrl,
+            streamUrl,
+            endUrl,
+            songId,
+            isLiked,
+            duration,
+            videoId,
+            isVideo
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ''',
+          [
+            playlistID,
+            song.title,
+            song.author,
+            song.thumbnailUrl,
+            song.streamUrl,
+            song.endUrl,
+            song.songId,
+            song.isLiked,
+            song.duration,
+            song.videoId,
+            song.isVideo
+          ]
+        );
+      });
+    });
   }
 
   @override
