@@ -13,4 +13,9 @@ class Responsive {
   static bool isDesktop(BuildContext context) {
     return MediaQuery.of(context).size.width >= 1024;
   }
+
+  static bool isTabletOrDesktop(BuildContext context) {
+    return MediaQuery.of(context).size.width >= 600;
+  }
+
 }
