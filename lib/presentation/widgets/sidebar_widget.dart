@@ -16,6 +16,7 @@ class CustomMusicSidebar extends StatelessWidget {
       _SidebarItem(icon: Iconsax.home_2_outline, route: '/'),
       _SidebarItem(icon: Iconsax.heart_outline, route: '/favorites'),
       _SidebarItem(icon: Iconsax.music_library_2_outline, route: '/library'),
+      _SidebarItem(icon: Iconsax.setting_3_outline, route: '/settings'),
     ];
 
     return Container(
@@ -40,7 +41,7 @@ class CustomMusicSidebar extends StatelessWidget {
                 color: colors.secondary.withOpacity(0.8),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withOpacity(0.2),
                   width: 1.5,
                 ),
               ),
@@ -49,7 +50,7 @@ class CustomMusicSidebar extends StatelessWidget {
                   const SizedBox(height: 15),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 15),
-                    child: Divider(color: Colors.white24, height: 1),
+                    child: Divider(color: Colors.white, height: 1),
                   ),
                   const SizedBox(height: 15),
                   Expanded(
@@ -127,7 +128,7 @@ class _SidebarIconItem extends StatelessWidget {
                 child: Icon(
                   icon,
                   size: 26,
-                  color: Colors.white.withOpacity(isSelected ? 1 : 0.7),
+                  color: Colors.white,
                 ),
               ),
             ),
