@@ -21,47 +21,67 @@ class RootScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBody: true,
-      body: Padding(
-        padding: EdgeInsets.only(
-          bottom: kBottomNavigationBarHeight - 50,
-        ),
-        child: Column(
-          children: [
-            Expanded(
-              child: navigationShell,
-            ),
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        children: [
 
-            StreamBuilder<Song?>(
-              stream: playerService.currentSongStream,
-              builder: (context, songSnapshot) {
-                final currentSong = songSnapshot.data;
-                
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  height: currentSong != null ? navbarHeight.toDouble() + 80 : 0,
-                  child: currentSong == null 
-                    ? const SizedBox.shrink()
-                    : Padding(
-                        padding: EdgeInsets.only(bottom: navbarHeight.toDouble() + 15),
-                        child: StreamBuilder<bool>(
-                          stream: playerService.playingStream,
-                          builder: (context, playingSnapshot) {
-                            return PlayerControlWidget(
-                              currentSong: currentSong,
-                              playerService: playerService,
-                              isPlaying: playingSnapshot.data ?? false,
-                              onPlayPause: () => playerService.togglePlay(),
-                            );
-                          },
-                        ),
+          const GradientWidget(),
+
+          Row(
+            children: [
+          
+              if (!isMobile)
+                // Sidebar
+                const CustomMusicSidebar(),
+          
+          
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: kBottomNavigationBarHeight - 50,
+                  ),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: navigationShell,
                       ),
-                );
-              },
-            ),
-          ],
-        ),
+                  
+                      StreamBuilder<Song?>(
+                        stream: playerService.currentSongStream,
+                        builder: (context, songSnapshot) {
+                          final currentSong = songSnapshot.data;
+                          
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            height: currentSong != null ? navbarHeight.toDouble() + 80 : 0,
+                            child: currentSong == null 
+                              ? const SizedBox.shrink()
+                              : Padding(
+                                  padding: EdgeInsets.only(bottom: navbarHeight.toDouble() + 15),
+                                  child: StreamBuilder<bool>(
+                                    stream: playerService.playingStream,
+                                    builder: (context, playingSnapshot) {
+                                      return PlayerControlWidget(
+                                        currentSong: currentSong,
+                                        playerService: playerService,
+                                        isPlaying: playingSnapshot.data ?? false,
+                                        onPlayPause: () => playerService.togglePlay(),
+                                      );
+                                    },
+                                  ),
+                                ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ]
       ),
-      bottomNavigationBar: const Navbar(),
+      bottomNavigationBar: isMobile ? const Navbar() : null
     );
   }
 }
