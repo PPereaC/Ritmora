@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:icons_plus/icons_plus.dart';
 import '../../domain/entities/song.dart';
 import '../widgets/widgets.dart';
@@ -25,20 +26,19 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
   @override
   ThemeData appBarTheme(BuildContext context) {
     return ThemeData(
-      appBarTheme: AppBarTheme(
-        backgroundColor: colors.surface,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Colors.white),
+        systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
+      scaffoldBackgroundColor: Colors.transparent,
       textTheme: const TextTheme(
-        // Estilo para el texto de entrada
         titleMedium: TextStyle(color: Colors.white),
       ),
       inputDecorationTheme: const InputDecorationTheme(
-        // Color del texto de entrada
         hintStyle: TextStyle(color: Colors.white),
         labelStyle: TextStyle(color: Colors.white),
-        // Color del texto mientras se escribe
         counterStyle: TextStyle(color: Colors.white),
       ),
     );
@@ -98,141 +98,138 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
   }
 
   Widget buildResultsAndSuggestions(ColorScheme colors) {
-    return Container(
-      color: colors.surface,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ValueListenableBuilder<String>(
-              valueListenable: _filterNotifier,
-              builder: (context, filter, _) {
-                return Row(
-                  children: [
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: () => _onFilterChanged('songs'),
-                        icon: const Icon(
-                          Iconsax.music_square_outline,
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ValueListenableBuilder<String>(
+            valueListenable: _filterNotifier,
+            builder: (context, filter, _) {
+              return Row(
+                children: [
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: () => _onFilterChanged('songs'),
+                      icon: const Icon(
+                        Iconsax.music_square_outline,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        'Canciones',
+                        style: TextStyle(
                           color: Colors.white,
                         ),
-                        label: const Text(
-                          'Canciones',
-                          style: TextStyle(
-                            color: Colors.white,
-                          ),
-                        ),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: filter == 'songs'
-                              ? (colors.primary)
-                              : (colors.secondary),
-                        ),
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: filter == 'songs'
+                            ? (colors.primary)
+                            : (colors.secondary),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: () => _onFilterChanged('videos'),
-                        icon: const Icon(
-                          Iconsax.video_play_outline,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: () => _onFilterChanged('videos'),
+                      icon: const Icon(
+                        Iconsax.video_play_outline,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        'Videos',
+                        style: TextStyle(
                           color: Colors.white,
                         ),
-                        label: const Text(
-                          'Videos',
-                          style: TextStyle(
-                            color: Colors.white,
-                          ),
-                        ),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: filter == 'videos'
-                              ? (colors.primary)
-                              : (colors.secondary),
-                        ),
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: filter == 'videos'
+                            ? (colors.primary)
+                            : (colors.secondary),
                       ),
                     ),
-                  ],
-                );
-              },
-            ),
+                  ),
+                ],
+              );
+            },
           ),
-
-          Expanded(
-            child: ValueListenableBuilder<String>(
-              valueListenable: _queryNotifier,
-              builder: (context, query, _) {
-                return ValueListenableBuilder<String>(
-                  valueListenable: _filterNotifier,
-                  builder: (context, filter, _) {
-                    if (query.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'Ingresa una búsqueda para ver resultados',
-                          style: TextStyle(
-                            color: Colors.white,
-                          ),
+        ),
+            
+        Expanded(
+          child: ValueListenableBuilder<String>(
+            valueListenable: _queryNotifier,
+            builder: (context, query, _) {
+              return ValueListenableBuilder<String>(
+                valueListenable: _filterNotifier,
+                builder: (context, filter, _) {
+                  if (query.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'Ingresa una búsqueda para ver resultados',
+                        style: TextStyle(
+                          color: Colors.white,
                         ),
-                      );
-                    }
-                    
-                    return FutureBuilder<List<Song>>(
-                      // Agregar key única basada en query y filter para forzar la reconstrucción
-                      key: ValueKey('$query-$filter'),
-                      future: _debouncedSearch(query, filter),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
-                        } else if (snapshot.hasError) {
-                          return Center(
-                            child: Text(
-                              'Error: ${snapshot.error}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                          );
-                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                          return const Center(
-                            child: Text(
-                              'No se encontraron resultados',
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                          );
-                        }
-
-                        return ListView.builder(
-                          itemCount: snapshot.data!.length,
-                          itemBuilder: (context, index) {
-                            final song = snapshot.data![index];
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 3),
-                              child: SongListTile(
-                                song: song,
-                                onSongOptions: () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    builder: (context) => BottomSheetBarWidget(song: song),
-                                  );
-                                },
-                                isPlaylist: false,
-                                isVideo: song.title.contains('Vídeo') || 
-                                  song.title.contains('Episodio') ||
-                                  song.author.contains('Vídeo') ||
-                                  song.author.contains('Episodio'),
-                              ),
-                            );
-                          },
-                        );
-                      },
+                      ),
                     );
-                  },
-                );
-              },
-            ),
+                  }
+                  
+                  return FutureBuilder<List<Song>>(
+                    // Agregar key única basada en query y filter para forzar la reconstrucción
+                    key: ValueKey('$query-$filter'),
+                    future: _debouncedSearch(query, filter),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(
+                          child: Text(
+                            'Error: ${snapshot.error}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        );
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'No se encontraron resultados',
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        );
+                      }
+            
+                      return ListView.builder(
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          final song = snapshot.data![index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 3),
+                            child: SongListTile(
+                              song: song,
+                              onSongOptions: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  builder: (context) => BottomSheetBarWidget(song: song),
+                                );
+                              },
+                              isPlaylist: false,
+                              isVideo: song.title.contains('Vídeo') || 
+                                song.title.contains('Episodio') ||
+                                song.author.contains('Vídeo') ||
+                                song.author.contains('Episodio'),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -265,19 +262,34 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
   @override
   Widget buildResults(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    return buildResultsAndSuggestions(colors);
-  } 
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          buildResultsAndSuggestions(colors),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-
     final colors = Theme.of(context).colorScheme;
 
-    // Forzar búsqueda automática al escribir
     if (query.isNotEmpty) {
       _queryNotifier.value = query;
       _debouncedSearch(query, _filterNotifier.value);
     }
-    return buildResultsAndSuggestions(colors);
+
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          buildResultsAndSuggestions(colors),
+        ],
+      ),
+    );
   }
 }
