@@ -26,57 +26,59 @@ class RootScreen extends ConsumerWidget {
 
           const GradientWidget(),
 
+          // Row con sidebar y contenido principal
           Row(
             children: [
-          
               if (!isMobile)
-                // Sidebar
                 const CustomMusicSidebar(),
-          
-          
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: kBottomNavigationBarHeight - 50,
-                  ),
+                  padding: Responsive.isMobile(context) 
+                    ? const EdgeInsets.only(bottom: kBottomNavigationBarHeight - 50)
+                    : EdgeInsets.zero,
                   child: Column(
                     children: [
                       Expanded(
                         child: navigationShell,
-                      ),
-                  
-                      StreamBuilder<Song?>(
-                        stream: playerService.currentSongStream,
-                        builder: (context, songSnapshot) {
-                          final currentSong = songSnapshot.data;
-                          
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            height: currentSong != null ? navbarHeight.toDouble() + 80 : 0,
-                            child: currentSong == null 
-                              ? const SizedBox.shrink()
-                              : Padding(
-                                  padding: EdgeInsets.only(bottom: navbarHeight.toDouble() + 15),
-                                  child: StreamBuilder<bool>(
-                                    stream: playerService.playingStream,
-                                    builder: (context, playingSnapshot) {
-                                      return PlayerControlWidget(
-                                        currentSong: currentSong,
-                                        playerService: playerService,
-                                        isPlaying: playingSnapshot.data ?? false,
-                                        onPlayPause: () => playerService.togglePlay(),
-                                      );
-                                    },
-                                  ),
-                                ),
-                          );
-                        },
                       ),
                     ],
                   ),
                 ),
               ),
             ],
+          ),
+
+          // Player Control por encima
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: StreamBuilder<Song?>(
+              stream: playerService.currentSongStream,
+              builder: (context, songSnapshot) {
+                final currentSong = songSnapshot.data;
+                
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  height: Responsive.isMobile(context) 
+                    ? currentSong != null ? navbarHeight.toDouble() + 80 : 0 
+                    : 80,
+                  child: currentSong == null 
+                    ? const SizedBox.shrink()
+                    : StreamBuilder<bool>(
+                        stream: playerService.playingStream,
+                        builder: (context, playingSnapshot) {
+                          return PlayerControlWidget(
+                            currentSong: currentSong,
+                            playerService: playerService,
+                            isPlaying: playingSnapshot.data ?? false,
+                            onPlayPause: () => playerService.togglePlay(),
+                          );
+                        },
+                      ),
+                );
+              },
+            ),
           ),
         ]
       ),
