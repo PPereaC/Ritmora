@@ -30,7 +30,18 @@ class RootScreen extends ConsumerWidget {
           Row(
             children: [
               if (!isMobile)
-                const CustomMusicSidebar(),
+                StreamBuilder<Song?>(
+                  stream: playerService.currentSongStream,
+                  builder: (context, snapshot) {
+                    final hasCurrentSong = snapshot.data != null;
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: hasCurrentSong ? 88 : 0 // 80 del player + 8 de padding
+                      ),
+                      child: const CustomMusicSidebar(),
+                    );
+                  },
+                ),
               Expanded(
                 child: Padding(
                   padding: Responsive.isMobile(context) 

@@ -26,46 +26,53 @@ class CustomMusicSidebar extends StatelessWidget {
           BoxShadow(
             color: colors.primary.withOpacity(0.1),
             blurRadius: 20,
-            offset: const Offset(5, 0),
+            offset: const Offset(5, 4),
           ),
         ],
       ),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          decoration: BoxDecoration(
-            color: colors.secondary.withOpacity(0.8),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.2),
-              width: 1.5,
-            ),
-          ),
-          child: Column(
-            children: [
-              const SizedBox(height: 10),
-              Image.asset(
-                'assets/images/logo.png',
-                width: 50,
-                height: 50,
-              ),
-              const SizedBox(height: 10),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 15),
-                child: Divider(color: Colors.white, height: 1),
-              ),
-              const SizedBox(height: 15),
-              Expanded(
-                child: ListView(
-                  physics: const BouncingScrollPhysics(),
-                  children: items.map((item) {
-                    return _SidebarIconItem(
-                      icon: item.icon,
-                      route: item.route,
-                    );
-                  }).toList(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              decoration: BoxDecoration(
+                color: colors.surface.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1.5,
                 ),
               ),
-            ],
+              child: Column(
+                children: [
+                  const SizedBox(height: 10),
+                  Image.asset(
+                    'assets/images/logo.png',
+                    width: 50,
+                    height: 50,
+                  ),
+                  const SizedBox(height: 10),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 15),
+                    child: Divider(color: Colors.white, height: 1),
+                  ),
+                  const SizedBox(height: 15),
+                  Expanded(
+                    child: ListView(
+                      physics: const BouncingScrollPhysics(),
+                      children: items.map((item) {
+                        return _SidebarIconItem(
+                          icon: item.icon,
+                          route: item.route,
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

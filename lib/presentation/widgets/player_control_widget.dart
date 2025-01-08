@@ -74,7 +74,15 @@ class _DesktopPlayerControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: colors.secondary,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withOpacity(0.2),
+            width: 1.5,
+          ),
+        ),
+      ),
       child: Row(
         children: [
           // Sección izquierda - Info canción
