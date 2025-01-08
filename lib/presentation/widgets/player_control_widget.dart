@@ -4,11 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../config/utils/constants.dart';
 import '../../domain/entities/song.dart';
-import '../../infrastructure/services/song_player_service.dart';
 
 class PlayerControlWidget extends ConsumerWidget {
   final Song currentSong;
-  final SongPlayerService playerService;
+  final playerService;
   final bool isPlaying;
   final VoidCallback onPlayPause;
 

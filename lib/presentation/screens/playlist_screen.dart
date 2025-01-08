@@ -482,7 +482,7 @@ class _MobilePlaylistHeader extends ConsumerWidget {
                   songs = songs..shuffle();
                   final playerProvider = ref.read(songPlayerProvider);
                   playerProvider.playSong(songs.first);
-                  playerProvider.addSongsToQueue(songs);
+                  // playerProvider.addSongsToQueue(songs);
                 },
                 child: const Row(
                   children: [
@@ -675,7 +675,7 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                               songs = songs..shuffle();
                               final playerProvider = ref.read(songPlayerProvider);
                               playerProvider.playSong(songs.first);
-                              playerProvider.addSongsToQueue(songs);
+                              // playerProvider.addSongsToQueue(songs);
                             },
                           ),
                         ),

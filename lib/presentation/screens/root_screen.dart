@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../config/utils/responsive.dart';
 import '../../domain/entities/song.dart';
-import '../../infrastructure/services/song_player_service.dart';
 import '../providers/song_player_provider.dart';
 import '../widgets/widgets.dart';
 
@@ -15,7 +14,7 @@ class RootScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isMobile = Responsive.isMobile(context);
-    final SongPlayerService playerService = ref.read(songPlayerProvider);
+    final playerService = ref.read(songPlayerProvider);
     final navbarHeight = isMobile ? kBottomNavigationBarHeight : 0;
 
     return Scaffold(
