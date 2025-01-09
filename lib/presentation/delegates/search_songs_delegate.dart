@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -51,19 +52,35 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
 
     final completer = Completer<List<Song>>();
 
-    _searchTimer = Timer(const Duration(milliseconds: 800), () async {
-      try {
-        _queryNotifier.value = query;
-        final results = await searchSongs(query, filter: filter);
-        if (!completer.isCompleted) {
-          completer.complete(results);
+    if (Platform.isAndroid || Platform.isIOS) {
+      _searchTimer = Timer(const Duration(milliseconds: 500), () async {
+        try {
+          _queryNotifier.value = query;
+          final results = await searchSongs(query, filter: filter);
+          if (!completer.isCompleted) {
+            completer.complete(results);
+          }
+        } catch (e) {
+          if (!completer.isCompleted) {
+            completer.completeError(e);
+          }
         }
-      } catch (e) {
-        if (!completer.isCompleted) {
-          completer.completeError(e);
+      });
+    } else {
+      _searchTimer = Timer(const Duration(milliseconds: 200), () async {
+        try {
+          _queryNotifier.value = query;
+          final results = await searchSongs(query, filter: filter);
+          if (!completer.isCompleted) {
+            completer.complete(results);
+          }
+        } catch (e) {
+          if (!completer.isCompleted) {
+            completer.completeError(e);
+          }
         }
-      }
-    });
+      });
+    }
 
     return completer.future;
   }

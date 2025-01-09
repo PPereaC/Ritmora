@@ -55,7 +55,7 @@ class _RootScreenState extends ConsumerState<RootScreen> {
                     final hasCurrentSong = snapshot.data != null;
                     return Padding(
                       padding: EdgeInsets.only(
-                        bottom: hasCurrentSong ? 88 : 0 // 80 del player + 8 de padding
+                        bottom: hasCurrentSong ? 88 : 0
                       ),
                       child: const CustomMusicSidebar(),
                     );
@@ -64,7 +64,7 @@ class _RootScreenState extends ConsumerState<RootScreen> {
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(
-                    bottom: _isQueuePanelVisible ? 150 : 80, // Espacio para el PlayerControlWidget
+                    bottom: _isQueuePanelVisible ? 150 : Responsive.isDesktop(context) ? 90 : 0,
                   ),
                   child: Column(
                     children: [
@@ -82,7 +82,7 @@ class _RootScreenState extends ConsumerState<RootScreen> {
                     final hasCurrentSong = snapshot.data != null;
                     return Padding(
                       padding: EdgeInsets.only(
-                        bottom: hasCurrentSong ? 150 : 80 // 80 del player + 8 de padding
+                        bottom: hasCurrentSong ? 150 : 0
                       ),
                       child: QueueSlidePanel(onClose: _hideQueuePanel),
                     );
@@ -101,9 +101,9 @@ class _RootScreenState extends ConsumerState<RootScreen> {
                 
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
-                  height: Responsive.isMobile(context) 
-                    ? currentSong != null ? navbarHeight.toDouble() + 80 : 0 
-                    : 80,
+                  height: currentSong != null 
+                    ? (Responsive.isMobile(context) ? navbarHeight.toDouble() + 80 : 80) 
+                    : 0,
                   child: currentSong == null 
                     ? const SizedBox.shrink()
                     : StreamBuilder<bool>(
