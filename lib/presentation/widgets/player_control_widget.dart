@@ -16,6 +16,7 @@ class PlayerControlWidget extends ConsumerWidget {
   final playerService;
   final bool isPlaying;
   final VoidCallback onPlayPause;
+  final VoidCallback onQueueButtonPressed;
 
   const PlayerControlWidget({
     super.key,
@@ -23,25 +24,40 @@ class PlayerControlWidget extends ConsumerWidget {
     required this.playerService,
     required this.isPlaying,
     required this.onPlayPause,
+    required this.onQueueButtonPressed,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final colors = Theme.of(context).colorScheme;
     final textStyles = Theme.of(context).textTheme;
     final size = MediaQuery.of(context).size;
     final playerService = ref.read(songPlayerProvider);
 
     if (Responsive.isMobile(context)) {
-      return _MobilePlayerControl(colors: colors, size: size, currentSong: currentSong, textStyles: textStyles, onPlayPause: onPlayPause, isPlaying: isPlaying);
+      return _MobilePlayerControl(
+        colors: colors,
+        size: size,
+        currentSong: currentSong,
+        textStyles: textStyles,
+        onPlayPause: onPlayPause,
+        isPlaying: isPlaying,
+        onQueueButtonPressed: onQueueButtonPressed,
+      );
     } else if (Responsive.isTabletOrDesktop(context)) {
-      return _DesktopPlayerControl(colors: colors, size: size, currentSong: currentSong, textStyles: textStyles, onPlayPause: onPlayPause, isPlaying: isPlaying, playerService: playerService);
+      return _DesktopPlayerControl(
+        colors: colors,
+        size: size,
+        currentSong: currentSong,
+        textStyles: textStyles,
+        onPlayPause: onPlayPause,
+        isPlaying: isPlaying,
+        playerService: playerService,
+        onQueueButtonPressed: onQueueButtonPressed,
+      );
     } else {
       return const SizedBox.shrink();
     }
-
-    
   }
 }
 
@@ -54,6 +70,7 @@ class _DesktopPlayerControl extends StatelessWidget {
   final VoidCallback onPlayPause;
   final bool isPlaying;
   final BasePlayerService playerService;
+  final VoidCallback onQueueButtonPressed;
 
   const _DesktopPlayerControl({
     required this.colors,
@@ -63,6 +80,7 @@ class _DesktopPlayerControl extends StatelessWidget {
     required this.onPlayPause,
     required this.isPlaying,
     required this.playerService,
+    required this.onQueueButtonPressed
   });
 
   String _formatDuration(Duration duration) {
@@ -255,8 +273,24 @@ class _DesktopPlayerControl extends StatelessWidget {
             ),
           ),
   
-          // Sección derecha - Espacio vacío
-          SizedBox(width: size.width * 0.25),
+          // Sección derecha - Boton de cola
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: SizedBox(
+              width: size.width * 0.25,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    onPressed: onQueueButtonPressed,
+                    icon: const Icon(Iconsax.music_square_outline),
+                    color: Colors.white,
+                    iconSize: 30,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -271,6 +305,7 @@ class _MobilePlayerControl extends StatelessWidget {
   final TextTheme textStyles;
   final VoidCallback onPlayPause;
   final bool isPlaying;
+  final VoidCallback onQueueButtonPressed;
   
   const _MobilePlayerControl({
     required this.colors,
@@ -279,6 +314,7 @@ class _MobilePlayerControl extends StatelessWidget {
     required this.textStyles,
     required this.onPlayPause,
     required this.isPlaying,
+    required this.onQueueButtonPressed
   });
 
   @override
@@ -396,7 +432,7 @@ class _MobilePlayerControl extends StatelessWidget {
     
                   ],
                 ),
-              ),
+              )
             )
           ),
         ),

@@ -6,26 +6,45 @@ import '../../domain/entities/song.dart';
 import '../providers/song_player_provider.dart';
 import '../widgets/widgets.dart';
 
-class RootScreen extends ConsumerWidget {
+class RootScreen extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
 
   const RootScreen({super.key, required this.navigationShell});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  _RootScreenState createState() => _RootScreenState();
+}
+
+class _RootScreenState extends ConsumerState<RootScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isQueuePanelVisible = false;
+
+  void _toggleQueuePanel() {
+    setState(() {
+      _isQueuePanelVisible = !_isQueuePanelVisible;
+    });
+  }
+
+  void _hideQueuePanel() {
+    setState(() {
+      _isQueuePanelVisible = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isMobile = Responsive.isMobile(context);
     final playerService = ref.read(songPlayerProvider);
     final navbarHeight = isMobile ? kBottomNavigationBarHeight : 0;
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Colors.transparent,
       extendBody: true,
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-
           const GradientWidget(),
-
           // Row con sidebar y contenido principal
           Row(
             children: [
@@ -44,22 +63,33 @@ class RootScreen extends ConsumerWidget {
                 ),
               Expanded(
                 child: Padding(
-                  padding: Responsive.isMobile(context) 
-                    ? const EdgeInsets.only(bottom: kBottomNavigationBarHeight - 50)
-                    : EdgeInsets.zero,
+                  padding: EdgeInsets.only(
+                    bottom: _isQueuePanelVisible ? 150 : 80, // Espacio para el PlayerControlWidget
+                  ),
                   child: Column(
                     children: [
                       Expanded(
-                        child: navigationShell,
+                        child: widget.navigationShell,
                       ),
                     ],
                   ),
                 ),
               ),
+              if (_isQueuePanelVisible)
+                StreamBuilder<Song?>(
+                  stream: playerService.currentSongStream,
+                  builder: (context, snapshot) {
+                    final hasCurrentSong = snapshot.data != null;
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: hasCurrentSong ? 150 : 80 // 80 del player + 8 de padding
+                      ),
+                      child: QueueSlidePanel(onClose: _hideQueuePanel),
+                    );
+                  },
+                ),
             ],
           ),
-
-          // Player Control por encima
           Positioned(
             left: 0,
             right: 0,
@@ -84,6 +114,7 @@ class RootScreen extends ConsumerWidget {
                             playerService: playerService,
                             isPlaying: playingSnapshot.data ?? false,
                             onPlayPause: () => playerService.togglePlay(),
+                            onQueueButtonPressed: _toggleQueuePanel,
                           );
                         },
                       ),

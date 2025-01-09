@@ -10,3 +10,4 @@ export 'home/song_grid_horizontal_listview_widget.dart';
 export 'gradient_widget.dart';
 export 'home/playlist_horizontal_listview_widget.dart';
 export 'sidebar_widget.dart';
+export 'queue_slide_panel.dart';
