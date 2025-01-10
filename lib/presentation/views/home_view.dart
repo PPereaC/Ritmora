@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 
-import '../../config/utils/responsive.dart';
 import '../../domain/entities/song.dart';
 import '../delegates/search_songs_delegate.dart';
 import '../providers/providers.dart';
@@ -56,92 +55,47 @@ class HomeViewState extends ConsumerState<HomeView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Campo de búsqueda
                             if (index == 0) ...[
-                              if (Responsive.isDesktop(context))
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                                    decoration: BoxDecoration(
-                                      color: colors.secondary.withOpacity(0.8),
-                                      border: Border.all(color: Colors.white.withOpacity(0.5), width: 1),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Row(
-                                      children: [
-                                        const Icon(Iconsax.search_normal_1_outline, color: Colors.white),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: TextField(
-                                            decoration: const InputDecoration(
-                                              hintText: 'Buscar Canción o Video',
-                                              hintStyle: TextStyle(color: Colors.white),
-                                              border: InputBorder.none,
-                                            ),
-                                            style: const TextStyle(color: Colors.white),
-                                            cursorColor: Colors.white,
-                                            textAlign: TextAlign.start,
-                                            onSubmitted: (query) async {
-                                              // ignore: unused_local_variable
-                                              final song = await showSearch<Song?>(
-                                                query: query,
-                                                context: context,
-                                                delegate: SearchSongsDelegate(
-                                                  searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery,
-                                                  colors: colors,
-                                                )
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ],
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  IconButton.filled(
+                                    onPressed: () async {
+                                      final searchQuery = ref.read(searchQueryProvider);
+                                      // ignore: unused_local_variable
+                                      final song = await showSearch<Song?>(
+                                        query: searchQuery,
+                                        context: context,
+                                        delegate: SearchSongsDelegate(
+                                          searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery,
+                                          colors: colors,
+                                        )
+                                      );
+                                    },
+                                    icon: const Icon(Iconsax.search_normal_1_outline),
+                                    color: Colors.white,
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: colors.secondary.withOpacity(0.5),
+                                      padding: const EdgeInsets.all(10),
                                     ),
                                   ),
-                                ),
-                              if (Responsive.isMobile(context))
-                                Row(
-                                  children: [
-                                    IconButton.filled(
-                                      onPressed: () async {
-                                        final searchQuery = ref.read(searchQueryProvider);
-                                        // ignore: unused_local_variable
-                                        final song = await showSearch<Song?>(
-                                          query: searchQuery,
-                                          context: context,
-                                          delegate: SearchSongsDelegate(
-                                            searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery,
-                                            colors: colors,
-                                          )
-                                        );
-                                      },
-                                      icon: const Icon(Iconsax.search_normal_1_outline),
-                                      color: Colors.white,
-                                      style: IconButton.styleFrom(
-                                        backgroundColor: colors.secondary.withOpacity(0.5),
-                                        padding: const EdgeInsets.all(10),
-                                      ),
+                                  const SizedBox(width: 3),
+                                  IconButton.filled(
+                                    onPressed: () {},
+                                    icon: const Icon(Iconsax.notification_outline),
+                                    color: Colors.white,
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: colors.secondary.withOpacity(0.5),
+                                      padding: const EdgeInsets.all(10),
                                     ),
-                                    const SizedBox(width: 3),
-                                    IconButton.filled(
-                                      onPressed: () {},
-                                      icon: const Icon(Iconsax.notification_outline),
-                                      color: Colors.white,
-                                      style: IconButton.styleFrom(
-                                        backgroundColor: colors.secondary.withOpacity(0.5),
-                                        padding: const EdgeInsets.all(10),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
+                              ),
                             ],
 
                             // Contenido principal
                             if (index == 1) ...[
-                              if (Responsive.isDesktop(context))
-                                const SizedBox(height: 15),
-
                               const _SectionTitle('Selecciones rápidas', showViewAll: false),
                               const SizedBox(height: 10),
                               SongGridHorizontalListview(songs: quickPicks),
