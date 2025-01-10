@@ -270,10 +270,14 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
 
   @override
   Widget? buildLeading(BuildContext context) {
-    return IconButton(
-      onPressed: () => close(context, null),
-      icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
-    );
+    if (Platform.isAndroid || Platform.isIOS) {
+      return IconButton(
+        onPressed: () => close(context, null),
+        icon: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white),
+      );
+    } else {
+      return const SizedBox.shrink();
+    }
   }
 
   @override

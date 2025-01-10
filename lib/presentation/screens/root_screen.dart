@@ -62,17 +62,27 @@ class _RootScreenState extends ConsumerState<RootScreen> {
                   },
                 ),
               Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    bottom: _isQueuePanelVisible ? 150 : Responsive.isDesktop(context) ? 90 : 0,
-                  ),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: widget.navigationShell,
+                child: StreamBuilder<Song?>(
+                  stream: playerService.currentSongStream,
+                  builder: (context, songSnapshot) {
+                    final currentSong = songSnapshot.data;
+                    final bottomPadding = currentSong != null 
+                      ? (Responsive.isMobile(context) ? navbarHeight.toDouble() + 80 : 80) 
+                      : 90;
+
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: bottomPadding.toDouble(),
                       ),
-                    ],
-                  ),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: widget.navigationShell,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
               if (_isQueuePanelVisible)
@@ -104,11 +114,11 @@ class _RootScreenState extends ConsumerState<RootScreen> {
                   height: currentSong != null 
                     ? (Responsive.isMobile(context) ? navbarHeight.toDouble() + 80 : 80) 
                     : 0,
-                  child: currentSong == null 
-                    ? const SizedBox.shrink()
-                    : StreamBuilder<bool>(
+                  child: currentSong != null 
+                    ? StreamBuilder<bool>(
                         stream: playerService.playingStream,
                         builder: (context, playingSnapshot) {
+                          
                           return PlayerControlWidget(
                             currentSong: currentSong,
                             playerService: playerService,
@@ -116,8 +126,10 @@ class _RootScreenState extends ConsumerState<RootScreen> {
                             onPlayPause: () => playerService.togglePlay(),
                             onQueueButtonPressed: _toggleQueuePanel,
                           );
+
                         },
-                      ),
+                      )
+                    : const SizedBox.shrink(),
                 );
               },
             ),

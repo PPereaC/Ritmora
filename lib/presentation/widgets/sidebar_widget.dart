@@ -14,6 +14,7 @@ class CustomMusicSidebar extends StatelessWidget {
 
     final items = [
       _SidebarItem(icon: Iconsax.home_2_outline, route: '/'),
+      _SidebarItem(icon: Iconsax.search_normal_1_outline, route: '/search'),
       _SidebarItem(icon: Iconsax.heart_outline, route: '/favorites'),
       _SidebarItem(icon: Iconsax.music_library_2_outline, route: '/library'),
       _SidebarItem(icon: Iconsax.setting_3_outline, route: '/settings'),

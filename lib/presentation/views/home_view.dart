@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 
+import '../../config/utils/responsive.dart';
 import '../../domain/entities/song.dart';
 import '../delegates/search_songs_delegate.dart';
 import '../providers/providers.dart';
@@ -56,42 +57,47 @@ class HomeViewState extends ConsumerState<HomeView> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (index == 0) ...[
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  IconButton.filled(
-                                    onPressed: () async {
-                                      final searchQuery = ref.read(searchQueryProvider);
-                                      // ignore: unused_local_variable
-                                      final song = await showSearch<Song?>(
-                                        query: searchQuery,
-                                        context: context,
-                                        delegate: SearchSongsDelegate(
-                                          searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery,
-                                          colors: colors,
-                                        )
-                                      );
-                                    },
-                                    icon: const Icon(Iconsax.search_normal_1_outline),
-                                    color: Colors.white,
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: colors.secondary.withOpacity(0.5),
-                                      padding: const EdgeInsets.all(10),
+                              if (Responsive.isMobile(context))
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    IconButton.filled(
+                                      onPressed: () async {
+                                        final searchQuery = ref.read(searchQueryProvider);
+                                        // ignore: unused_local_variable
+                                        final song = await showSearch<Song?>(
+                                          query: searchQuery,
+                                          context: context,
+                                          delegate: SearchSongsDelegate(
+                                            searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery,
+                                            colors: colors,
+                                          )
+                                        );
+                                      },
+                                      icon: const Icon(Iconsax.search_normal_1_outline),
+                                      color: Colors.white,
+                                      style: IconButton.styleFrom(
+                                        backgroundColor: colors.secondary.withOpacity(0.5),
+                                        padding: const EdgeInsets.all(10),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 3),
-                                  IconButton.filled(
-                                    onPressed: () {},
-                                    icon: const Icon(Iconsax.notification_outline),
-                                    color: Colors.white,
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: colors.secondary.withOpacity(0.5),
-                                      padding: const EdgeInsets.all(10),
+                                    const SizedBox(width: 3),
+                                    IconButton.filled(
+                                      onPressed: () {},
+                                      icon: const Icon(Iconsax.notification_outline),
+                                      color: Colors.white,
+                                      style: IconButton.styleFrom(
+                                        backgroundColor: colors.secondary.withOpacity(0.5),
+                                        padding: const EdgeInsets.all(10),
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
+                                  ],
+                                ),
+
+                              if (Responsive.isDesktop(context))
+                                const SizedBox(height: 10),
+
                             ],
 
                             // Contenido principal
