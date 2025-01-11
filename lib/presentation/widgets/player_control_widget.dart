@@ -363,7 +363,6 @@ class _MobilePlayerControl extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
                   child: Row(
                     children: [
-            
                       // Thumbnail
                       SizedBox(
                         width: size.width * 0.12,
@@ -402,7 +401,6 @@ class _MobilePlayerControl extends StatelessWidget {
                                 );
                               },
                             )
-                            
                           ),
                         ),
                       ),
@@ -448,7 +446,6 @@ class _MobilePlayerControl extends StatelessWidget {
                         color: Colors.white,
                         constraints: const BoxConstraints(),
                       ),
-            
                     ],
                   ),
                 )

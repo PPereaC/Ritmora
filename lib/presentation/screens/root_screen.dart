@@ -67,7 +67,7 @@ class _RootScreenState extends ConsumerState<RootScreen> {
                   builder: (context, songSnapshot) {
                     final currentSong = songSnapshot.data;
                     final bottomPadding = currentSong != null 
-                      ? (Responsive.isMobile(context) ? navbarHeight.toDouble() + 80 : 80) 
+                      ? (Responsive.isMobile(context) ? navbarHeight.toDouble() + 20 : 80) 
                       : 0.0;
               
                     return Padding(
@@ -114,6 +114,9 @@ class _RootScreenState extends ConsumerState<RootScreen> {
                   height: currentSong != null 
                     ? (Responsive.isMobile(context) ? navbarHeight.toDouble() + 80 : 80) 
                     : 0,
+                  padding: EdgeInsets.only(
+                    bottom: Responsive.isMobile(context) ? navbarHeight.toDouble() + 20 : 0,
+                  ),
                   child: currentSong != null 
                     ? StreamBuilder<bool>(
                         stream: playerService.playingStream,
