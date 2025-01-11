@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:apolo/config/utils/pretty_print.dart';
-import 'package:apolo/domain/datasources/playlist_datasource.dart';
-import 'package:apolo/domain/entities/playlist.dart';
-import 'package:apolo/domain/entities/song.dart';
+import 'package:finmusic/config/utils/pretty_print.dart';
+import 'package:finmusic/domain/datasources/playlist_datasource.dart';
+import 'package:finmusic/domain/entities/playlist.dart';
+import 'package:finmusic/domain/entities/song.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';

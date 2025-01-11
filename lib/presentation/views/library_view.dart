@@ -2,9 +2,9 @@
 
 import 'dart:io';
 
-import 'package:apolo/config/utils/pretty_print.dart';
-import 'package:apolo/presentation/providers/playlist/playlist_provider.dart';
-import 'package:apolo/presentation/widgets/widgets.dart';
+import 'package:finmusic/config/utils/pretty_print.dart';
+import 'package:finmusic/presentation/providers/playlist/playlist_provider.dart';
+import 'package:finmusic/presentation/widgets/widgets.dart';
 import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';

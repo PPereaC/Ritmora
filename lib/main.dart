@@ -1,4 +1,4 @@
-import 'package:apolo/presentation/providers/theme/theme_provider.dart';
+import 'package:finmusic/presentation/providers/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio_background/just_audio_background.dart';

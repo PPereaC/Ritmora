@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:apolo/infrastructure/services/base_player_service.dart';
+import 'package:finmusic/infrastructure/services/base_player_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';

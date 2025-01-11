@@ -1,5 +1,5 @@
-import 'package:apolo/presentation/widgets/home/song_horizontal_listview_widget.dart';
-import 'package:apolo/presentation/widgets/widgets.dart';
+import 'package:finmusic/presentation/widgets/home/song_horizontal_listview_widget.dart';
+import 'package:finmusic/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';

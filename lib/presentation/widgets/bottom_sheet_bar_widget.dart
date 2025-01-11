@@ -1,8 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:animate_do/animate_do.dart';
-import 'package:apolo/presentation/providers/playlist/playlist_repository_provider.dart';
-import 'package:apolo/presentation/providers/providers.dart';
+import 'package:finmusic/presentation/providers/playlist/playlist_repository_provider.dart';
+import 'package:finmusic/presentation/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';

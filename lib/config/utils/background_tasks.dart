@@ -1,7 +1,7 @@
 // Función para obtener los stream urls de las canciones en segundo plano
 import 'dart:isolate';
 
-import 'package:apolo/config/utils/pretty_print.dart';
+import 'package:finmusic/config/utils/pretty_print.dart';
 
 import '../../infrastructure/models/player_response.dart';
 

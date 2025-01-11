@@ -1,4 +1,4 @@
-import 'package:apolo/infrastructure/datasources/sqflite_playlist_datasource.dart';
+import 'package:finmusic/infrastructure/datasources/sqflite_playlist_datasource.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../infrastructure/repositories/playlist_repository_impl.dart';

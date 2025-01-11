@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:apolo/presentation/providers/providers.dart';
-import 'package:apolo/presentation/widgets/widgets.dart';
+import 'package:finmusic/presentation/providers/providers.dart';
+import 'package:finmusic/presentation/widgets/widgets.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

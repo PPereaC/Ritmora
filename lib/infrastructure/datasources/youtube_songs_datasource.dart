@@ -1,9 +1,9 @@
 // ignore_for_file: unnecessary_null_comparison
 
-import 'package:apolo/config/utils/pretty_print.dart';
-import 'package:apolo/domain/datasources/songs_datasource.dart';
-import 'package:apolo/domain/entities/song.dart';
-import 'package:apolo/infrastructure/mappers/youtube_search_songs_response.dart';
+import 'package:finmusic/config/utils/pretty_print.dart';
+import 'package:finmusic/domain/datasources/songs_datasource.dart';
+import 'package:finmusic/domain/entities/song.dart';
+import 'package:finmusic/infrastructure/mappers/youtube_search_songs_response.dart';
 import 'package:dio/dio.dart';
 
 import '../../config/utils/constants.dart';

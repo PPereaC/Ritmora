@@ -1,7 +1,7 @@
-import 'package:apolo/domain/datasources/songs_datasource.dart';
-import 'package:apolo/domain/entities/playlist.dart';
-import 'package:apolo/domain/entities/song.dart';
-import 'package:apolo/domain/repositories/songs_repository.dart';
+import 'package:finmusic/domain/datasources/songs_datasource.dart';
+import 'package:finmusic/domain/entities/playlist.dart';
+import 'package:finmusic/domain/entities/song.dart';
+import 'package:finmusic/domain/repositories/songs_repository.dart';
 
 class SongRepositoryImpl extends SongsRepository {
 
