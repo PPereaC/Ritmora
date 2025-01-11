@@ -17,7 +17,7 @@
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     
     <application
-        android:label="Apolo\nMusic"
+        android:label="FinMusic"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:enableOnBackInvokedCallback="true">
