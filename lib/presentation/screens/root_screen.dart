@@ -125,6 +125,8 @@ class _RootScreenState extends ConsumerState<RootScreen> {
                             isPlaying: playingSnapshot.data ?? false,
                             onPlayPause: () => playerService.togglePlay(),
                             onQueueButtonPressed: _toggleQueuePanel,
+                            onNextSong: () => playerService.playNext(),
+                            onPreviousSong: () => playerService.playPrevious(),
                           );
 
                         },

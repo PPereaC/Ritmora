@@ -17,6 +17,8 @@ class PlayerControlWidget extends ConsumerWidget {
   final bool isPlaying;
   final VoidCallback onPlayPause;
   final VoidCallback onQueueButtonPressed;
+  final VoidCallback onNextSong;
+  final VoidCallback onPreviousSong;
 
   const PlayerControlWidget({
     super.key,
@@ -25,6 +27,8 @@ class PlayerControlWidget extends ConsumerWidget {
     required this.isPlaying,
     required this.onPlayPause,
     required this.onQueueButtonPressed,
+    required this.onNextSong,
+    required this.onPreviousSong
   });
 
   @override
@@ -43,6 +47,7 @@ class PlayerControlWidget extends ConsumerWidget {
         onPlayPause: onPlayPause,
         isPlaying: isPlaying,
         onQueueButtonPressed: onQueueButtonPressed,
+        onNextSong: onNextSong
       );
     } else if (Responsive.isTabletOrDesktop(context)) {
       return _DesktopPlayerControl(
@@ -54,6 +59,8 @@ class PlayerControlWidget extends ConsumerWidget {
         isPlaying: isPlaying,
         playerService: playerService,
         onQueueButtonPressed: onQueueButtonPressed,
+        onNextSong: onNextSong,
+        onPreviousSong: onPreviousSong
       );
     } else {
       return const SizedBox.shrink();
@@ -71,6 +78,8 @@ class _DesktopPlayerControl extends StatelessWidget {
   final bool isPlaying;
   final BasePlayerService playerService;
   final VoidCallback onQueueButtonPressed;
+  final VoidCallback onNextSong;
+  final VoidCallback onPreviousSong;
 
   const _DesktopPlayerControl({
     required this.colors,
@@ -80,7 +89,9 @@ class _DesktopPlayerControl extends StatelessWidget {
     required this.onPlayPause,
     required this.isPlaying,
     required this.playerService,
-    required this.onQueueButtonPressed
+    required this.onQueueButtonPressed,
+    required this.onNextSong,
+    required this.onPreviousSong
   });
 
   String _formatDuration(Duration duration) {
@@ -173,7 +184,7 @@ class _DesktopPlayerControl extends StatelessWidget {
                   children: [
 
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () => onPreviousSong,
                       icon: const Icon(Iconsax.previous_bold),
                       color: Colors.white,
                       iconSize: 25,
@@ -209,7 +220,7 @@ class _DesktopPlayerControl extends StatelessWidget {
                     const SizedBox(width: 12),
 
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () => onNextSong,
                       icon: const Icon(Iconsax.next_bold),
                       color: Colors.white,
                       iconSize: 25,
@@ -306,6 +317,7 @@ class _MobilePlayerControl extends StatelessWidget {
   final VoidCallback onPlayPause;
   final bool isPlaying;
   final VoidCallback onQueueButtonPressed;
+  final VoidCallback onNextSong;
   
   const _MobilePlayerControl({
     required this.colors,
@@ -314,7 +326,8 @@ class _MobilePlayerControl extends StatelessWidget {
     required this.textStyles,
     required this.onPlayPause,
     required this.isPlaying,
-    required this.onQueueButtonPressed
+    required this.onQueueButtonPressed,
+    required this.onNextSong
   });
 
   @override
@@ -324,116 +337,123 @@ class _MobilePlayerControl extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 5),
-      child: SizedBox(
-        height: 60,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Container(
-            color: colors.secondary,
-            child: InkWell(
-              onTap: () {
-                if (!isFullPlayerOpened) {
-                  context.push('/full-player');
-                  isFullPlayerOpened = true;
-                } else {
-                  context.pushNamed('/full-player');
-                }
-              },
-              onLongPress: () => context.push('/full-player'),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
-                child: Row(
-                  children: [
-    
-                    // Thumbnail
-                    SizedBox(
-                      width: size.width * 0.12,
-                      child: AspectRatio(
-                        aspectRatio: 1,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.network(
-                            currentSong.thumbnailUrl,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) {
-                                return child;
-                              } else {
-                                return Center(
+      child: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          if (details.primaryVelocity != null && details.primaryVelocity! < 0) {
+            onNextSong();
+          }
+        },
+        child: SizedBox(
+          height: 60,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              color: colors.secondary,
+              child: InkWell(
+                onTap: () {
+                  if (!isFullPlayerOpened) {
+                    context.push('/full-player');
+                    isFullPlayerOpened = true;
+                  } else {
+                    context.pushNamed('/full-player');
+                  }
+                },
+                onLongPress: () => context.push('/full-player'),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
+                  child: Row(
+                    children: [
+            
+                      // Thumbnail
+                      SizedBox(
+                        width: size.width * 0.12,
+                        child: AspectRatio(
+                          aspectRatio: 1,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.network(
+                              currentSong.thumbnailUrl,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) {
+                                  return child;
+                                } else {
+                                  return Center(
+                                    child: Image.asset(
+                                      defaultLoader,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  );
+                                }
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.grey[900],
                                   child: Image.asset(
-                                    defaultLoader,
+                                    defaultPoster,
+                                    fit: BoxFit.cover,
                                     width: double.infinity,
                                     height: double.infinity,
-                                    fit: BoxFit.cover,
-                                  ),
+                                  )
                                 );
-                              }
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.grey[900],
-                                child: Image.asset(
-                                  defaultPoster,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                )
-                              );
-                            },
-                          )
-                          
+                              },
+                            )
+                            
+                          ),
                         ),
                       ),
-                    ),
-                    
-                    const SizedBox(width: 10),
-                    
-                    // Título y autor
-                    SizedBox(
-                      width: size.width * 0.6,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            currentSong.title,
-                            style: textStyles.titleMedium!.copyWith(
-                              color: Colors.white
+                      
+                      const SizedBox(width: 10),
+                      
+                      // Título y autor
+                      SizedBox(
+                        width: size.width * 0.6,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              currentSong.title,
+                              style: textStyles.titleMedium!.copyWith(
+                                color: Colors.white
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            currentSong.author,
-                            style: textStyles.bodyLarge!.copyWith(
-                              color: Colors.white60
+                            Text(
+                              currentSong.author,
+                              style: textStyles.bodyLarge!.copyWith(
+                                color: Colors.white60
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-    
-                    const Spacer(),
-    
-                    // Botón de opciones
-                    IconButton(
-                      onPressed: onPlayPause,
-                      icon: Icon(
-                        isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                        size: 30,
+            
+                      const Spacer(),
+            
+                      // Botón de opciones
+                      IconButton(
+                        onPressed: onPlayPause,
+                        icon: Icon(
+                          isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                          size: 30,
+                        ),
+                        color: Colors.white,
+                        constraints: const BoxConstraints(),
                       ),
-                      color: Colors.white,
-                      constraints: const BoxConstraints(),
-                    ),
-    
-                  ],
-                ),
+            
+                    ],
+                  ),
+                )
               )
-            )
+            ),
           ),
         ),
       ),
