@@ -68,8 +68,8 @@ class _RootScreenState extends ConsumerState<RootScreen> {
                     final currentSong = songSnapshot.data;
                     final bottomPadding = currentSong != null 
                       ? (Responsive.isMobile(context) ? navbarHeight.toDouble() + 80 : 80) 
-                      : 90;
-
+                      : 0.0;
+              
                     return Padding(
                       padding: EdgeInsets.only(
                         bottom: bottomPadding.toDouble(),
