@@ -1,5 +1,6 @@
 class Playlist {
 
+  final int id;
   final String title;
   final String author;
   String thumbnailUrl;
@@ -7,11 +8,12 @@ class Playlist {
   final int isLocal;
 
   Playlist({
+    int? id,
     required this.title,
     required this.author,
     required this.thumbnailUrl,
     this.playlistId = '',
     this.isLocal = 0
-  });
+  }) : id = id ?? DateTime.now().millisecondsSinceEpoch;
 
 }

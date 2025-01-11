@@ -1,4 +1,4 @@
-import 'package:apolo/domain/repositories/songs_repository.dart';
+import 'package:finmusic/domain/repositories/songs_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/playlist.dart';
 import '../song_repository_provider.dart';

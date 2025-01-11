@@ -1,7 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:apolo/presentation/providers/providers.dart';
-import 'package:apolo/presentation/widgets/widgets.dart';
+import 'package:finmusic/presentation/providers/providers.dart';
+import 'package:finmusic/presentation/widgets/widgets.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,7 +30,6 @@ class SongListTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
 
     final textStyles = Theme.of(context).textTheme;
-    final size = MediaQuery.of(context).size;
 
     return InkWell(
       onTap: () async {
@@ -62,8 +61,11 @@ class SongListTile extends ConsumerWidget {
         child: Row(
           children: [
             // Thumbnail
-            SizedBox(
-              width: size.width * 0.13,
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: 48, // Ancho fijo para todas las pantallas
+                maxHeight: isVideo ? 45 : 60, // Alto fijo ajustado para videos
+              ),
               child: AspectRatio(
                 aspectRatio: isVideo ? 16/12 : 1,
                 child: ClipRRect(

@@ -1,8 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:io';
-import 'package:apolo/presentation/providers/playlist/playlist_provider.dart';
-import 'package:apolo/presentation/providers/providers.dart';
+import 'package:finmusic/presentation/providers/playlist/playlist_provider.dart';
+import 'package:finmusic/presentation/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +10,7 @@ import 'package:icons_plus/icons_plus.dart';
 
 import '../../config/helpers/permissions_helper.dart';
 import '../../config/utils/constants.dart';
+import '../../config/utils/responsive.dart';
 import '../../domain/entities/playlist.dart';
 import '../../domain/entities/song.dart';
 import '../widgets/image_picker_widget.dart';
@@ -56,23 +57,25 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
     }
   }
 
-  Future<Playlist> getPlaylistByID(String playlistID) async {
-    try {
-      if (widget.isLocalPlaylist == '0') {
-        final pID = int.parse(playlistID);
-        return await ref.read(playlistProvider.notifier).getPlaylistByID(pID);
-      }
+  Future<List<Song>> getPlaylistSongs(int playlistID) async {
+    return await ref.read(playlistProvider.notifier).getSongsFromPlaylist(playlistID);
+    // try {
+    //   if (widget.isLocalPlaylist == '0') {
+        
+    //   }
+
       
-      // Para playlists de YouTube
-      await ref.read(playlistSongsProvider(playlistID).notifier).loadPlaylist();
-      return ref.read(playlistSongsProvider(playlistID));
-    } catch (e) {
-      return Playlist(
-        title: 'Error',
-        author: '',
-        thumbnailUrl: ''
-      );
-    }
+      
+    //   Para playlists de YouTube
+    //   await ref.read(playlistSongsProvider(playlistID).notifier).loadPlaylist();
+    //   return ref.read(playlistSongsProvider(playlistID));
+    // } catch (e) {
+    //   return Playlist(
+    //     title: 'Error',
+    //     author: '',
+    //     thumbnailUrl: ''
+    //   );
+    // }
   }
 
   @override
@@ -80,6 +83,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
 
     final colors = Theme.of(context).colorScheme;
     bool isLocalPlaylist = widget.isLocalPlaylist == '0';
+    final bool isTabletOrDesktop = Responsive.isTabletOrDesktop(context);
 
     return Scaffold(
       backgroundColor: colors.surface,
@@ -135,40 +139,57 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
 
           const GradientWidget(),
 
-          // FutureBuilder<Playlist>(
-          //   future: getPlaylistByID(widget.playlistID),
-          //   builder: (context, snapshot) {
-          //     if (!snapshot.hasData || snapshot.data!.songs.isEmpty) {
-          //       return const Scaffold(
-          //         body: Stack(
-          //           children: [
-          //             GradientWidget(),
-          //             Center(
-          //               child: CircularProgressIndicator(),
-          //             ),
-          //           ],
-          //         )
-          //       );
-          //     } 
-          
-          //     final playlistLocal = snapshot.data!;
-          //     return CustomScrollView(
-          //       controller: _scrollController,
-          //       slivers: [
-          //         SliverToBoxAdapter(
-          //           child: PlaylistHeader(
-          //             title: isLocalPlaylist ? playlistLocal.title : widget.playlist!.title,
-          //             thumbnail: isLocalPlaylist ? playlistLocal.thumbnailUrl : widget.playlist!.thumbnailUrl,
-          //             playlistID: playlistLocal.id,
-          //             isLocalPlaylist: isLocalPlaylist,
-          //             songs: playlistLocal.songs,
-          //           ),
-          //         ),
-          //         _PlaylistSongsList(songs: playlistLocal.songs, isLocalPlaylist: widget.isLocalPlaylist),
-          //       ],
-          //     );
-          //   },
-          // ),
+          FutureBuilder<List<Song>>(
+            future: getPlaylistSongs(int.parse(widget.playlistID)),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              if (snapshot.hasError) {
+                return Center(
+                  child: Text('Error: ${snapshot.error}'),
+                );
+              }
+
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(
+                  child: Text('No hay canciones en esta playlist'),
+                );
+              }
+
+              final songs = snapshot.data!;
+              
+              return CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: isTabletOrDesktop
+                      ? _TabletDesktopPlaylistHeader(
+                          title: widget.playlist?.title ?? '',
+                          thumbnail: widget.playlist?.thumbnailUrl ?? '',
+                          playlistID: int.parse(widget.playlistID),
+                          isLocalPlaylist: widget.isLocalPlaylist == '0',
+                          songs: songs,
+                        )
+                      : _MobilePlaylistHeader(
+                          title: widget.playlist?.title ?? '',
+                          thumbnail: widget.playlist?.thumbnailUrl ?? '',
+                          playlistID: int.parse(widget.playlistID),
+                          isLocalPlaylist: widget.isLocalPlaylist == '0',
+                          songs: songs,
+                        ),
+                  ),
+                  _PlaylistSongsList(
+                    songs: songs,
+                    isLocalPlaylist: widget.isLocalPlaylist,
+                  ),
+                ],
+              );
+            },
+          ),
 
         ]
         
@@ -279,15 +300,14 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
 }
 
 // ignore: must_be_immutable
-class PlaylistHeader extends ConsumerWidget {
+class _MobilePlaylistHeader extends ConsumerWidget {
   final String title;
   final String thumbnail;
   final int playlistID;
   final bool isLocalPlaylist;
   List<Song> songs;
 
-  PlaylistHeader({
-    super.key,
+  _MobilePlaylistHeader({
     required this.title, 
     required this.thumbnail,
     required this.playlistID,
@@ -462,7 +482,7 @@ class PlaylistHeader extends ConsumerWidget {
                   songs = songs..shuffle();
                   final playerProvider = ref.read(songPlayerProvider);
                   playerProvider.playSong(songs.first);
-                  playerProvider.addSongsToQueue(songs);
+                  // playerProvider.addSongsToQueue(songs);
                 },
                 child: const Row(
                   children: [
@@ -479,3 +499,196 @@ class PlaylistHeader extends ConsumerWidget {
     );
   }
 }
+
+// ignore: must_be_immutable
+class _TabletDesktopPlaylistHeader extends ConsumerWidget {
+  final String title;
+  final String thumbnail;
+  final int playlistID;
+  final bool isLocalPlaylist;
+  List<Song> songs;
+
+  _TabletDesktopPlaylistHeader({
+    required this.title, 
+    required this.thumbnail,
+    required this.playlistID,
+    required this.isLocalPlaylist,
+    required this.songs,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = Theme.of(context).colorScheme;
+
+    Future<void> updateThumbnail() async {
+      bool isGranted = await PermissionsHelper.storagePermission();
+      if (!isGranted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Permisos de almacenamiento'),
+            content: const Text('No tienes permisos de almacenamiento. Por favor, actívalos manualmente en la configuración de tu dispositivo.'),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  bool isGranted = await PermissionsHelper.storagePermission();
+                  if (isGranted) {
+                    final image = await ImagePickerWidget.pickImage(context);
+                    if (image != null) {
+                      ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, image.path);
+                      context.push('/library');
+                    }
+                  }
+                },
+                child: const Text('Aceptar'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        final image = await ImagePickerWidget.pickImage(context);
+        if (image != null) {
+          ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, image.path);
+          context.push('/library');
+        }
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 60, bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SizedBox(
+              width: 260,
+              height: 260,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20.0),
+                child: Image(
+                  image: isLocalPlaylist 
+                    ? (thumbnail.startsWith('assets/')
+                        ? AssetImage(thumbnail)
+                        : FileImage(File(thumbnail)) as ImageProvider)
+                    : NetworkImage(thumbnail) as ImageProvider,
+                  height: 260,
+                  width: 260,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 260,
+                    width: 260,
+                    color: Colors.grey[900],
+                    child: Image.asset(
+                      defaultPoster,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                    )
+                  ),
+                ),
+              ),
+            ),
+          ),
+      
+          const SizedBox(height: 16.0),
+      
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+            
+                const Padding(
+                  padding: EdgeInsets.only(left: 16, top: 10),
+                  child: Text(
+                    'Lista Local',
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+            
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 80.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+      
+                const SizedBox(height: 16.0),
+      
+                // Botones de play y shuffle
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    children: [
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black26,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: colors.primary,
+                              width: 2,
+                            ),
+                          ),
+                          child: IconButton(
+                            padding: const EdgeInsets.all(16),
+                            iconSize: 40,
+                            icon: const Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.white,
+                            ),
+                            onPressed: () {},
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black26,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: colors.primary,
+                              width: 2,
+                            ),
+                          ),
+                          child: IconButton(
+                            padding: const EdgeInsets.all(12),
+                            iconSize: 34,
+                            icon: const Icon(
+                              Icons.shuffle_rounded,
+                              color: Colors.white,
+                            ),
+                            onPressed: () {
+                              songs = songs..shuffle();
+                              final playerProvider = ref.read(songPlayerProvider);
+                              playerProvider.playSong(songs.first);
+                              // playerProvider.addSongsToQueue(songs);
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

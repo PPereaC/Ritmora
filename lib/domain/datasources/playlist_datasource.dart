@@ -6,6 +6,7 @@ import '../entities/song.dart';
 abstract class PlaylistDatasource {
 
   Future<List<Playlist>> getPlaylists();
+  Future<List<Song>> getSongsFromPlaylist(int playlistID);
   Future<void> addNewPlaylist(Playlist playlist);
   Future<void> removePlaylist(Playlist playlist);
   Future<void> updatePlaylist(Playlist playlist);

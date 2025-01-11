@@ -1,7 +1,7 @@
-name: apolo
+name: finmusic
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.3
+version: 0.1.4
 
 environment:
   sdk: ^3.5.4
@@ -9,6 +9,7 @@ environment:
 dependencies:
   animate_do: ^3.3.4
   audio_session: ^0.1.23
+  audioplayers: ^6.1.0
   cached_network_image: ^3.4.1
   card_swiper: ^3.0.1
   csv: ^6.0.0
@@ -27,10 +28,11 @@ dependencies:
   path: ^1.9.0
   path_provider: ^2.1.5
   permission_handler: ^11.3.1
-  shared_preferences: ^2.3.3
+  rename: ^3.0.2
   sqflite: ^2.4.1
   sqflite_common_ffi: ^2.3.4+4
   sqlite3_flutter_libs: ^0.5.28
+  synchronized: ^3.3.0+3
 
 dev_dependencies:
   flutter_lints: ^4.0.0

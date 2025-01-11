@@ -2,9 +2,9 @@
 
 import 'dart:io';
 
-import 'package:apolo/config/utils/pretty_print.dart';
-import 'package:apolo/presentation/providers/playlist/playlist_provider.dart';
-import 'package:apolo/presentation/widgets/widgets.dart';
+import 'package:finmusic/config/utils/pretty_print.dart';
+import 'package:finmusic/presentation/providers/playlist/playlist_provider.dart';
+import 'package:finmusic/presentation/widgets/widgets.dart';
 import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +14,7 @@ import 'package:icons_plus/icons_plus.dart';
 
 import '../../config/helpers/permissions_helper.dart';
 import '../../config/utils/constants.dart';
+import '../../config/utils/responsive.dart';
 import '../../domain/entities/playlist.dart';
 import '../../domain/entities/song.dart';
 import '../../infrastructure/mappers/piped_search_songs_mapper.dart';
@@ -112,8 +113,9 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
         onConfirm: (value) async {
           final playlist = Playlist(
             title: value,
-            author: '',
+            author: 'anonymous',
             thumbnailUrl: defaultPoster,
+            playlistId: 'XXXXX'
           );
           
           await ref.read(playlistProvider.notifier).addPlaylist(playlist);
@@ -226,13 +228,13 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
 
             // Agregar todas las canciones a la playlist
             for (final song in songList) {
-              // await ref.read(playlistProvider.notifier).addSongToPlaylist(
-              //   context, 
-              //   playlist.id, 
-              //   song,
-              //   showNotifications: false,
-              //   reloadPlaylists: false  // Evita recargas innecesarias
-              // );
+              await ref.read(playlistProvider.notifier).addSongToPlaylist(
+                context, 
+                playlist.id, 
+                song,
+                showNotifications: false,
+                reloadPlaylists: false  // Evita recargas innecesarias
+              );
             }
 
             // Recargar la lista una sola vez al finalizar
@@ -375,6 +377,9 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
   }
 
   Widget _buildPlaylistsView() {
+
+    final bool isTabletOrDesktop = Responsive.isTablet(context) || Responsive.isDesktop(context);
+
     return Consumer(
       builder: (context, ref, child) {
         final playlistState = ref.watch(playlistProvider);
@@ -408,9 +413,9 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
   
         return GridView.builder(
           padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 1,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: Responsive.isMobile(context) ? 2 : Responsive.isDesktop(context) ? 8 : Responsive.isTablet(context) ? 4 : 5,
+            childAspectRatio: isTabletOrDesktop ? 0.7 : 0.8,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),
@@ -419,13 +424,13 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
             final playlist = playlistState.playlists[index];
             return MouseRegion(
               child: InkWell(
-                onTap: () { // Acción al tocar la playlist
-                  // context.go(
-                  //   '/library/playlist/0/${playlist.id}',
-                  //   extra: playlist,
-                  // );
+                onTap: () {
+                  context.go(
+                    '/library/playlist/0/${playlist.id}',
+                    extra: playlist,
+                  );
                 },
-                onLongPress: () async { // Acción al mantener presionado la playlist (borrar)
+                onLongPress: () async {
                   final shouldDelete = await showConfirmationDialog(
                     context,
                     '¿Seguro que quieres eliminar la playlist?',
@@ -440,27 +445,16 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
                     }
                   }
                 },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.4),
-                        blurRadius: 8.0,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10.0),
-                    child: Stack(
-                      children: [
-
-                        Image(
+                child: Column(
+                  children: [
+                    AspectRatio(
+                      aspectRatio: 1.1,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10.0),
+                        child: Image(
                           image: playlist.thumbnailUrl.startsWith('assets/')
                               ? AssetImage(playlist.thumbnailUrl)
                               : FileImage(File(playlist.thumbnailUrl)) as ImageProvider,
-                          height: double.infinity,
                           width: double.infinity,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => Container(
@@ -473,43 +467,26 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
                             )
                           ),
                         ),
-                        
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.bottomCenter,
-                                end: Alignment.topCenter,
-                                colors: [
-                                  Colors.black.withOpacity(0.8),
-                                  Colors.transparent,
-                                ],
-                              ),
-                            ),
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  playlist.title,
-                                  style: const TextStyle(
-                                    fontSize: 18.0,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 2,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          playlist.title,
+                          style: const TextStyle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          textAlign: TextAlign.start,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );

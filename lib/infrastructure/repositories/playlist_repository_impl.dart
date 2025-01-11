@@ -1,6 +1,6 @@
-import 'package:apolo/domain/datasources/playlist_datasource.dart';
-import 'package:apolo/domain/entities/playlist.dart';
-import 'package:apolo/domain/entities/song.dart';
+import 'package:finmusic/domain/datasources/playlist_datasource.dart';
+import 'package:finmusic/domain/entities/playlist.dart';
+import 'package:finmusic/domain/entities/song.dart';
 import 'package:flutter/material.dart';
 
 import '../../domain/repositories/playlist_repository.dart';
@@ -44,6 +44,11 @@ class PlaylistRepositoryImpl extends PlaylistRepository {
   @override
   Future<void> updatePlaylistThumbnail(int playlistID, String thumbnailURL) {
     return datasource.updatePlaylistThumbnail(playlistID, thumbnailURL);
+  }
+  
+  @override
+  Future<List<Song>> getSongsFromPlaylist(int playlistID) {
+    return datasource.getSongsFromPlaylist(playlistID);
   }
 
 }

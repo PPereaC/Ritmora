@@ -1,14 +1,15 @@
 import 'dart:async';
 
-import 'package:apolo/config/utils/pretty_print.dart';
+import 'package:finmusic/infrastructure/services/base_player_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
-import '../../config/utils/background_tasks.dart';
-import '../../domain/entities/song.dart';
+import '../../../config/utils/background_tasks.dart';
+import '../../../config/utils/pretty_print.dart';
+import '../../../domain/entities/song.dart';
 
-class SongPlayerService {
+class JustAudioService extends BasePlayerService {
   final AudioPlayer _justAudioPlayer = AudioPlayer();
   final _songController = StreamController<Song?>.broadcast();
   final _queueController = StreamController<List<Song>>.broadcast();
@@ -17,7 +18,7 @@ class SongPlayerService {
   Song? _currentSong;
   bool _isPlaying = false;
 
-  SongPlayerService() {
+  JustAudioService() {
     // Escuchar cambios de estado del reproductor
     _playerStateListener = _justAudioPlayer.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
@@ -56,25 +57,45 @@ class SongPlayerService {
   final List<Song> _queue = [];
 
   // Getters
+  @override
   Song? get currentSong => _currentSong;
+
+  @override
   bool get isPlaying => _isPlaying;
+
+  @override
   Stream<bool> get playingStream => _justAudioPlayer.playingStream;
+
+  @override
   Stream<Song?> get currentSongStream => _songController.stream;
+
+  @override
   List<Song> get queue => List.unmodifiable(_queue);
+
+  @override
   Stream<List<Song>> get queueStream => _queueController.stream;
 
   // Getters para la posición y duración de la canción
+  @override
   Duration get currentPosition => _justAudioPlayer.position;
+
+  @override
   Duration get totalDuration => _justAudioPlayer.duration ?? Duration.zero;
+
+  @override
   Stream<Duration> get positionStream => _justAudioPlayer.positionStream;
+
+  @override
   Stream<Duration?> get durationStream => _justAudioPlayer.durationStream;
 
   // Método para buscar una posición específica
+  @override
   Future<void> seek(Duration position) async {
     await _justAudioPlayer.seek(position);
   }
 
   // Reproducir una canción
+  @override
   Future<void> playSong(Song song, [int retryCount = 0]) async {
 
     // Verificar URL primero
@@ -161,11 +182,13 @@ class SongPlayerService {
     
   }
 
+  @override
   Future<void> pause() async {
     await _justAudioPlayer.pause();
     _isPlaying = false;
   }
 
+  @override
   Future<void> resume() async {
     if (_currentSong != null) {
       await _justAudioPlayer.play();
@@ -173,6 +196,7 @@ class SongPlayerService {
     }
   }
 
+  @override
   Future<void> togglePlay() async {
     if (_currentSong == null) return;
 
@@ -184,8 +208,9 @@ class SongPlayerService {
 
     _isPlaying = _justAudioPlayer.playing;
   }
-
+  
   // Añadir canción al final de la cola
+  @override
   Future<void> addToQueue(Song song) async {
     if (!_queue.contains(song)) {
       // Obtener URL si es necesario y validar
@@ -253,6 +278,7 @@ class SongPlayerService {
   }
 
   // Añadir canción siguiente en la cola
+  @override
   Future<void> addNext(Song song) async {
     if (!_queue.contains(song)) {
       // Obtener y validar URL primero
@@ -289,6 +315,7 @@ class SongPlayerService {
   }
 
   // Este método modifica la lista mutable interna _queue y luego actualiza el stream de la cola.
+  @override
   void reorderQueue(int oldIndex, int newIndex) {
     if (oldIndex < 0 || oldIndex >= _queue.length) return;
     if (newIndex < 0 || newIndex >= _queue.length) return;
@@ -299,6 +326,7 @@ class SongPlayerService {
   }
 
   // Reproducir siguiente canción
+  @override
   Future<void> playNext() async {
     if (_justAudioPlayer.hasNext) {
       final nextIndex = (_justAudioPlayer.currentIndex ?? -1) + 1;
@@ -325,6 +353,7 @@ class SongPlayerService {
   }
 
   // Reproducir canción anterior
+  @override
   Future<void> playPrevious() async {
     if (_justAudioPlayer.hasPrevious) {
       await _justAudioPlayer.seekToPrevious();
@@ -343,12 +372,14 @@ class SongPlayerService {
   }
 
   // Eliminar canción de la cola
+  @override
   void removeFromQueue(int index) {
     if (index < 0 || index >= _queue.length) return;
     _queue.removeAt(index);
     _queueController.add(_queue);
   }
 
+  @override
   void dispose() {
     _justAudioPlayer.dispose();
     _songController.close();

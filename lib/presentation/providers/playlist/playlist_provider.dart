@@ -1,7 +1,7 @@
-import 'package:apolo/config/utils/pretty_print.dart';
+import 'package:finmusic/config/utils/pretty_print.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:apolo/domain/entities/playlist.dart';
+import 'package:finmusic/domain/entities/playlist.dart';
 
 import '../../../domain/entities/song.dart';
 import '../../../infrastructure/repositories/playlist_repository_impl.dart';
@@ -49,6 +49,15 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
         isLoading: false,
         errorMessage: 'Error al cargar las playlists: $e',
       );
+    }
+  }
+
+  Future<List<Song>> getSongsFromPlaylist(int playlistID) async {
+    try {
+      final songs = await _repository.getSongsFromPlaylist(playlistID);
+      return songs;
+    } catch (e) {
+      return [];
     }
   }
 

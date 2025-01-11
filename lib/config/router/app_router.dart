@@ -32,6 +32,16 @@ final appRouter = GoRouter(
           ]
         ),
 
+        // Búsqueda
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/search',
+              builder: (context, state) => const SearchView(),
+            ),
+          ],
+        ),
+
         // Librería
         StatefulShellBranch(
           routes: [
