@@ -227,7 +227,12 @@ class SearchSongsDelegate extends SearchDelegate<Song?> {
                               onSongOptions: () {
                                 showModalBottomSheet(
                                   context: context,
-                                  builder: (context) => BottomSheetBarWidget(song: song),
+                                  builder: (context) => Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: colors,
+                                    ),
+                                    child: BottomSheetBarWidget(song: song),
+                                  ),
                                 );
                               },
                               isPlaylist: false,

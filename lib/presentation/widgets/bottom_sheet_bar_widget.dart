@@ -23,8 +23,28 @@ class BottomSheetBarWidget extends ConsumerWidget {
     final textStyle = Theme.of(context).textTheme;
 
     return Container(
-      color: colors.surface,
-      height: MediaQuery.of(context).size.height * 0.44,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withOpacity(0.2),
+            width: 1.5,
+          ),
+          left: BorderSide(
+            color: Colors.white.withOpacity(0.2),
+            width: 1.5,
+          ),
+          right: BorderSide(
+            color: Colors.white.withOpacity(0.2),
+            width: 1.5,
+          ),
+        )
+      ),
+      height: MediaQuery.of(context).size.height * 0.54,
       child: Column(
         children: [
 
