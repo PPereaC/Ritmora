@@ -37,102 +37,104 @@ class HomeViewState extends ConsumerState<HomeView> {
     final quickPicks = ref.watch(quickPicksProvider);
     final playlistsHits = ref.watch(playlistsHitsProvider);
 
-    return Scaffold(
-      backgroundColor: colors.surface,
-      extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          const GradientWidget(),
-          
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: CustomScrollView(
-              slivers: [
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (index == 0) ...[
-                              if (Responsive.isMobile(context))
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    IconButton.filled(
-                                      onPressed: () async {
-                                        final searchQuery = ref.read(searchQueryProvider);
-                                        // ignore: unused_local_variable
-                                        final song = await showSearch<Song?>(
-                                          query: searchQuery,
-                                          context: context,
-                                          delegate: SearchSongsDelegate(
-                                            searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery,
-                                            colors: colors,
-                                          )
-                                        );
-                                      },
-                                      icon: const Icon(Iconsax.search_normal_1_outline),
-                                      color: Colors.white,
-                                      style: IconButton.styleFrom(
-                                        backgroundColor: colors.secondary.withOpacity(0.5),
-                                        padding: const EdgeInsets.all(10),
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: colors.surface,
+        extendBodyBehindAppBar: true,
+        body: Stack(
+          children: [
+            const GradientWidget(),
+            
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: CustomScrollView(
+                slivers: [
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (index == 0) ...[
+                                if (Responsive.isMobile(context))
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      IconButton.filled(
+                                        onPressed: () async {
+                                          final searchQuery = ref.read(searchQueryProvider);
+                                          // ignore: unused_local_variable
+                                          final song = await showSearch<Song?>(
+                                            query: searchQuery,
+                                            context: context,
+                                            delegate: SearchSongsDelegate(
+                                              searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery,
+                                              colors: colors,
+                                            )
+                                          );
+                                        },
+                                        icon: const Icon(Iconsax.search_normal_1_outline),
+                                        color: Colors.white,
+                                        style: IconButton.styleFrom(
+                                          backgroundColor: colors.secondary.withOpacity(0.5),
+                                          padding: const EdgeInsets.all(10),
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 3),
-                                    IconButton.filled(
-                                      onPressed: () {},
-                                      icon: const Icon(Iconsax.notification_outline),
-                                      color: Colors.white,
-                                      style: IconButton.styleFrom(
-                                        backgroundColor: colors.secondary.withOpacity(0.5),
-                                        padding: const EdgeInsets.all(10),
+                                      const SizedBox(width: 3),
+                                      IconButton.filled(
+                                        onPressed: () {},
+                                        icon: const Icon(Iconsax.notification_outline),
+                                        color: Colors.white,
+                                        style: IconButton.styleFrom(
+                                          backgroundColor: colors.secondary.withOpacity(0.5),
+                                          padding: const EdgeInsets.all(10),
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-
-                              if (Responsive.isDesktop(context))
+                                    ],
+                                  ),
+      
+                                if (Responsive.isDesktop(context))
+                                  const SizedBox(height: 10),
+      
+                              ],
+      
+                              // Contenido principal
+                              if (index == 1) ...[
+                                const _SectionTitle('Selecciones rápidas', showViewAll: false),
                                 const SizedBox(height: 10),
-
+                                SongGridHorizontalListview(songs: quickPicks),
+                    
+                                const _SectionTitle('En tendencia'),
+                                const SizedBox(height: 10),
+                                SongHorizontalListview(songs: trendingSongs),
+                    
+                                const _SectionTitle('Grandes Éxitos', showViewAll: false),
+                                const SizedBox(height: 10),
+                                PlaylistHorizontalListview (
+                                  onTap: (playlist) {
+                                    context.go(
+                                      '/library/playlist/1/${playlist.playlistId}',
+                                      extra: playlist
+                                    );
+                                  },
+                                  playlists: playlistsHits
+                                )
+                              ],
                             ],
-
-                            // Contenido principal
-                            if (index == 1) ...[
-                              const _SectionTitle('Selecciones rápidas', showViewAll: false),
-                              const SizedBox(height: 10),
-                              SongGridHorizontalListview(songs: quickPicks),
-                  
-                              const _SectionTitle('En tendencia'),
-                              const SizedBox(height: 10),
-                              SongHorizontalListview(songs: trendingSongs),
-                  
-                              const _SectionTitle('Grandes Éxitos', showViewAll: false),
-                              const SizedBox(height: 10),
-                              PlaylistHorizontalListview (
-                                onTap: (playlist) {
-                                  context.go(
-                                    '/library/playlist/1/${playlist.playlistId}',
-                                    extra: playlist
-                                  );
-                                },
-                                playlists: playlistsHits
-                              )
-                            ],
-                          ],
-                        ),
-                      );
-                    },
-                    childCount: 2,
+                          ),
+                        );
+                      },
+                      childCount: 2,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
