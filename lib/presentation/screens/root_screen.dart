@@ -86,18 +86,7 @@ class _RootScreenState extends ConsumerState<RootScreen> {
                 ),
               ),
               if (_isQueuePanelVisible)
-                StreamBuilder<Song?>(
-                  stream: playerService.currentSongStream,
-                  builder: (context, snapshot) {
-                    final hasCurrentSong = snapshot.data != null;
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: hasCurrentSong ? 150 : 0
-                      ),
-                      child: QueueSlidePanel(onClose: _hideQueuePanel),
-                    );
-                  },
-                ),
+                QueueSlidePanel(onClose: _hideQueuePanel)
             ],
           ),
           Positioned(
