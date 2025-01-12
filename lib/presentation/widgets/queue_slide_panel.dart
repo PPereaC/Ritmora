@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
 import '../../config/utils/constants.dart';
+import '../../domain/entities/song.dart';
 import '../providers/providers.dart';
 
 class QueueSlidePanel extends ConsumerStatefulWidget {
@@ -16,12 +17,11 @@ class QueueSlidePanel extends ConsumerStatefulWidget {
 class QueueSlidePanelState extends ConsumerState<QueueSlidePanel> {
   double _panelWidth = 300; // Ancho inicial del panel
   final double _minWidth = 300; // Ancho mínimo del panel
-  final double _maxWidth = 400; // Ancho máximo del panel
+  final double _maxWidth = 300; // Ancho máximo del panel
 
   @override
   Widget build(BuildContext context) {
-    final songPlayer = ref.read(songPlayerProvider);
-    final queue = ref.watch(songPlayerProvider).queue;
+    final songPlayer = ref.watch(songPlayerProvider);
     final colors = Theme.of(context).colorScheme;
 
     return GestureDetector(
@@ -73,53 +73,60 @@ class QueueSlidePanelState extends ConsumerState<QueueSlidePanel> {
 
             // Lista reordenable
             Expanded(
-              child: ReorderableListView.builder(
-                padding: EdgeInsets.zero,
-                itemCount: queue.length,
-                onReorder: (oldIndex, newIndex) {
-                  setState(() {
-                    songPlayer.reorderQueue(oldIndex, newIndex);
-                  });
-                },
-                itemBuilder: (context, index) {
-                  final song = queue[index];
-
-                  return ListTile(
-                    key: ValueKey(song.songId),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        song.thumbnailUrl,
-                        fit: BoxFit.cover,
-                        width: 40,
-                        height: 40,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[900],
-                            child: Image.asset(
-                              defaultPoster,
-                              fit: BoxFit.cover,
-                              width: 40,
-                              height: 40,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    title: Text(
-                      song.title,
-                      style: const TextStyle(color: Colors.white),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    subtitle: Text(
-                      song.author,
-                      style: TextStyle(color: Colors.white.withOpacity(0.8)),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    trailing: const Icon(Icons.drag_handle, color: Colors.white),
+              child: StreamBuilder<List<Song>>(
+                stream: songPlayer.queueStream,
+                initialData: songPlayer.queue,
+                builder: (context, snapshot) {
+                  final queue = snapshot.data ?? [];
+                  return ReorderableListView.builder(
+                    padding: EdgeInsets.zero,
+                    itemCount: queue.length,
+                    onReorder: (oldIndex, newIndex) {
+                      setState(() {
+                        songPlayer.reorderQueue(oldIndex, newIndex);
+                      });
+                    },
+                    itemBuilder: (context, index) {
+                      final song = queue[index];
+                  
+                      return ListTile(
+                        key: ValueKey(song.songId),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            song.thumbnailUrl,
+                            fit: BoxFit.cover,
+                            width: 40,
+                            height: 40,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[900],
+                                child: Image.asset(
+                                  defaultPoster,
+                                  fit: BoxFit.cover,
+                                  width: 40,
+                                  height: 40,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        title: Text(
+                          song.title,
+                          style: const TextStyle(color: Colors.white),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          song.author,
+                          style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: const Icon(Icons.drag_handle, color: Colors.white),
+                      );
+                    },
                   );
                 },
               ),
