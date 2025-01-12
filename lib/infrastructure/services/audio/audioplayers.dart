@@ -123,7 +123,6 @@ class AudioPlayersService extends BasePlayerService {
       _history.add(_currentSong!);
     }
 
-    _queue.clear();
     _queueController.add(_queue);
 
     _currentSong = song;
