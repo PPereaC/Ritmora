@@ -59,8 +59,6 @@ class PlayerControlWidget extends ConsumerWidget {
         isPlaying: isPlaying,
         playerService: playerService,
         onQueueButtonPressed: onQueueButtonPressed,
-        onNextSong: onNextSong,
-        onPreviousSong: onPreviousSong
       );
     } else {
       return const SizedBox.shrink();
@@ -68,7 +66,7 @@ class PlayerControlWidget extends ConsumerWidget {
   }
 }
 
-class _DesktopPlayerControl extends StatelessWidget {
+class _DesktopPlayerControl extends ConsumerWidget {
 
   final ColorScheme colors;
   final Size size;
@@ -78,8 +76,6 @@ class _DesktopPlayerControl extends StatelessWidget {
   final bool isPlaying;
   final BasePlayerService playerService;
   final VoidCallback onQueueButtonPressed;
-  final VoidCallback onNextSong;
-  final VoidCallback onPreviousSong;
 
   const _DesktopPlayerControl({
     required this.colors,
@@ -90,8 +86,6 @@ class _DesktopPlayerControl extends StatelessWidget {
     required this.isPlaying,
     required this.playerService,
     required this.onQueueButtonPressed,
-    required this.onNextSong,
-    required this.onPreviousSong
   });
 
   String _formatDuration(Duration duration) {
@@ -101,7 +95,10 @@ class _DesktopPlayerControl extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+
+    final playerService = ref.watch(songPlayerProvider);
+
     return Container(
       decoration: BoxDecoration(
         color: colors.surface,
@@ -184,7 +181,7 @@ class _DesktopPlayerControl extends StatelessWidget {
                   children: [
 
                     IconButton(
-                      onPressed: () => onPreviousSong,
+                      onPressed: () => playerService.playPrevious(),
                       icon: const Icon(Iconsax.previous_bold),
                       color: Colors.white,
                       iconSize: 25,
@@ -220,7 +217,7 @@ class _DesktopPlayerControl extends StatelessWidget {
                     const SizedBox(width: 12),
 
                     IconButton(
-                      onPressed: () => onNextSong,
+                      onPressed: () => playerService.playNext(),
                       icon: const Icon(Iconsax.next_bold),
                       color: Colors.white,
                       iconSize: 25,
