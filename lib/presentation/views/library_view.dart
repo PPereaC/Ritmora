@@ -128,136 +128,139 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
       ),
     );
   }
-
+  
+  
   Future<void> _importPlaylist() async {
-    List<Song> songList = [];
-    String playlistName = '';
-  
-    try {
-      // Verificar permisos de almacenamiento
-      bool hasPermissions = await PermissionsHelper.storagePermission();
-      if (!hasPermissions) {
-        printERROR('No se concedieron los permisos necesarios');
-        return;
-      }
-  
-      // Configurar FilePicker para seleccionar un archivo CSV
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['csv'],
-        allowMultiple: false,
-        dialogTitle: 'Seleccionar archivo CSV',
-        withData: true,
-      );
-  
-      if (result != null) {
-        final path = result.files.single.path;
-        if (path != null) {
-          final file = File(path);
-          if (path.toLowerCase().endsWith('.csv')) {
-            final contents = await file.readAsString();
-            final rows = const CsvToListConverter().convert(contents);
-            
-            if (rows.isEmpty) {
-              printERROR('El archivo CSV está vacío');
-              return;
-            }
-  
-            // Procesar los headers (encabezados)
-            final headers = rows.first;
-            final mediaIdIndex = headers.indexWhere(
-              (header) => header.toString().toLowerCase() == 'mediaid'
-            );
-            final titleIndex = headers.indexWhere(
-              (header) => header.toString().toLowerCase() == 'title'
-            );
-            final artistsIndex = headers.indexWhere(
-              (header) => header.toString().toLowerCase() == 'artists'
-            );
-            final playlistNameIndex = headers.indexWhere(
-              (header) => header.toString().toLowerCase() == 'playlistname'
-            );
-  
-            // Verificar que existan todas las columnas necesarias
-            if (mediaIdIndex == -1 || titleIndex == -1 || 
-                artistsIndex == -1 || playlistNameIndex == -1) {
-                CustomSnackbar.show(
-                  context,
-                  'Faltan columnas requeridas en el CSV',
-                  Colors.red,
-                  Iconsax.warning_2_outline,
-                  duration: 3,
-                );
-              printERROR('Faltan columnas requeridas en el CSV');
-              return;
-            }
-  
-            // Procesar filas y crear canciones
-            for (var row in rows.skip(1)) {
-              if (row.length > mediaIdIndex) {
-                final song = Song(
-                  songId: row[mediaIdIndex].toString(),
-                  title: row[titleIndex].toString(),
-                  author: row[artistsIndex].toString(),
-                  thumbnailUrl: PipedSearchSongsMapper.getHighQualityThumbnail(row[mediaIdIndex].toString()),
-                  streamUrl: '',
-                  endUrl: '/watch?v=${row[mediaIdIndex].toString()}',
-                  duration: '',
-                );
-                songList.add(song);
-                playlistName = row[playlistNameIndex].toString();
-              }
-            }
+      List<Song> songList = [];
+      String playlistName = '';
+    
+      try {
 
-            if (songList.isEmpty) {
-              printERROR('No se encontraron canciones válidas en el CSV');
-              return;
-            }
-
-            // Invertir el orden de las canciones
-            songList = songList.reversed.toList();
-
-            // Crear y guardar la playlist
-            final playlist = Playlist(
-              title: playlistName,
-              author: '',
-              thumbnailUrl: defaultPoster,
-            );
-
-            await ref.read(playlistProvider.notifier).addPlaylist(playlist);
-
-            // Agregar todas las canciones a la playlist
-            for (final song in songList) {
-              await ref.read(playlistProvider.notifier).addSongToPlaylist(
-                context, 
-                playlist.id, 
-                song,
-                showNotifications: false,
-                reloadPlaylists: false  // Evita recargas innecesarias
-              );
-            }
-
-            // Recargar la lista una sola vez al finalizar
-            await ref.read(playlistProvider.notifier).loadPlaylists();
-
-            // Mostrar una única notificación al finalizar
-            CustomSnackbar.show(
-              context,
-              'Playlist importada con éxito: ${songList.length} canciones agregadas',
-              Colors.green,
-              Iconsax.tick_circle_outline,
-              duration: 3,
-            );
-            
+        // Verificar permisos de almacenamiento en Android
+        if (Platform.isAndroid) { 
+          bool hasPermissions = await PermissionsHelper.storagePermission();
+          if (!hasPermissions) {
+            printERROR('No se concedieron los permisos necesarios');
+            return;
           }
         }
-      } else {
-        printERROR('No se seleccionó ningún archivo');
+
+        // Configurar FilePicker para seleccionar un archivo CSV
+        FilePickerResult? result = await FilePicker.platform.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['csv'],
+          allowMultiple: false,
+          dialogTitle: 'Seleccionar archivo CSV',
+        );
+    
+        if (result != null) {
+          final path = result.files.single.path;
+          if (path != null) {
+            final file = File(path);
+            if (path.toLowerCase().endsWith('.csv')) {
+              final contents = await file.readAsString();
+              final rows = const CsvToListConverter().convert(contents);
+              
+              if (rows.isEmpty) {
+                printERROR('El archivo CSV está vacío');
+                return;
+              }
+    
+              // Procesar los headers (encabezados)
+              final headers = rows.first;
+              final mediaIdIndex = headers.indexWhere(
+                (header) => header.toString().toLowerCase() == 'mediaid'
+              );
+              final titleIndex = headers.indexWhere(
+                (header) => header.toString().toLowerCase() == 'title'
+              );
+              final artistsIndex = headers.indexWhere(
+                (header) => header.toString().toLowerCase() == 'artists'
+              );
+              final playlistNameIndex = headers.indexWhere(
+                (header) => header.toString().toLowerCase() == 'playlistname'
+              );
+    
+              // Verificar que existan todas las columnas necesarias
+              if (mediaIdIndex == -1 || titleIndex == -1 || 
+                  artistsIndex == -1 || playlistNameIndex == -1) {
+                  CustomSnackbar.show(
+                    context,
+                    'Faltan columnas requeridas en el CSV',
+                    Colors.red,
+                    Iconsax.warning_2_outline,
+                    duration: 3,
+                  );
+                printERROR('Faltan columnas requeridas en el CSV');
+                return;
+              }
+    
+              // Procesar filas y crear canciones
+              for (var row in rows.skip(1)) {
+                if (row.length > mediaIdIndex) {
+                  final song = Song(
+                    songId: row[mediaIdIndex].toString(),
+                    title: row[titleIndex].toString(),
+                    author: row[artistsIndex].toString(),
+                    thumbnailUrl: PipedSearchSongsMapper.getHighQualityThumbnail(row[mediaIdIndex].toString()),
+                    streamUrl: '',
+                    endUrl: '/watch?v=${row[mediaIdIndex].toString()}',
+                    duration: '',
+                  );
+                  songList.add(song);
+                  playlistName = row[playlistNameIndex].toString();
+                }
+              }
+  
+              if (songList.isEmpty) {
+                printERROR('No se encontraron canciones válidas en el CSV');
+                return;
+              }
+  
+              // Invertir el orden de las canciones
+              songList = songList.reversed.toList();
+  
+              // Crear y guardar la playlist
+              final playlist = Playlist(
+                title: playlistName,
+                author: '',
+                thumbnailUrl: defaultPoster,
+              );
+  
+              await ref.read(playlistProvider.notifier).addPlaylist(playlist);
+  
+              // Agregar todas las canciones a la playlist
+              for (final song in songList) {
+                await ref.read(playlistProvider.notifier).addSongToPlaylist(
+                  context, 
+                  playlist.id, 
+                  song,
+                  showNotifications: false,
+                  reloadPlaylists: false  // Evita recargas innecesarias
+                );
+              }
+  
+              // Recargar la lista una sola vez al finalizar
+              await ref.read(playlistProvider.notifier).loadPlaylists();
+  
+              // Mostrar una única notificación al finalizar
+              CustomSnackbar.show(
+                context,
+                'Playlist importada con éxito: ${songList.length} canciones agregadas',
+                Colors.green,
+                Iconsax.tick_circle_outline,
+                duration: 3,
+              );
+              
+            }
+          }
+        } else {
+          printERROR('No se seleccionó ningún archivo');
+        }
+      } catch (e) {
+        printERROR('Error al procesar el archivo: $e');
       }
-    } catch (e) {
-      printERROR('Error al procesar el archivo: $e');
     }
-  }
     
 
   @override
