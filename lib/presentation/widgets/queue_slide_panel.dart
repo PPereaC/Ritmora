@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
+import '../../config/utils/constants.dart';
 import '../providers/providers.dart';
 
 class QueueSlidePanel extends ConsumerStatefulWidget {
@@ -97,7 +98,7 @@ class QueueSlidePanelState extends ConsumerState<QueueSlidePanel> {
                           return Container(
                             color: Colors.grey[900],
                             child: Image.asset(
-                              'assets/images/default_poster.png',
+                              defaultPoster,
                               fit: BoxFit.cover,
                               width: 40,
                               height: 40,
