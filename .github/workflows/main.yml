@@ -49,21 +49,21 @@ jobs:
 
     - name: Upload APK
       if: matrix.os == 'ubuntu-latest'
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: android-apk
         path: build/app/outputs/flutter-apk/app-release.apk
 
     - name: Upload DEB
       if: matrix.os == 'ubuntu-latest'
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: linux-deb
         path: build/flutter_app.deb
 
     - name: Upload EXE
       if: matrix.os == 'windows-latest'
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: windows-exe
         path: build/windows/runner/Release/flutter_app.exe
