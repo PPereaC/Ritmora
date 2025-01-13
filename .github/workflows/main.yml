@@ -53,11 +53,11 @@ jobs:
             echo "TAG_EXISTS=false" >> $GITHUB_ENV
           fi
       - name: Modify Tag
-          if: env.TAG_EXISTS == 'true'
-          id: modify_tag
-          run: |
-            new_version="${{ env.VERSION }}-build-${{ github.run_number }}"
-            echo "VERSION=$new_version" >> $GITHUB_ENV
+        if: env.TAG_EXISTS == 'true'
+        id: modify_tag
+        run: |
+          new_version="${{ env.VERSION }}-build-${{ github.run_number }}"
+          echo "VERSION=$new_version" >> $GITHUB_ENV
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
