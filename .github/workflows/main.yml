@@ -1,69 +1,54 @@
-name: Flutter Build
+name: Flutter Multi-Platform Build
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    tags:
+      - "v*"
 
 jobs:
-  build:
+  build-android:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+      - name: Build APK
+        run: flutter build apk --release
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
 
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.24.4'
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+      - name: Build Linux .deb
+        run: |
+          flutter build linux --release
+          # Empaquetar en .deb manualmente si hace falta
+      - name: Upload .deb
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release.deb
+          path: path/to/app-release.deb
 
-    - name: Install dependencies
-      run: flutter pub get
-
-    - name: Build APK for Android
-      if: matrix.os == 'ubuntu-latest'
-      run: flutter build apk --release
-
-    - name: Build DEB for Linux
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libgtk-3-dev
-        flutter build linux --release
-        mkdir -p build/deb
-        cp -r build/linux/x64/release/bundle/* build/deb/
-        cd build/deb
-        dpkg-deb --build . ../flutter_app.deb
-
-    - name: Build EXE for Windows
-      if: matrix.os == 'windows-latest'
-      run: flutter build windows --release
-
-    - name: Upload APK
-      if: matrix.os == 'ubuntu-latest'
-      uses: actions/upload-artifact@v3
-      with:
-        name: android-apk
-        path: build/app/outputs/flutter-apk/app-release.apk
-
-    - name: Upload DEB
-      if: matrix.os == 'ubuntu-latest'
-      uses: actions/upload-artifact@v3
-      with:
-        name: linux-deb
-        path: build/flutter_app.deb
-
-    - name: Upload EXE
-      if: matrix.os == 'windows-latest'
-      uses: actions/upload-artifact@v3
-      with:
-        name: windows-exe
-        path: build/windows/runner/Release/flutter_app.exe
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+      - name: Build Windows .exe
+        run: flutter build windows --release
+      - name: Upload .exe
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release.exe
+          path: build\windows\runner\Release\appname.exe
