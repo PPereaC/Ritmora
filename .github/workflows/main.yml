@@ -37,10 +37,13 @@ jobs:
           path: |
             build/app/outputs/flutter-apk/app-release.apk
             build/app/outputs/bundle/release/app-release.aab
+
       - name: Extract version from pubspec.yaml
         id: extract_version
-        version=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
-        echo "VERSION=$version" >> $GITHUB_ENV
+        run: |
+          version=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
+          echo "VERSION=$version" >> $GITHUB_ENV
+
       - name: Check if Tag Exists
         id: check_tag
         run: |
