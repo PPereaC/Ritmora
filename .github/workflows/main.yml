@@ -24,7 +24,7 @@ jobs:
         with:
           flutter-version: '3.24.4'
           channel: 'stable'
-      - mame: Install Dependencies
+      - name: Install Dependencies
         run: flutter pub get
       - name: Build APK
         run: flutter build apk --release
