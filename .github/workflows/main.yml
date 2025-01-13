@@ -20,10 +20,10 @@ jobs:
           distribution: 'oracle'
           java-version: '17'
       - name: Set Up Flutter
-          uses: subosito/flutter-action@v2
-          with:
-            flutter-version: '3.24.4'
-            channel: 'stable'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.4'
+          channel: 'stable'
       - mame: Install Dependencies
         run: flutter pub get
       - name: Build APK
