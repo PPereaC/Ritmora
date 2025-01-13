@@ -88,57 +88,56 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
     return Scaffold(
       backgroundColor: colors.surface,
       extendBodyBehindAppBar: true,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: ValueListenableBuilder(
-          valueListenable: _opacity,
-          builder: (context, double opacity, _) {
-            return AppBar(
-              elevation: 0,
-              backgroundColor: colors.secondary.withOpacity(opacity),
-              title: Opacity(
-                opacity: opacity,
-                child: Text(
-                  isLocalPlaylist ? widget.playlist?.title ?? '' : widget.playlist?.title ?? '',
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ),
-              iconTheme: const IconThemeData(color: Colors.white),
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                onPressed: () {
-                  if (widget.isLocalPlaylist == '0') {
-                    context.go('/library');
-                  } else {
-                    // ref.read(playlistSongsProvider(widget.playlistID)).songs = [];
-                    context.go('/');
-                  }
-                },
-              ),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 5.0),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Iconsax.setting_2_outline, color: Colors.white),
-                        onPressed: () {
-                          // Acción de más opciones
-                        },
+      appBar: isTabletOrDesktop
+          ? null
+          : PreferredSize(
+              preferredSize: const Size.fromHeight(kToolbarHeight),
+              child: ValueListenableBuilder(
+                valueListenable: _opacity,
+                builder: (context, double opacity, _) {
+                  return AppBar(
+                    elevation: 0,
+                    backgroundColor: colors.secondary.withOpacity(opacity),
+                    title: Opacity(
+                      opacity: opacity,
+                      child: Text(
+                        widget.playlist?.title ?? '',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    iconTheme: const IconThemeData(color: Colors.white),
+                    leading: IconButton(
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                      onPressed: () {
+                        if (widget.isLocalPlaylist == '0') {
+                          context.go('/library');
+                        } else {
+                          context.go('/');
+                        }
+                      },
+                    ),
+                    actions: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 5.0),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Iconsax.setting_2_outline, color: Colors.white),
+                              onPressed: () {
+                                // Acción de más opciones
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     ],
-                  ),
-                ),
-              ],
-            );
-          }
-        ),
-      ),
+                  );
+                },
+              ),
+            ),
       body: Stack(
         children: [
-
           const GradientWidget(),
-
           FutureBuilder<List<Song>>(
             future: getPlaylistSongs(int.parse(widget.playlistID)),
             builder: (context, snapshot) {
@@ -147,40 +146,61 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                   child: CircularProgressIndicator(),
                 );
               }
-
+    
               if (snapshot.hasError) {
                 return Center(
                   child: Text('Error: ${snapshot.error}'),
                 );
               }
-
+    
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return const Center(
                   child: Text('No hay canciones en esta playlist'),
                 );
               }
-
+    
               final songs = snapshot.data!;
-              
+    
               return CustomScrollView(
                 controller: _scrollController,
                 slivers: [
                   SliverToBoxAdapter(
-                    child: isTabletOrDesktop
-                      ? _TabletDesktopPlaylistHeader(
-                          title: widget.playlist?.title ?? '',
-                          thumbnail: widget.playlist?.thumbnailUrl ?? '',
-                          playlistID: int.parse(widget.playlistID),
-                          isLocalPlaylist: widget.isLocalPlaylist == '0',
-                          songs: songs,
-                        )
-                      : _MobilePlaylistHeader(
-                          title: widget.playlist?.title ?? '',
-                          thumbnail: widget.playlist?.thumbnailUrl ?? '',
-                          playlistID: int.parse(widget.playlistID),
-                          isLocalPlaylist: widget.isLocalPlaylist == '0',
-                          songs: songs,
-                        ),
+                    child: Column(
+                      children: [
+                        if (isTabletOrDesktop)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 10, left: 5),
+                            child: Align(
+                              alignment: Alignment.topLeft,
+                              child: IconButton(
+                                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+                                onPressed: () {
+                                  if (widget.isLocalPlaylist == '0') {
+                                    context.go('/library');
+                                  } else {
+                                    context.go('/');
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        isTabletOrDesktop
+                            ? _TabletDesktopPlaylistHeader(
+                                title: widget.playlist?.title ?? '',
+                                thumbnail: widget.playlist?.thumbnailUrl ?? '',
+                                playlistID: int.parse(widget.playlistID),
+                                isLocalPlaylist: widget.isLocalPlaylist == '0',
+                                songs: songs,
+                              )
+                            : _MobilePlaylistHeader(
+                                title: widget.playlist?.title ?? '',
+                                thumbnail: widget.playlist?.thumbnailUrl ?? '',
+                                playlistID: int.parse(widget.playlistID),
+                                isLocalPlaylist: widget.isLocalPlaylist == '0',
+                                songs: songs,
+                              ),
+                      ],
+                    ),
                   ),
                   _PlaylistSongsList(
                     songs: songs,
@@ -190,9 +210,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
               );
             },
           ),
-
-        ]
-        
+        ],
       ),
     );
   }
@@ -556,7 +574,7 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(top: 60, bottom: 16),
+      padding: const EdgeInsets.only(top: 25, bottom: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
