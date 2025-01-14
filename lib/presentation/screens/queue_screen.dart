@@ -19,8 +19,6 @@ class QueueScreenState extends ConsumerState<QueueScreen> {
   @override
   Widget build(BuildContext context) {
     final songPlayer = ref.read(songPlayerProvider);
-    final isPlaying = ref.watch(songPlayerProvider.select((player) => player.isPlaying));
-    List<Song> queue = ref.watch(songPlayerProvider).queue;
     final currentSong = ref.watch(songPlayerProvider).currentSong;
     final textStyle = Theme.of(context).textTheme;
 
@@ -59,7 +57,7 @@ class QueueScreenState extends ConsumerState<QueueScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                 child: Text(
                   'Sonando',
-                  style: textStyle.titleLarge
+                  style: textStyle.titleLarge!.copyWith(color: Colors.white)
                 ),
               ),
 
@@ -155,99 +153,97 @@ class QueueScreenState extends ConsumerState<QueueScreen> {
               alignment: Alignment.centerLeft,
               child: Text(
                 'A continuación en la cola',
-                style: textStyle.titleLarge
+                style: textStyle.titleLarge!.copyWith(color: Colors.white)
               ),
             ),
           ),
 
           // Lista de canciones en cola
           Expanded(
-            child: ReorderableListView.builder(
-              padding: EdgeInsets.zero,
-              itemCount: queue.length,
-              onReorder: (oldIndex, newIndex) {
-                setState(() {
-                  songPlayer.reorderQueue(oldIndex, newIndex);
-                });
-              },
-              itemBuilder: (context, index) {
-                final song = queue[index];
-                final isSelected = _selectedSongs.contains(index);
-          
-                return ListTile(
-                  key: ValueKey(song.songId),
-                  contentPadding: const EdgeInsets.only(right: 8.0),
-                  tileColor: Colors.black,
-                  leading: IconButton(
-                    icon: Icon(
-                      isSelected ? Iconsax.tick_circle_outline : Icons.circle_outlined,
-                      color: isSelected ? Colors.white : Colors.grey[600],
-                      size: 30,
+            child: StreamBuilder<List<Song>>(
+              stream: songPlayer.queueStream.distinct(),
+              initialData: songPlayer.queue,
+              builder: (context, snapshot) {
+                final queue = List<Song>.from(snapshot.data ?? []);
+                
+                if (queue.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'No hay canciones en la cola',
+                      style: TextStyle(color: Colors.white),
                     ),
-                    onPressed: () {
+                  );
+                }
+
+                return ReorderableListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: queue.length,
+                  onReorder: (oldIndex, newIndex) {
+                    if (oldIndex < queue.length && newIndex <= queue.length) {
+                      songPlayer.reorderQueue(oldIndex, newIndex);
                       setState(() {
-                        if (isSelected) {
-                          _selectedSongs.remove(index);
-                        } else {
-                          _selectedSongs.add(index);
+                        // Actualizar selecciones
+                        final selectedIndices = _selectedSongs.toList();
+                        _selectedSongs.clear();
+                        for (var index in selectedIndices) {
+                          if (index == oldIndex) {
+                            _selectedSongs.add(newIndex > oldIndex ? newIndex - 1 : newIndex);
+                          } else if (index > oldIndex && index <= newIndex) {
+                            _selectedSongs.add(index - 1);
+                          } else if (index < oldIndex && index >= newIndex) {
+                            _selectedSongs.add(index + 1);
+                          } else {
+                            _selectedSongs.add(index);
+                          }
                         }
                       });
-                    },
-                  ),
-                  title: Text(
-                    song.title,
-                    style: const TextStyle(color: Colors.white),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(
-                    song.author,
-                    style: TextStyle(color: Colors.grey[600]),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing: Icon(Icons.drag_handle, color: Colors.grey[600]),
+                    }
+                  },
+                  itemBuilder: (context, index) {
+                    final song = queue[index];
+                    final isSelected = _selectedSongs.contains(index);
+        
+                    return ListTile(
+                      key: ValueKey('${song.songId}_$index'),
+                      contentPadding: const EdgeInsets.only(right: 8.0),
+                      tileColor: Colors.black,
+                      leading: IconButton(
+                        icon: Icon(
+                          isSelected ? Iconsax.tick_circle_outline : Icons.circle_outlined,
+                          color: isSelected ? Colors.white : Colors.grey[600],
+                          size: 30,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            if (isSelected) {
+                              _selectedSongs.remove(index);
+                            } else {
+                              _selectedSongs.add(index);
+                            }
+                          });
+                        },
+                      ),
+                      title: Text(
+                        song.title,
+                        style: const TextStyle(color: Colors.white),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        song.author,
+                        style: TextStyle(color: Colors.grey[600]),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: Icon(Icons.drag_handle, color: Colors.grey[600]),
+                    );
+                  },
                 );
               },
             ),
           ),
-
-          // Controles de reproducción
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildControlButton(
-                  Icons.skip_previous,
-                  () => songPlayer.playPrevious(),
-                ),
-                const SizedBox(width: 20),
-                _buildControlButton(
-                  isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                  () => songPlayer.togglePlay(),
-                  size: 50,
-                ),
-                const SizedBox(width: 20),
-                _buildControlButton(
-                  Icons.skip_next,
-                  () => songPlayer.playNext(),
-                ),
-              ],
-            ),
-          ),
-
         ],
       ),
     );
   }
-
-  Widget _buildControlButton(IconData icon, VoidCallback onPressed, {double size = 30}) {
-    return IconButton(
-      iconSize: size,
-      icon: Icon(icon, color: Colors.white),
-      onPressed: onPressed,
-    );
-  }
-
 }
