@@ -302,6 +302,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                           context.push('/queue');
                                         }
                                       },
+                                      onTap: () => context.push('/queue'),
                                       child: ClipRRect(
                                         borderRadius: const BorderRadius.only(
                                           topLeft: Radius.circular(20),
@@ -325,7 +326,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                               const SizedBox(height: 10),
                                               const Center(
                                                 child: Text(
-                                                  'Desliza hacia arriba para abrir la cola',
+                                                  'Desliza hacia arriba o pulsa para abrir la cola',
                                                   style: TextStyle(color: Colors.white, fontSize: 15),
                                                 ),
                                               ),
