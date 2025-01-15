@@ -12,7 +12,6 @@ import '../../config/utils/constants.dart';
 import '../../domain/entities/song.dart';
 
 class SongListTile extends ConsumerWidget {
-
   final Song song;
   final Function onSongOptions;
   final bool isPlaylist;
@@ -28,100 +27,80 @@ class SongListTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final textStyles = Theme.of(context).textTheme;
 
-    return InkWell(
-      onTap: () async {
-        bool isPlayable = true;
-        FocusScope.of(context).unfocus();
-        
-        await getStreamUrlInBackground(song.songId).then((url) {
-          if (url == null) {
-            CustomSnackbar.show(
-              context,
-              'No es posible reproducir esta canción',
-              Colors.red,
-              Iconsax.warning_2_outline,
-              duration: 3,
-            );
-            isPlayable = false;
-            return;
-          }
-          song.streamUrl = url;
-        });
-        
-        if(isPlayable) {
-          ref.read(songPlayerProvider).playSong(song);
-        }
+    return Dismissible(
+      key: Key(song.songId),
+      direction: DismissDirection.startToEnd,
+      dismissThresholds: const { DismissDirection.startToEnd: 0.05 },
+      background: Container(
+        width: 50,
+        color: Colors.green,
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: const Icon(Icons.playlist_add, color: Colors.white),
+      ),
+      confirmDismiss: (direction) async {
+        ref.read(songPlayerProvider).addToQueue(song);
+        return false;
       },
-      onLongPress: () => onSongOptions(),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
-        child: Row(
-          children: [
-            // Thumbnail
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: 48, // Ancho fijo para todas las pantallas
-                maxHeight: isVideo ? 45 : 60, // Alto fijo ajustado para videos
-              ),
-              child: AspectRatio(
-                aspectRatio: isVideo ? 16/12 : 1,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: isPlaylist // Cachear las carátulas de las canciones solo si es una playlist
-                  ? CachedNetworkImage(
-                    key: ValueKey(song.thumbnailUrl),
-                    imageUrl: song.thumbnailUrl,
-                    fit: isVideo ? BoxFit.contain : BoxFit.cover,
-                    memCacheWidth: 300,
-                    maxWidthDiskCache: 300,
-                    useOldImageOnUrlChange: true,
-                    placeholderFadeInDuration: const Duration(milliseconds: 300),
-                    fadeOutDuration: const Duration(milliseconds: 300),
-                    placeholder: (context, url) => Center(
-                      child: Image.asset(
-                        defaultLoader,
-                        width: double.infinity,
-                        height: double.infinity,
-                        fit: BoxFit.cover,
+      child: InkWell(
+        onTap: () async {
+          bool isPlayable = true;
+          FocusScope.of(context).unfocus();
+
+          await getStreamUrlInBackground(song.songId).then((url) {
+            if (url == null) {
+              CustomSnackbar.show(
+                context,
+                'No es posible reproducir esta canción',
+                Colors.red,
+                Iconsax.warning_2_outline,
+                duration: 3,
+              );
+              isPlayable = false;
+              return;
+            }
+            song.streamUrl = url;
+          });
+
+          if (isPlayable) {
+            ref.read(songPlayerProvider).playSong(song);
+          }
+        },
+        onLongPress: () => onSongOptions(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
+          child: Row(
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: 48,
+                  maxHeight: isVideo ? 45 : 60,
+                ),
+                child: AspectRatio(
+                  aspectRatio: isVideo ? 16/12 : 1,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: isPlaylist
+                    ? CachedNetworkImage(
+                      key: ValueKey(song.thumbnailUrl),
+                      imageUrl: song.thumbnailUrl,
+                      fit: isVideo ? BoxFit.contain : BoxFit.cover,
+                      memCacheWidth: 300,
+                      maxWidthDiskCache: 300,
+                      useOldImageOnUrlChange: true,
+                      placeholderFadeInDuration: const Duration(milliseconds: 300),
+                      fadeOutDuration: const Duration(milliseconds: 300),
+                      placeholder: (context, url) => Center(
+                        child: Image.asset(
+                          defaultLoader,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: Colors.grey[900],
-                      child: Image.asset(
-                        defaultPoster,
-                        fit: isVideo ? BoxFit.contain : BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                      )
-                    ),
-                    maxHeightDiskCache: 300,
-                    // Timeout después de 10 segundos
-                    httpHeaders: const {'Cache-Control': 'max-age=7200'},
-                  )
-                  : Image.network(
-                    song.thumbnailUrl,
-                    fit: isVideo ? BoxFit.contain : BoxFit.cover,
-                    width: double.infinity,
-                    height: double.infinity,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) {
-                        return child;
-                      } else {
-                        return Center(
-                          child: Image.asset(
-                            defaultLoader,
-                            width: double.infinity,
-                            height: double.infinity,
-                            fit: BoxFit.cover,
-                          ),
-                        );
-                      }
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
+                      errorWidget: (context, url, error) => Container(
                         color: Colors.grey[900],
                         child: Image.asset(
                           defaultPoster,
@@ -129,57 +108,88 @@ class SongListTile extends ConsumerWidget {
                           width: double.infinity,
                           height: double.infinity,
                         )
-                      );
-                    },
-                  )
+                      ),
+                      maxHeightDiskCache: 300,
+                      httpHeaders: const {'Cache-Control': 'max-age=7200'},
+                    )
+                    : Image.network(
+                      song.thumbnailUrl,
+                      fit: isVideo ? BoxFit.contain : BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) {
+                          return child;
+                        } else {
+                          return Center(
+                            child: Image.asset(
+                              defaultLoader,
+                              width: double.infinity,
+                              height: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
+                          );
+                        }
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[900],
+                          child: Image.asset(
+                            defaultPoster,
+                            fit: isVideo ? BoxFit.contain : BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                          )
+                        );
+                      },
+                    )
+                  ),
                 ),
               ),
-            ),
-            
-            const SizedBox(width: 12),
-            
-            // Título y autor
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    song.title,
-                    style: textStyles.titleMedium!.copyWith(
-                      color: Colors.white
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    song.author,
-                    style: textStyles.bodyLarge!.copyWith(
-                      color: Colors.grey
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
 
-            // Botón de opciones
-            InkWell(
-              onTap: () => onSongOptions(),
-              child: Padding(
-                padding: const EdgeInsets.only(left: 25),
-                child: Container(
-                  alignment: Alignment.centerRight,
-                  child: const Icon(
-                    Iconsax.more_square_outline,
-                    size: 23,
-                    color: Colors.white,
+              const SizedBox(width: 12),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      song.title,
+                      style: textStyles.titleMedium!.copyWith(
+                        color: Colors.white
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      song.author,
+                      style: textStyles.bodyLarge!.copyWith(
+                        color: Colors.grey
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+
+              InkWell(
+                onTap: () => onSongOptions(),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 25),
+                  child: Container(
+                    alignment: Alignment.centerRight,
+                    child: const Icon(
+                      Iconsax.more_circle_outline,
+                      size: 23,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
