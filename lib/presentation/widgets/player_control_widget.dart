@@ -355,7 +355,7 @@ class _MobilePlayerControl extends StatelessWidget {
                     context.pushNamed('/full-player');
                   }
                 },
-                onLongPress: () => context.push('/full-player'),
+                onLongPress: () => context.push('/queue'),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
                   child: Row(
