@@ -302,7 +302,19 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                           context.push('/queue');
                                         }
                                       },
-                                      onTap: () => context.push('/queue'),
+                                      onTap: () {
+                                        showModalBottomSheet(
+                                          context: context,
+                                          isScrollControlled: true,
+                                          backgroundColor: Colors.transparent,
+                                          builder: (context) => Theme(
+                                            data: Theme.of(context).copyWith(
+                                              colorScheme: colors,
+                                            ),
+                                            child: const QueueBottomSheetBar()
+                                          ),
+                                        );
+                                      },
                                       child: ClipRRect(
                                         borderRadius: const BorderRadius.only(
                                           topLeft: Radius.circular(20),
