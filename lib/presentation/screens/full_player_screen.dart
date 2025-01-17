@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:marquee/marquee.dart';
 
 import '../../config/utils/constants.dart';
 import '../../domain/entities/song.dart';
@@ -39,7 +40,6 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
             builder: (context, snapshot) {
               final currentSong = snapshot.data ?? playerService.currentSong;
               if (currentSong == null) return const SizedBox.shrink();
-              // final nextSongs = playerService.getNextSongs(3);
           
               return GestureDetector(
                 onVerticalDragStart: (_) {
@@ -76,6 +76,14 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                   size: 28
                                 ),
                                 onPressed: () => context.pop(),
+                              ),
+                              const Text(
+                                'FinMusic',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               IconButton(
                                 icon: const Icon(Iconsax.more_outline, 
@@ -151,16 +159,67 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                                 child: Column(
                                   children: [
-                                    Text(
-                                      currentSong.title,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 0.2,
+                                    SizedBox(
+                                      height: 35,
+                                      child: LayoutBuilder(
+                                        builder: (context, constraints) {
+                                          // Crear un TextSpan para medir el ancho del texto
+                                          final textSpan = TextSpan(
+                                            text: currentSong.title,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 0.2,
+                                            ),
+                                          );
+                                    
+                                          // Usar TextPainter para calcular el ancho del texto
+                                          final textPainter = TextPainter(
+                                            text: textSpan,
+                                            maxLines: 1,
+                                            textDirection: TextDirection.ltr,
+                                          )..layout(maxWidth: constraints.maxWidth);
+                                    
+                                          // Verificar si el texto excede el ancho disponible
+                                          final isOverflow = textPainter.didExceedMaxLines;
+                                    
+                                          if (isOverflow) {
+                                            // Si excede, usar Marquee
+                                            return Marquee(
+                                              text: currentSong.title,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: 0.2,
+                                              ),
+                                              scrollAxis: Axis.horizontal,
+                                              blankSpace: 20.0,
+                                              velocity: 30.0,
+                                              pauseAfterRound: const Duration(seconds: 3),
+                                              startPadding: 10.0,
+                                              accelerationDuration: const Duration(seconds: 1),
+                                              accelerationCurve: Curves.linear,
+                                              decelerationDuration: const Duration(milliseconds: 500),
+                                              decelerationCurve: Curves.easeOut,
+                                            );
+                                          } else {
+                                            // Si no, mostrar texto estático
+                                            return Text(
+                                              currentSong.title,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: 0.2,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            );
+                                          }
+                                        },
                                       ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 2,
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
@@ -177,7 +236,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                 ),
                               ),
 
-                              SizedBox(height: screenHeight * 0.02),
+                              SizedBox(height: screenHeight * 0.01),
                   
                               // Barra de progreso
                               StreamBuilder<Duration>(
@@ -244,7 +303,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Iconsax.radio_outline),
+                                    icon: const Icon(Iconsax.shuffle_outline),
                                     iconSize: 30,
                                     color: Colors.white,
                                     onPressed: () {},
@@ -292,17 +351,31 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
           
                               // Barra de opciones
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 3),
-                                child: Column(
+                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                   children: [
-                                    GestureDetector(
-                                      onVerticalDragEnd: (details) {
-                                        // Si el usuario desliza hacia arriba
-                                        if (details.primaryVelocity! < 0) { 
-                                          context.push('/queue');
-                                        }
+                                    IconButton(
+                                      icon: const Icon(Iconsax.message_square_outline),
+                                      iconSize: 30,
+                                      color: Colors.white,
+                                      onPressed: () {
+                                        
                                       },
-                                      onTap: () {
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Iconsax.audio_square_outline),
+                                      iconSize: 30,
+                                      color: Colors.white,
+                                      onPressed: () {
+                                        
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Iconsax.music_square_outline),
+                                      iconSize: 30,
+                                      color: Colors.white,
+                                      onPressed: () {
                                         showModalBottomSheet(
                                           context: context,
                                           isScrollControlled: true,
@@ -315,41 +388,10 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                           ),
                                         );
                                       },
-                                      child: ClipRRect(
-                                        borderRadius: const BorderRadius.only(
-                                          topLeft: Radius.circular(20),
-                                          topRight: Radius.circular(20),
-                                        ),
-                                        child: Container(
-                                          color: colors.secondary,
-                                          height: 60,
-                                          width: double.infinity,
-                                          child: Column(
-                                            children: [
-                                              Container(
-                                                margin: const EdgeInsets.only(top: 8),
-                                                width: 40,
-                                                height: 4,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius: BorderRadius.circular(2),
-                                                ),
-                                              ),
-                                              const SizedBox(height: 10),
-                                              const Center(
-                                                child: Text(
-                                                  'Desliza hacia arriba o pulsa para abrir la cola',
-                                                  style: TextStyle(color: Colors.white, fontSize: 15),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
                                     ),
                                   ],
                                 ),
-                              )
+                              ),
                               
                             ],
                           ),
