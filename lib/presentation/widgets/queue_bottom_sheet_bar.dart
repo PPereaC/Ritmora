@@ -5,6 +5,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:icons_plus/icons_plus.dart';
 
 import '../../config/utils/constants.dart';
+import '../../config/utils/pretty_print.dart';
 import '../../domain/entities/song.dart';
 
 class QueueBottomSheetBar extends ConsumerStatefulWidget {
@@ -17,6 +18,7 @@ class QueueBottomSheetBar extends ConsumerStatefulWidget {
 class QueueBottomSheetBarState extends ConsumerState<QueueBottomSheetBar> {
 
   final Set<int> _selectedSongs = {};
+  bool _isReordering = false;
 
   @override
   Widget build(BuildContext context) {
@@ -237,79 +239,88 @@ class QueueBottomSheetBarState extends ConsumerState<QueueBottomSheetBar> {
 
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: queue.length,
-                      itemBuilder: (context, index) {
-                        final song = queue[index];
-                              
-                        return ListTile(
-                          key: ValueKey('${song.songId}_$index'),
-                          contentPadding: const EdgeInsets.only(right: 8.0),
-                          tileColor: Colors.black,
-                          leading: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                                const BoxShadow(
-                                  color: Colors.white12,
-                                  blurRadius: 3,
-                                  offset: Offset(0, -1),
-                                ),
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Container(
+                    child: Column(
+                      children: [
+                        ReorderableListView.builder(
+                          padding: EdgeInsets.zero,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: queue.length,
+                          onReorder: (oldIndex, newIndex) async {
+                            printINFO('Reordering queue: $oldIndex -> $newIndex');
+                            songPlayer.reorderQueue(oldIndex, newIndex);
+                          },
+                          itemBuilder: (context, index) {
+                            final song = queue[index];
+                                  
+                            return ListTile(
+                              key: ValueKey('${song.songId}_$index'),
+                              contentPadding: const EdgeInsets.only(right: 8.0),
+                              tileColor: Colors.black,
+                              leading: Container(
                                 decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.white12,
-                                    width: 0.5,
-                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.3),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                    const BoxShadow(
+                                      color: Colors.white12,
+                                      blurRadius: 3,
+                                      offset: Offset(0, -1),
+                                    ),
+                                  ],
                                 ),
-                                child: Image.network(
-                                  song.thumbnailUrl,
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => Container(
-                                    color: Colors.grey[900],
-                                    child: Image.asset(
-                                      defaultPoster,
-                                      fit: BoxFit.cover,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.white12,
+                                        width: 0.5,
+                                      ),
+                                    ),
+                                    child: Image.network(
+                                      song.thumbnailUrl,
                                       width: 50,
                                       height: 50,
-                                    )
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => Container(
+                                        color: Colors.grey[900],
+                                        child: Image.asset(
+                                          defaultPoster,
+                                          fit: BoxFit.cover,
+                                          width: 50,
+                                          height: 50,
+                                        )
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ),
-                          title: Text(
-                            song.title,
-                            style: const TextStyle(color: Colors.white, fontSize: 16),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          subtitle: Text(
-                            song.author,
-                            style: const TextStyle(color: Colors.grey, fontSize: 14),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          trailing: const Icon(
-                            Iconsax.menu_1_outline,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        );
-                      },
+                              title: Text(
+                                song.title,
+                                style: const TextStyle(color: Colors.white, fontSize: 16),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              subtitle: Text(
+                                song.author,
+                                style: const TextStyle(color: Colors.grey, fontSize: 14),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              trailing: const Icon(
+                                Iconsax.menu_1_outline,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            );
+                          }
+                        )
+                      ]
                     ),
                   );
                 },
