@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:finmusic/presentation/providers/playlist/playlist_provider.dart';
 import 'package:finmusic/presentation/providers/providers.dart';
 import 'package:flutter/material.dart';
@@ -539,35 +540,48 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
     final colors = Theme.of(context).colorScheme;
 
     Future<void> updateThumbnail() async {
-      bool isGranted = await PermissionsHelper.storagePermission();
-      if (!isGranted) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Permisos de almacenamiento'),
-            content: const Text('No tienes permisos de almacenamiento. Por favor, actívalos manualmente en la configuración de tu dispositivo.'),
-            actions: [
-              TextButton(
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  bool isGranted = await PermissionsHelper.storagePermission();
-                  if (isGranted) {
-                    final image = await ImagePickerWidget.pickImage(context);
-                    if (image != null) {
-                      ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, image.path);
-                      context.push('/library');
+      if(Platform.isAndroid) {
+        bool isGranted = await PermissionsHelper.storagePermission();
+        if (!isGranted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Permisos de almacenamiento'),
+              content: const Text('No tienes permisos de almacenamiento. Por favor, actívalos manualmente en la configuración de tu dispositivo.'),
+              actions: [
+                TextButton(
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                    bool isGranted = await PermissionsHelper.storagePermission();
+                    if (isGranted) {
+                      final image = await ImagePickerWidget.pickImage(context);
+                      if (image != null) {
+                        ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, image.path);
+                        context.push('/library');
+                      }
                     }
-                  }
-                },
-                child: const Text('Aceptar'),
-              ),
-            ],
-          ),
-        );
+                  },
+                  child: const Text('Aceptar'),
+                ),
+              ],
+            ),
+          );
+        } else {
+          final image = await ImagePickerWidget.pickImage(context);
+          if (image != null) {
+            ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, image.path);
+            context.push('/library');
+          }
+        }
       } else {
-        final image = await ImagePickerWidget.pickImage(context);
-        if (image != null) {
-          ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, image.path);
+        FilePickerResult? result = await FilePicker.platform.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['png', 'jpg', 'jpeg'],
+          allowMultiple: false,
+          dialogTitle: 'Seleccionar imagen',
+        );
+        if (result != null && result!.files.single.path != null) {
+          ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, result.files.single.path!);
           context.push('/library');
         }
       }
@@ -580,30 +594,35 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: SizedBox(
-              width: 260,
-              height: 260,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20.0),
-                child: Image(
-                  image: isLocalPlaylist 
-                    ? (thumbnail.startsWith('assets/')
-                        ? AssetImage(thumbnail)
-                        : FileImage(File(thumbnail)) as ImageProvider)
-                    : NetworkImage(thumbnail) as ImageProvider,
-                  height: 260,
-                  width: 260,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
+            child: InkWell(
+              onLongPress: () {
+                updateThumbnail();
+              },
+              child: SizedBox(
+                width: 260,
+                height: 260,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20.0),
+                  child: Image(
+                    image: isLocalPlaylist 
+                      ? (thumbnail.startsWith('assets/')
+                          ? AssetImage(thumbnail)
+                          : FileImage(File(thumbnail)) as ImageProvider)
+                      : NetworkImage(thumbnail) as ImageProvider,
                     height: 260,
                     width: 260,
-                    color: Colors.grey[900],
-                    child: Image.asset(
-                      defaultPoster,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                    )
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 260,
+                      width: 260,
+                      color: Colors.grey[900],
+                      child: Image.asset(
+                        defaultPoster,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                      )
+                    ),
                   ),
                 ),
               ),
