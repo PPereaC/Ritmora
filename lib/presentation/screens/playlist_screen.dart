@@ -83,7 +83,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
   Widget build(BuildContext context) {
 
     final colors = Theme.of(context).colorScheme;
-    bool isLocalPlaylist = widget.isLocalPlaylist == '0';
+    // bool isLocalPlaylist = widget.isLocalPlaylist == '0';
     final bool isTabletOrDesktop = Responsive.isTabletOrDesktop(context);
 
     return Scaffold(
@@ -580,7 +580,7 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
           allowMultiple: false,
           dialogTitle: 'Seleccionar imagen',
         );
-        if (result != null && result!.files.single.path != null) {
+        if (result != null && result.files.single.path != null) {
           ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, result.files.single.path!);
           context.push('/library');
         }
