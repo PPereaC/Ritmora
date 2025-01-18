@@ -317,19 +317,11 @@ class JustAudioService extends BasePlayerService {
   @override
   void reorderQueue(int oldIndex, int newIndex) {
     if (oldIndex < 0 || oldIndex >= _queue.length) return;
-    
-    // Ajustar el índice cuando se mueve hacia abajo
-    if (newIndex > oldIndex) newIndex--;
-    
-    // Mover en la cola
+    if (newIndex < 0 || newIndex >= _queue.length) return;
+
     final item = _queue.removeAt(oldIndex);
     _queue.insert(newIndex, item);
-
-    // Sincronizar con el playlist
-    _playlist.move(oldIndex, newIndex).then((_) {
-      // Notificar cambios con una copia de la lista
-      _queueController.add(List.from(_queue));
-    });
+    _queueController.add(_queue);
   }
 
   // Reproducir siguiente canción

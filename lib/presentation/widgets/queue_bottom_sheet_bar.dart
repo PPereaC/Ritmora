@@ -15,20 +15,6 @@ class QueueBottomSheetBar extends ConsumerStatefulWidget {
 }
 
 class QueueBottomSheetBarState extends ConsumerState<QueueBottomSheetBar> {
-
-  final Set<int> _selectedSongs = {};
-
-  void _removeSelectedSongs() {
-    final songPlayer = ref.read(songPlayerProvider);
-    final indices = _selectedSongs.toList()..sort((a, b) => b.compareTo(a));
-    for (final index in indices) {
-      songPlayer.removeFromQueue(index);
-    }
-    setState(() {
-      _selectedSongs.clear();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -244,117 +230,143 @@ class QueueBottomSheetBarState extends ConsumerState<QueueBottomSheetBar> {
                       
                       return Padding(
                         padding: const EdgeInsets.only(left: 12),
-                        child: Column(
-                          children: [
-                            ListView.builder(
-                              padding: EdgeInsets.zero,
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: queue.length,
-                              itemBuilder: (context, index) {
-                                final song = queue[index];
-                                final isSelected = _selectedSongs.contains(index);
-                                      
-                                return ListTile(
-                                  key: ValueKey('${song.songId}_$index'),
-                                  contentPadding: const EdgeInsets.only(right: 8.0),
-                                  tileColor: Colors.black,
-                                  leading: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(8),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withOpacity(0.3),
-                                              blurRadius: 4,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                            const BoxShadow(
+                        child: ReorderableListView.builder(
+                          padding: EdgeInsets.zero,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: queue.length,
+                          onReorder: (oldIndex, newIndex) {
+                            setState(() {
+                              if (newIndex > oldIndex) {
+                                newIndex -= 1;
+                              }
+                              final Song movedSong = queue.removeAt(oldIndex);
+                              queue.insert(newIndex, movedSong);
+                              songPlayer.reorderQueue(oldIndex, newIndex);
+                            });
+                          },
+                          itemBuilder: (context, index) {
+                            final song = queue[index];
+                            
+                            return Dismissible(
+                              key: Key(song.songId),
+                              direction: DismissDirection.startToEnd,
+                              dismissThresholds: const { DismissDirection.startToEnd: 0.05 },
+                              background: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  width: 50,
+                                  color: Colors.red,
+                                  alignment: Alignment.centerLeft,
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  child: const Padding(
+                                    padding: EdgeInsets.only(left: 5),
+                                    child: Icon(Iconsax.trash_outline, color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                              confirmDismiss: (direction) async {
+                                ref.read(songPlayerProvider).removeFromQueue(index);
+                                setState(() {}); // Actualizar la lista (rebuild)
+                                return false;
+                              },
+                              child: ListTile(
+                                key: ValueKey('${song.songId}_$index'),
+                                contentPadding: const EdgeInsets.only(right: 8.0),
+                                tileColor: Colors.black,
+                                leading: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.3),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                          const BoxShadow(
+                                            color: Colors.white12,
+                                            blurRadius: 3,
+                                            offset: Offset(0, -1),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
                                               color: Colors.white12,
-                                              blurRadius: 3,
-                                              offset: Offset(0, -1),
+                                              width: 0.5,
                                             ),
-                                          ],
-                                        ),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(8),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              border: Border.all(
-                                                color: Colors.white12,
-                                                width: 0.5,
-                                              ),
-                                            ),
-                                            child: Image.network(
-                                              song.thumbnailUrl,
-                                              width: 50,
-                                              height: 50,
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (context, error, stackTrace) => Container(
-                                                color: Colors.grey[900],
-                                                child: Image.asset(
-                                                  defaultPoster,
-                                                  fit: BoxFit.cover,
-                                                  width: 50,
-                                                  height: 50,
-                                                )
-                                              ),
+                                          ),
+                                          child: Image.network(
+                                            song.thumbnailUrl,
+                                            width: 50,
+                                            height: 50,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) => Container(
+                                              color: Colors.grey[900],
+                                              child: Image.asset(
+                                                defaultPoster,
+                                                fit: BoxFit.cover,
+                                                width: 50,
+                                                height: 50,
+                                              )
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                  trailing: IconButton(
-                                    icon: Icon(
-                                      isSelected ? Iconsax.tick_circle_outline : Icons.circle_outlined,
-                                      color: isSelected ? Colors.white : Colors.white,
-                                      size: 26,
                                     ),
-                                    onPressed: () {
-                                      setState(() {
-                                        if (isSelected) {
-                                          _selectedSongs.remove(index);
-                                        } else {
-                                          _selectedSongs.add(index);
-                                        }
-                                      });
-                                    },
-                                  ),
-                                  title: Text(
-                                    song.title,
-                                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  subtitle: Text(
-                                    song.author,
-                                    style: const TextStyle(color: Colors.grey, fontSize: 14),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                );
-                              }
-                            )
-                          ]
-                        ),
+                                  ],
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.drag_handle, color: Colors.white),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.3),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                          const BoxShadow(
+                                            color: Colors.white12,
+                                            blurRadius: 3,
+                                            offset: Offset(0, -1),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                title: Text(
+                                  song.title,
+                                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                subtitle: Text(
+                                  song.author,
+                                  style: const TextStyle(color: Colors.grey, fontSize: 14),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            );
+                          }
+                        )
                       );
                     },
                   ),
                 ],
               ),
-              if (_selectedSongs.isNotEmpty)
-                Positioned(
-                  bottom: 16,
-                  right: 16,
-                  child: FloatingActionButton(
-                    onPressed: _removeSelectedSongs,
-                    backgroundColor: Colors.red,
-                    child: const Icon(Iconsax.trash_outline, size: 28),
-                  ),
-                ),
             ],
           ),
         );
