@@ -35,6 +35,7 @@ dependencies:
   sqflite_common_ffi: ^2.3.4+4
   sqlite3_flutter_libs: ^0.5.28
   synchronized: ^3.3.0+3
+  youtube_explode_dart: ^2.3.6
 
 dev_dependencies:
   flutter_lints: ^4.0.0
