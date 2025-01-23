@@ -267,64 +267,62 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
   
-    return Scaffold(
-      backgroundColor: colors.surface,
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        // title: const Text(
-        //   'Biblioteca',
-        //   style: TextStyle(
-        //     fontFamily: 'Titulo',
-        //     color: Colors.white,
-        //     fontSize: 30
-        //   ),
-        // ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: Row(
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: colors.surface,
+        extendBodyBehindAppBar: true,
+        body: Stack(
+          children: [
+            const GradientWidget(),
+            
+            Column(
               children: [
-                IconButton.filled(
-                  onPressed: () => _importPlaylist(),
-                  icon: const Icon(Iconsax.import_2_outline),
-                  color: Colors.white,
-                  style: IconButton.styleFrom(
-                    backgroundColor: colors.secondary.withOpacity(0.5),
-                    padding: const EdgeInsets.all(10),
-                  ),
-                ),
-                const SizedBox(width: 3),
-                IconButton.filled(
-                  onPressed: () => _showCreatePlaylistDialog(),
-                  icon: const Icon(Iconsax.add_square_outline),
-                  color: Colors.white,
-                  style: IconButton.styleFrom(
-                    backgroundColor: colors.secondary.withOpacity(0.5),
-                    padding: const EdgeInsets.all(10),
-                  ),
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
-      body: Stack(
-        children: [
+                // Header con logo y botones
+                Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
 
-          // Gradiente
-          const GradientWidget(),
+                      Image.asset(
+                        'assets/images/logo.png',
+                        width: 60,
+                        height: 60,
+                      ),
+                      const Spacer(),
+
+                      Row(
+                        children: [
+                          IconButton.filled(
+                            onPressed: () => _importPlaylist(),
+                            icon: const Icon(Iconsax.import_2_outline),
+                            color: Colors.white,
+                            style: IconButton.styleFrom(
+                              backgroundColor: colors.secondary.withOpacity(0.5),
+                              padding: const EdgeInsets.all(10),
+                            ),
+                          ),
+                          const SizedBox(width: 3),
+                          IconButton.filled(
+                            onPressed: () => _showCreatePlaylistDialog(),
+                            icon: const Icon(Iconsax.add_square_outline),
+                            color: Colors.white,
+                            style: IconButton.styleFrom(
+                              backgroundColor: colors.secondary.withOpacity(0.5),
+                              padding: const EdgeInsets.all(10),
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                    ],
+                  ),
+                ),
   
-          // Contenido Principal
-          SafeArea(
-            child: Column(
-              children: [
-
                 // TabBar
                 _tabBar(colors),
   
-                // TabBarView
+                // TabBarView con contenido
                 Expanded(
                   child: TabBarView(
                     controller: _tabController,
@@ -335,11 +333,10 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
                     ],
                   ),
                 ),
-                
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

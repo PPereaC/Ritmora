@@ -45,25 +45,34 @@ class HomeViewState extends ConsumerState<HomeView> {
           children: [
             const GradientWidget(),
             
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: CustomScrollView(
-                slivers: [
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (index == 0) ...[
-                                if (Responsive.isMobile(context))
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      IconButton.filled(
+            CustomScrollView(
+              slivers: [
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (index == 0) ...[
+                            if (Responsive.isMobile(context))
+                              Padding(
+                                padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                                        
+                                    Image.asset(
+                                      'assets/images/logo.png',
+                                      width: 60,
+                                      height: 60,
+                                    ),
+                                                        
+                                    const Spacer(),
+                                                        
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 5),
+                                      child: IconButton.filled(
                                         onPressed: () async {
                                           final searchQuery = ref.read(searchQueryProvider);
                                           // ignore: unused_local_variable
@@ -83,8 +92,13 @@ class HomeViewState extends ConsumerState<HomeView> {
                                           padding: const EdgeInsets.all(10),
                                         ),
                                       ),
-                                      const SizedBox(width: 3),
-                                      IconButton.filled(
+                                    ),
+                                                        
+                                    const SizedBox(width: 3),
+                                                        
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 5),
+                                      child: IconButton.filled(
                                         onPressed: () {},
                                         icon: const Icon(Iconsax.notification_outline),
                                         color: Colors.white,
@@ -93,48 +107,56 @@ class HomeViewState extends ConsumerState<HomeView> {
                                           padding: const EdgeInsets.all(10),
                                         ),
                                       ),
-                                    ],
-                                  ),
-      
-                                if (Responsive.isDesktop(context))
-                                  const SizedBox(height: 10),
-      
-                              ],
-      
-                              if (index == 1) ...[
-                                const _SectionTitle('Selecciones rápidas', showViewAll: false),
-                                const SizedBox(height: 15),
-                                SongGridHorizontalListview(songs: quickPicks),
-                              
-                                const _SectionTitle('En tendencia'),
-                                const SizedBox(height: 15),
-                                SongHorizontalListview(songs: trendingSongs),
-                              
-                                // Iteramos sobre cada categoría de playlists
-                                ...homePlaylists.entries.map((entry) => [
-                                  _SectionTitle(entry.key, showViewAll: false),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            
+                            if (Responsive.isDesktop(context))
+                              const SizedBox(height: 10),
+                            
+                          ],
+                            
+                          if (index == 1) ...[
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 5),
+                              child: Column(
+                                children: [
+                                  const _SectionTitle('Selecciones rápidas', showViewAll: false),
                                   const SizedBox(height: 15),
-                                  PlaylistHorizontalListview(
-                                    onTap: (playlist) {
-                                      context.go(
-                                        '/library/playlist/1/${playlist.playlistId}',
-                                        extra: playlist
-                                      );
-                                    },
-                                    playlists: entry.value
-                                  ),
-                                  const SizedBox(height: 20), // Espaciado entre secciones
-                                ]).expand((widgets) => widgets),
-                              ],
-                            ],
-                          ),
-                        );
-                      },
-                      childCount: 2,
-                    ),
+                                  SongGridHorizontalListview(songs: quickPicks),
+                                
+                                  const _SectionTitle('En tendencia'),
+                                  const SizedBox(height: 15),
+                                  SongHorizontalListview(songs: trendingSongs),
+                                
+                                  // Iteramos sobre cada categoría de playlists
+                                  ...homePlaylists.entries.map((entry) => [
+                                    _SectionTitle(entry.key, showViewAll: false),
+                                    const SizedBox(height: 15),
+                                    PlaylistHorizontalListview(
+                                      onTap: (playlist) {
+                                        context.go(
+                                          '/library/playlist/1/${playlist.playlistId}',
+                                          extra: playlist
+                                        );
+                                      },
+                                      playlists: entry.value
+                                    ),
+                                    const SizedBox(height: 20), // Espaciado entre secciones
+                                  ]).expand((widgets) => widgets),
+                                ],
+                              ),
+                            )
+                            
+                          ],
+                        ],
+                      );
+                    },
+                    childCount: 2,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
