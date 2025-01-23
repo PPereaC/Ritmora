@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:marquee/marquee.dart';
 
 import '../../config/utils/responsive.dart';
 import '../../domain/entities/song.dart';
@@ -177,42 +178,69 @@ class _SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textStyle = Theme.of(context).textTheme;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: textStyle.titleLarge?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
+          SizedBox(
+            width: screenWidth * 0.9,
+            child: title.length > 30
+                ? SizedBox(
+                    height: textStyle.titleLarge?.fontSize != null
+                        ? textStyle.titleLarge!.fontSize! * 1.5
+                        : 24.0, // Define una altura adecuada
+                    child: Marquee(
+                      text: title,
+                      style: textStyle.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      scrollAxis: Axis.horizontal,
+                      blankSpace: 10.0,
+                      velocity: 30.0,
+                      pauseAfterRound: const Duration(seconds: 3),
+                      accelerationDuration: const Duration(seconds: 1),
+                      accelerationCurve: Curves.linear,
+                      decelerationDuration: const Duration(milliseconds: 500),
+                      decelerationCurve: Curves.easeOut,
+                    ),
+                  )
+                : Text(
+                    title,
+                    style: textStyle.titleLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    maxLines: 2,
+                  ),
           ),
 
-          if (showViewAll)
-            InkWell(
-              onTap: () {
-                // TODO: Implementar navegación
-              },
-              child: Row(
-                children: [
-                  Text(
-                    'Ver todo',
-                    style: textStyle.bodyLarge?.copyWith(
-                      color: Colors.white
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 16,
-                    color: Colors.white
-                  ),
-                ],
-              ),
-            ),
+          // if (showViewAll)
+          //   InkWell(
+          //     onTap: () {
+          //       // TODO: Implementar navegación
+          //     },
+          //     child: Row(
+          //       children: [
+          //         Text(
+          //           'Ver todo',
+          //           style: textStyle.bodyLarge?.copyWith(
+          //             color: Colors.white
+          //           ),
+          //         ),
+          //         const SizedBox(width: 5),
+          //         const Icon(
+          //           Icons.arrow_forward_ios_rounded,
+          //           size: 16,
+          //           color: Colors.white
+          //         ),
+          //       ],
+          //     ),
+          //   ),
         ],
       ),
     );
