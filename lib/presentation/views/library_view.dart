@@ -427,6 +427,8 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
             final playlist = playlistState.playlists[index];
             return MouseRegion(
               child: InkWell(
+                hoverColor: Colors.transparent,
+                splashColor: Colors.transparent,
                 onTap: () {
                   context.go(
                     '/library/playlist/0/${playlist.id}',

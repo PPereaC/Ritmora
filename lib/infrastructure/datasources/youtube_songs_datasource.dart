@@ -248,76 +248,93 @@ class YoutubeSongsDatasource extends SongsDatasource {
   }
 
   @override
-  Future<List<Playlist>> getPlaylistsHits() async {
+  Future<Map<String, List<Playlist>>> getHomePlaylists() async {
     final body = getBody(2);
     body['browseId'] = 'FEmusic_home';
     final response = await _sendRequest('browse', body);
     return await _jsonToPlaylistsHits(response.data);
   }
 
-  Future<List<Playlist>> _jsonToPlaylistsHits(Map<String, dynamic> json) async {
-    List<Playlist> greatestHits = [];
-  
+  Future<Map<String, List<Playlist>>> _jsonToPlaylistsHits(Map<String, dynamic> json) async {
+    Map<String, List<Playlist>> playlistsByCategory = {};
+    
     try {
-
       final List sections = json.containsKey('musicCarouselShelfRenderer')
           ? [json['musicCarouselShelfRenderer']]
           : json['contents']?['singleColumnBrowseResultsRenderer']?['tabs']?[0]
                   ?['tabRenderer']?['content']?['sectionListRenderer']?['contents'] ??
               [];
-  
+
       for (var section in sections) {
-        if (section.containsKey('musicCarouselShelfRenderer')) {
-          final header = section['musicCarouselShelfRenderer']?['header']
-              ?['musicCarouselShelfBasicHeaderRenderer'];
-          
-          String headerTitle = '';
-          final straplineRuns = header?['strapline']?['runs'];
-          if (straplineRuns != null && straplineRuns.isNotEmpty) {
-            headerTitle = straplineRuns[0]?['text']?.toString().toLowerCase() ?? '';
-          }
-  
-          if (headerTitle.contains('grande') || headerTitle.contains('éxito') || 
-              headerTitle.contains('hit') || headerTitle.contains('exito')) {
-            final items = section['musicCarouselShelfRenderer']?['contents'] ?? [];
+        if (!section.containsKey('musicCarouselShelfRenderer')) continue;
+
+        final header = section['musicCarouselShelfRenderer']?['header']?['musicCarouselShelfBasicHeaderRenderer'];
+        
+        String? category;
+        if (header != null && header['title'] != null && header['title']['runs'] != null && header['title']['runs'].isNotEmpty) {
+          category = header['title']['runs'][0]['text'];
+        } else {
+          category = 'Sin Categoría';
+        }
+
+        // Ignorar la sección de 'Selecciones rápidas'
+        if (category?.toLowerCase().contains('selecciones') == true && category?.toLowerCase().contains('rápidas') == true) {
+          continue;
+        }
+
+        if (!playlistsByCategory.containsKey(category)) {
+          playlistsByCategory[category!] = [];
+        }
+
+        final items = section['musicCarouselShelfRenderer']?['contents'] ?? [];
+        
+        for (var item in items) {
+          try {
+            if (!item.containsKey('musicTwoRowItemRenderer')) continue;
+    
+            final playlistJson = item['musicTwoRowItemRenderer'];
+            final title = playlistJson['title']?['runs']?[0]?['text'];
+            final playlistId = playlistJson['navigationEndpoint']?['browseEndpoint']?['browseId'];
+            final thumbnails = playlistJson['thumbnailRenderer']?['musicThumbnailRenderer']
+              ?['thumbnail']?['thumbnails'] as List?;
             
-            for (var item in items) {
-              try {
-                if (item.containsKey('musicTwoRowItemRenderer')) {
-                  final playlistJson = item['musicTwoRowItemRenderer'];
-                  final title = playlistJson['title']?['runs']?[0]?['text'];
-                  final playlistId = playlistJson['navigationEndpoint']?['browseEndpoint']?['browseId'];
-                  final thumbnails = playlistJson['thumbnailRenderer']?['musicThumbnailRenderer']
-                    ?['thumbnail']?['thumbnails'] as List?;
-                  
-                  final thumbnailsList = thumbnails
-                      ?.map((t) => {
-                        'url': t['url'],
-                        'area': (t['height'] ?? 0) * (t['width'] ?? 0),
-                      })
-                      .toList();
-                  
-                  thumbnailsList?.sort((a, b) => b['area'].compareTo(a['area']));
-                  
-                  final thumbnailUrl = thumbnailsList?.first['url'] ?? '';
-                  final author = playlistJson['subtitle']?['runs']?[0]?['text'];
-  
-                  // Validar que tengamos todos los datos necesarios
-                  if (title != null && playlistId != null && thumbnailUrl != null && author != null) {
-                    greatestHits.add(
-                      Playlist(
-                        playlistId: playlistId,
-                        title: title,
-                        author: author,
-                        thumbnailUrl: thumbnailUrl,
-                      )
-                    );
-                  }
-                }
-              } catch (itemError) {
-                continue; // Continuar con el siguiente item si hay error
-              }
+            // Descartar playlist si no hay miniaturas
+            if (thumbnails == null || thumbnails.isEmpty) {
+              continue;
             }
+
+            final thumbnailsList = thumbnails
+                .map((t) => {
+                  'url': t['url'],
+                  'area': (t['height'] ?? 0) * (t['width'] ?? 0),
+                })
+                .toList();
+            
+            thumbnailsList.sort((a, b) => b['area'].compareTo(a['area']));
+            
+            final thumbnailUrl = thumbnailsList.first['url'];
+            String? author;
+            if (playlistJson['subtitle']?['runs'] != null && playlistJson['subtitle']['runs'].length > 1) {
+              author = playlistJson['subtitle']['runs'][0]['text'];
+            } else {
+              author = ''; // Si no se puede obtener el autor, usa un valor por defecto
+            }
+
+            if (title != null && playlistId != null && thumbnailUrl != null && author != null) {
+              playlistsByCategory[category]!.add(
+                Playlist(
+                  playlistId: playlistId,
+                  title: title,
+                  author: author,
+                  thumbnailUrl: thumbnailUrl,
+                )
+              );
+            } else {
+              printINFO('Playlist descartada - datos incompletos: $title');
+            }
+          } catch (itemError) {
+            printERROR('Error procesando item: $itemError');
+            continue;
           }
         }
       }
@@ -325,9 +342,8 @@ class YoutubeSongsDatasource extends SongsDatasource {
       printERROR('Error extracting Greatest Hits playlists: $e');
       printERROR('Stack trace: $stackTrace');
     }
-  
-    printINFO('Greatest Hits Playlists: ${greatestHits.length}');
-    return greatestHits;
+
+    return playlistsByCategory;
   }
   
   @override

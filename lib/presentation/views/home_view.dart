@@ -25,7 +25,7 @@ class HomeViewState extends ConsumerState<HomeView> {
     // Cargar datos iniciales
     ref.read(trendingSongsProvider.notifier).loadSongs();
     ref.read(quickPicksProvider.notifier).loadSongs();
-    ref.read(playlistsHitsProvider.notifier).loadSongs();
+    ref.read(homePlaylistsProvider.notifier).loadSongs();
   }
 
   @override
@@ -35,7 +35,7 @@ class HomeViewState extends ConsumerState<HomeView> {
     // Estados de las diferentes listas
     final trendingSongs = ref.watch(trendingSongsProvider);
     final quickPicks = ref.watch(quickPicksProvider);
-    final playlistsHits = ref.watch(playlistsHitsProvider);
+    final homePlaylists = ref.watch(homePlaylistsProvider);
 
     return SafeArea(
       child: Scaffold(
@@ -101,27 +101,30 @@ class HomeViewState extends ConsumerState<HomeView> {
       
                               ],
       
-                              // Contenido principal
                               if (index == 1) ...[
                                 const _SectionTitle('Selecciones rápidas', showViewAll: false),
-                                const SizedBox(height: 10),
+                                const SizedBox(height: 15),
                                 SongGridHorizontalListview(songs: quickPicks),
-                    
+                              
                                 const _SectionTitle('En tendencia'),
-                                const SizedBox(height: 10),
+                                const SizedBox(height: 15),
                                 SongHorizontalListview(songs: trendingSongs),
-                    
-                                const _SectionTitle('Grandes Éxitos', showViewAll: false),
-                                const SizedBox(height: 10),
-                                PlaylistHorizontalListview (
-                                  onTap: (playlist) {
-                                    context.go(
-                                      '/library/playlist/1/${playlist.playlistId}',
-                                      extra: playlist
-                                    );
-                                  },
-                                  playlists: playlistsHits
-                                )
+                              
+                                // Iteramos sobre cada categoría de playlists
+                                ...homePlaylists.entries.map((entry) => [
+                                  _SectionTitle(entry.key, showViewAll: false),
+                                  const SizedBox(height: 15),
+                                  PlaylistHorizontalListview(
+                                    onTap: (playlist) {
+                                      context.go(
+                                        '/library/playlist/1/${playlist.playlistId}',
+                                        extra: playlist
+                                      );
+                                    },
+                                    playlists: entry.value
+                                  ),
+                                  const SizedBox(height: 20), // Espaciado entre secciones
+                                ]).expand((widgets) => widgets),
                               ],
                             ],
                           ),

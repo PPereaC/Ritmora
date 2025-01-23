@@ -23,15 +23,15 @@ class SongRepositoryImpl extends SongsRepository {
   Future<List<Song>> getQuickPicks() {
     return datasource.getQuickPicks();
   }
-
-  @override
-  Future<List<Playlist>> getPlaylistsHits() {
-    return datasource.getPlaylistsHits();
-  }
   
   @override
   Future<Playlist> getPlaylistWSongs(String playlistID) {
     return datasource.getPlaylistWSongs(playlistID);
+  }
+  
+  @override
+  Future<Map<String, List<Playlist>>> getHomePlaylists() {
+    return datasource.getHomePlaylists();
   }
 
 }
