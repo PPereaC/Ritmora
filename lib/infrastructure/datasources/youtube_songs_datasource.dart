@@ -278,7 +278,7 @@ class YoutubeSongsDatasource extends SongsDatasource {
         }
 
         // Ignorar la sección de 'Selecciones rápidas'
-        if (category?.toLowerCase().contains('selecciones') == true && category?.toLowerCase().contains('rápidas') == true) {
+        if (category?.toLowerCase().contains('selecciones') == true && category?.toLowerCase().contains('rápidas') == true || category?.toLowerCase().contains('tendencia') == true || category?.toLowerCase().contains('tendendicas') == true) {
           continue;
         }
 
