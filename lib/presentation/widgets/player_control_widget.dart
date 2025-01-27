@@ -355,7 +355,19 @@ class _MobilePlayerControl extends StatelessWidget {
                     context.pushNamed('/full-player');
                   }
                 },
-                onLongPress: () => context.push('/full-player'),
+                onLongPress: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => Theme(
+                      data: Theme.of(context).copyWith(
+                        colorScheme: colors,
+                      ),
+                      child: const QueueBottomSheetBar()
+                    ),
+                  );
+                },
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
                   child: Row(

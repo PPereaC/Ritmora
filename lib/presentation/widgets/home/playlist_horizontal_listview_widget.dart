@@ -1,4 +1,5 @@
 import 'package:animate_do/animate_do.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,17 +21,14 @@ class PlaylistHorizontalListview extends StatefulWidget {
 
 class _PlaylistHorizontalListviewState extends State<PlaylistHorizontalListview> {
   final scrollController = ScrollController();
-
-  @override
-  void dispose() {
-    scrollController.dispose();
-    super.dispose();
-  }
+  // Definir tamaños constantes
+  static const double containerHeight = 165.0;
+  static const double imageSize = 120.0;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 250,
+      height: containerHeight,
       child: Column(
         children: [
           Expanded(
@@ -41,17 +39,24 @@ class _PlaylistHorizontalListviewState extends State<PlaylistHorizontalListview>
               physics: const BouncingScrollPhysics(),
               itemBuilder: (context, index) {
                 final playlist = widget.playlists[index];
-                // Padding específico según la posición
                 return Padding(
                   padding: EdgeInsets.only(
                     left: index == 0 ? 10 : 8,
                     right: index == widget.playlists.length - 1 ? 10 : 0,
                   ),
                   child: InkWell(
+                    hoverColor: Colors.transparent,
+                    splashColor: Colors.transparent,
                     onTap: () => widget.onTap(playlist),
                     borderRadius: BorderRadius.circular(12),
                     child: FadeInRight(
-                      child: _Slide(playlist: playlist)
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: _Slide(
+                          playlist: playlist,
+                          width: imageSize,
+                        ),
+                      )
                     ),
                   ),
                 );
@@ -66,19 +71,22 @@ class _PlaylistHorizontalListviewState extends State<PlaylistHorizontalListview>
 
 class _Slide extends ConsumerWidget {
   final Playlist playlist;
-  const _Slide({required this.playlist});
+  final double width;
+  
+  const _Slide({
+    required this.playlist,
+    required this.width,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textStyles = Theme.of(context).textTheme;
-    double containerWidth = 120;
-    // final songPlayer = ref.watch(songPlayerProvider);
     final colors = Theme.of(context).colorScheme;
 
     return Material(
       color: Colors.transparent,
       child: SizedBox(
-        width: containerWidth,
+        width: width,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,14 +95,14 @@ class _Slide extends ConsumerWidget {
               borderRadius: BorderRadius.circular(12),
               child: Image.network(
                 playlist.thumbnailUrl,
-                width: containerWidth,
-                height: containerWidth,
+                width: width,
+                height: width,
                 fit: BoxFit.cover,
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress != null) {
                     return Container(
-                      width: containerWidth,
-                      height: containerWidth,
+                      width: width,
+                      height: width,
                       decoration: BoxDecoration(
                         color: Colors.grey[800],
                         borderRadius: BorderRadius.circular(12),
@@ -108,8 +116,8 @@ class _Slide extends ConsumerWidget {
                 },
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
-                    width: containerWidth,
-                    height: containerWidth,
+                    width: width,
+                    height: width,
                     decoration: BoxDecoration(
                       color: colors.secondary,
                       borderRadius: BorderRadius.circular(12),
@@ -130,10 +138,11 @@ class _Slide extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  AutoSizeText(
                     playlist.title,
                     maxLines: 1,
                     style: textStyles.titleSmall?.copyWith(
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
