@@ -11,3 +11,4 @@ export 'gradient_widget.dart';
 export 'home/playlist_horizontal_listview_widget.dart';
 export 'sidebar_widget.dart';
 export 'queue_slide_panel.dart';
+export 'queue_bottom_sheet_bar.dart';
