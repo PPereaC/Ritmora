@@ -11,35 +11,17 @@ jobs:
   build:
     name: Build & Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install Linux Dependencies
+      - name: Install Linux dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build libgtk-3-dev
-          sudo apt-get install -y appstream
-          sudo apt-get install -y ninja-build cmake clang libgtk-3-dev
-          sudo apt-get install -y libunwind-dev
-          # Agregar dependencias de GStreamer
-          sudo apt-get install -y \
-            libgstreamer1.0-dev \
-            libgstreamer-plugins-base1.0-dev \
-            libgstreamer-plugins-bad1.0-dev \
-            gstreamer1.0-plugins-base \
-            gstreamer1.0-plugins-good \
-            gstreamer1.0-plugins-bad \
-            gstreamer1.0-plugins-ugly \
-            gstreamer1.0-libav \
-            gstreamer1.0-tools \
-            gstreamer1.0-x \
-            gstreamer1.0-alsa \
-            gstreamer1.0-gl \
-            gstreamer1.0-gtk3 \
-            gstreamer1.0-qt5 \
-            gstreamer1.0-pulseaudio
+          sudo apt-get update -y && sudo apt-get upgrade -y
+          sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev -y
 
       - name: Set Up Java
         uses: actions/setup-java@v3.12.0
@@ -56,51 +38,13 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      - name: Build APK & AAB
-        run: |
-          flutter build apk --release
-          flutter build appbundle
+      - name: Build APK
+        run: flutter build apk --release
 
       - name: Build Linux
         run: |
           flutter config --enable-linux-desktop
-          # Crear directorio de iconos con sudo
-          sudo mkdir -p /usr/local/share/icons/hicolor/256x256/apps
-          # Copiar icono con sudo
-          sudo cp linux/assets/icon.png /usr/local/share/icons/hicolor/256x256/apps/
-          # Ajustar permisos
-          sudo chmod 644 /usr/local/share/icons/hicolor/256x256/apps/icon.png
-          # Construir aplicación
           flutter build linux --release
-
-
-      - name: Create DEB Package
-        run: |
-          mkdir -p build/linux/x64/release/debian/DEBIAN
-          echo "Package: finmusic
-          Version: ${{ env.VERSION }}
-          Architecture: amd64
-          Maintainer: Your Name <your@email.com>
-          Description: FinMusic Application
-          Depends: libgtk-3-0
-          " > build/linux/x64/release/debian/DEBIAN/control
-          dpkg-deb --build build/linux/x64/release/debian build/linux/x64/release/finmusic.deb
-
-      - name: Create AppImage
-        run: |
-          wget -O appimagetool "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
-          chmod +x appimagetool
-          ./appimagetool build/linux/x64/release/bundle build/linux/x64/release/finmusic.AppImage
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: Releases
-          path: |
-            build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/bundle/release/app-release.aab
-            build/linux/x64/release/finmusic.deb
-            build/linux/x64/release/finmusic.AppImage
 
       - name: Extract version from pubspec.yaml
         id: extract_version
@@ -108,7 +52,7 @@ jobs:
           version=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
           echo "VERSION=$version" >> $GITHUB_ENV
 
-      - name: Check if Tag Exists
+      - name: Check if Tag Exists 
         id: check_tag
         run: |
           if git rev-parse "v${{ env.VERSION }}" >/dev/null 2>&1; then
@@ -127,10 +71,8 @@ jobs:
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: >-
-            build/app/outputs/flutter-apk/app-release.apk,
-            build/app/outputs/bundle/release/app-release.aab,
-            build/linux/x64/release/finmusic.deb,
-            build/linux/x64/release/finmusic.AppImage
+          artifacts: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/linux/x64/release/bundle/**/*
           tag: v${{ env.VERSION }}
           token: ${{ secrets.TOKEN }}
