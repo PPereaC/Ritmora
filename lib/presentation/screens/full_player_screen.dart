@@ -101,7 +101,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                           flex: 2,
                           child: Container(
                             margin: EdgeInsets.symmetric(
-                              horizontal: screenWidth * 0.09,
+                              horizontal: screenWidth * 0.11,
                               vertical: screenHeight * 0.04
                             ),
                             decoration: BoxDecoration(

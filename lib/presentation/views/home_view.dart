@@ -63,10 +63,13 @@ class HomeViewState extends ConsumerState<HomeView> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                                         
-                                    Image.asset(
-                                      'assets/images/logo.png',
-                                      width: 60,
-                                      height: 60,
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 5),
+                                      child: Image.asset(
+                                        'assets/images/logo.png',
+                                        width: 50,
+                                        height: 50,
+                                      ),
                                     ),
                                                         
                                     const Spacer(),
