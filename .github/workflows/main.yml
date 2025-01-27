@@ -64,7 +64,15 @@ jobs:
       - name: Build Linux
         run: |
           flutter config --enable-linux-desktop
+          # Crear directorio de iconos con sudo
+          sudo mkdir -p /usr/local/share/icons/hicolor/256x256/apps
+          # Copiar icono con sudo
+          sudo cp linux/assets/icon.png /usr/local/share/icons/hicolor/256x256/apps/
+          # Ajustar permisos
+          sudo chmod 644 /usr/local/share/icons/hicolor/256x256/apps/icon.png
+          # Construir aplicación
           flutter build linux --release
+
 
       - name: Create DEB Package
         run: |
