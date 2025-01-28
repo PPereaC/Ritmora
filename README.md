@@ -1,5 +1,5 @@
 # FinMusic
-Reproductor de música de YouTube Music sin necesidad de suscripción ni inicio de sesión. Importa, crea y gestiona playlists, y busca cualquier canción o video musical de forma gratuita.
+Reproductor multiplataforma de música de YouTube Music sin necesidad de suscripción ni inicio de sesión. Importa, crea y gestiona playlists, y busca cualquier canción o video musical de forma gratuita.
 
 ## ✨ Características
 * Vista inicial con las selecciones rápidas, videos musicales en tendencia y recomendaciones de playlists/albumes.
