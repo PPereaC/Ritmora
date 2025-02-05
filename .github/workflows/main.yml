@@ -78,7 +78,7 @@ jobs:
       - name: Empaquetar Linux (.deb y .appimage)
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y patchelf ruby ruby-dev build-essential
+          sudo apt-get install -y patchelf ruby ruby-dev build-essential fuse
           sudo gem install --no-document fpm
           wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
           chmod +x appimagetool
