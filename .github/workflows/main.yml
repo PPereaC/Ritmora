@@ -87,9 +87,12 @@ jobs:
           fpm -s dir -t deb -n "finmusic" --version "${{ env.VERSION }}" -C ${{ github.workspace }}/install
           mv finmusic_${{ env.VERSION }}_amd64.deb app-release.deb
           
-          # Preparar AppDir con archivo .desktop
+          # Preparar AppDir con archivo .desktop y copiar binarios
           mkdir -p AppDir/usr/bin AppDir/usr/share/applications AppDir/usr/share/icons/hicolor/256x256/apps
           cp -r ${{ github.workspace }}/install/* AppDir/usr/bin/
+
+          # Copiar el icono correcto
+          cp linux/assets/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/finmusic.png
           
           # Crear archivo .desktop
           cat > AppDir/usr/share/applications/finmusic.desktop << EOF
