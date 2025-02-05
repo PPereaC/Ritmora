@@ -71,11 +71,25 @@ jobs:
           new_version="${{ env.VERSION }}-build-${{ github.run_number }}"
           echo "VERSION=$new_version" >> $GITHUB_ENV
 
+      - name: Empaquetar Linux (.deb y .appimage)
+        run: |
+          sudo apt-get install -y patchelf fpm
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
+          chmod +x appimagetool
+          # Crear .deb
+          fpm -s dir -t deb -n "apolo" --version "${{ env.VERSION }}" --prefix /opt/apolo build/linux/x64/release/bundle
+          # Crear .appimage
+          mkdir -p AppDir/usr/bin
+          cp -r build/linux/x64/release/bundle/* AppDir/usr/bin/
+          ./appimagetool AppDir apolo-${{ env.VERSION }}.AppImage
+
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
           artifacts: |
             build/app/outputs/flutter-apk/app-release.apk
             build/linux/x64/release/bundle/**/*
+            apolo-${{ env.VERSION }}.AppImage
+            apolo_${{ env.VERSION }}_amd64.deb
           tag: v${{ env.VERSION }}
           token: ${{ secrets.TOKEN }}
