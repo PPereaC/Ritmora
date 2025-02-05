@@ -90,23 +90,28 @@ jobs:
           # Preparar AppDir con archivo .desktop y copiar binarios
           mkdir -p AppDir/usr/bin AppDir/usr/share/applications AppDir/usr/share/icons/hicolor/256x256/apps
           cp -r ${{ github.workspace }}/install/* AppDir/usr/bin/
-
           # Copiar el icono correcto
-          cp linux/assets/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/finmusic.png
+          cp linux/assets/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/
           
-          # Crear archivo .desktop
-          cat > AppDir/usr/share/applications/finmusic.desktop << EOF
+          # Crear archivo .desktop con permisos adecuados
+          sudo sh -c 'cat > AppDir/usr/share/applications/finmusic.desktop << EOF
           [Desktop Entry]
           Name=FinMusic
           Exec=finmusic
-          Icon=finmusic
+          Icon=icon
           Type=Application
           Categories=AudioVideo;Audio;Player;
-          EOF
+          EOF'
           
           # Crear AppImage
           ./appimagetool AppDir app-release.AppImage
-  
+
+      - name: Verificar Archivo .desktop y Icono
+        run: |
+          ls -l AppDir/usr/share/applications/finmusic.desktop
+          ls -l AppDir/usr/share/icons/hicolor/256x256/apps/icon.png
+          cat AppDir/usr/share/applications/finmusic.desktop
+
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
