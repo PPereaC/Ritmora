@@ -40,6 +40,9 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
+      - name: Create Install Directory
+        run: mkdir -p ${{ github.workspace }}/install
+
       - name: Build Linux
         run: |
           flutter config --enable-linux-desktop
