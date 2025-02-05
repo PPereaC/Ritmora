@@ -68,7 +68,7 @@ add_executable(${BINARY_NAME}
 
 # Instalar el icono
 install(FILES "assets/icon.png"
-  DESTINATION "${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/256x256/apps")
+  DESTINATION "share/icons/hicolor/256x256/apps")
 
 # Apply the standard set of build settings. This can be removed for applications
 # that need different build settings.
