@@ -47,6 +47,8 @@ jobs:
         run: |
           flutter config --enable-linux-desktop
           flutter build linux --release
+          mkdir -p ${{ github.workspace }}/install
+          cp -r build/linux/x64/release/bundle/* ${{ github.workspace }}/install/
 
       - name: Build APK
         run: flutter build apk --release
