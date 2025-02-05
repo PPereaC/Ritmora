@@ -101,9 +101,6 @@ jobs:
           Categories=AudioVideo;Audio;Player;
           EOF
           
-          # Copiar el icono
-          cp ${{ github.workspace }}/assets/icon/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/finmusic.png
-          
           # Crear AppImage
           ./appimagetool AppDir app-release.AppImage
   
