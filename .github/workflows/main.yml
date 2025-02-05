@@ -83,13 +83,28 @@ jobs:
           wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
           chmod +x appimagetool
           
-          # Crear .deb y renombrarlo a "app-release.deb"
-          fpm -s dir -t deb -n "apolo" --version "${{ env.VERSION }}" -C ${{ github.workspace }}/install
-          mv apolo_${{ env.VERSION }}_amd64.deb app-release.deb
+          # Crear .deb y renombrarlo
+          fpm -s dir -t deb -n "finmusic" --version "${{ env.VERSION }}" -C ${{ github.workspace }}/install
+          mv finmusic_${{ env.VERSION }}_amd64.deb app-release.deb
           
-          # Crear .appimage y renombrarlo a "app-release.AppImage"
-          mkdir -p AppDir/usr/bin
+          # Preparar AppDir con archivo .desktop
+          mkdir -p AppDir/usr/bin AppDir/usr/share/applications AppDir/usr/share/icons/hicolor/256x256/apps
           cp -r ${{ github.workspace }}/install/* AppDir/usr/bin/
+          
+          # Crear archivo .desktop
+          cat > AppDir/usr/share/applications/finmusic.desktop << EOF
+          [Desktop Entry]
+          Name=FinMusic
+          Exec=finmusic
+          Icon=finmusic
+          Type=Application
+          Categories=AudioVideo;Audio;Player;
+          EOF
+          
+          # Copiar el icono
+          cp ${{ github.workspace }}/assets/icon/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/finmusic.png
+          
+          # Crear AppImage
           ./appimagetool AppDir app-release.AppImage
   
       - name: Create Release
