@@ -77,7 +77,7 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y patchelf ruby ruby-dev build-essential
-          gem install --no-document fpm
+          sudo gem install --no-document fpm
           wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O appimagetool
           chmod +x appimagetool
           
@@ -89,7 +89,7 @@ jobs:
           mkdir -p AppDir/usr/bin
           cp -r ${{ github.workspace }}/install/* AppDir/usr/bin/
           ./appimagetool AppDir app-release.AppImage
-
+  
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
