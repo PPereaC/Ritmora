@@ -47,7 +47,8 @@ jobs:
       - name: Build Linux
         run: |
           flutter config --enable-linux-desktop
-          flutter build linux --release
+          # Ajusta el CMAKE_INSTALL_PREFIX para evitar escribir en /usr/local
+          flutter build linux --release -- -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/temp_install
 
       - name: Extract version from pubspec.yaml
         id: extract_version
