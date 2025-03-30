@@ -70,12 +70,12 @@ class SongListTile extends ConsumerWidget {
         },
         onLongPress: () => onSongOptions(),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
           child: Row(
             children: [
               ConstrainedBox(
                 constraints: BoxConstraints(
-                  maxWidth: 48,
+                  maxWidth: 55,
                   maxHeight: isVideo ? 45 : 60,
                 ),
                 child: AspectRatio(

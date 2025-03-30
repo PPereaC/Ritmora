@@ -1,8 +1,12 @@
+// ignore_for_file: deprecated_member_use
+
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/song.dart';
-import '../delegates/search_songs_delegate.dart';
+import 'package:icons_plus/icons_plus.dart';
 import '../providers/providers.dart';
+import '../widgets/widgets.dart';
 
 class SearchView extends ConsumerStatefulWidget {
   const SearchView({super.key});
@@ -12,40 +16,68 @@ class SearchView extends ConsumerStatefulWidget {
 }
 
 class SearchViewState extends ConsumerState<SearchView> {
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _searchTimer;
+
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showSearch();
-    });
+  void dispose() {
+    _searchController.dispose();
+    _searchTimer?.cancel();
+    super.dispose();
   }
 
-  void _showSearch() async {
-    final colors = Theme.of(context).colorScheme;
-    final searchSongs = ref.read(searchSongsProvider.notifier).searchSongsByQuery;
-
-    final song = await showSearch<Song?>(
-      context: context,
-      delegate: SearchSongsDelegate(
-        searchSongs: searchSongs,
-        colors: colors,
-      ),
-    );
-
-    // Manejar el resultado de la búsqueda
-    if (song != null) {
-      // Hacer algo con la canción seleccionada
-    }
+  void _onSearchChanged(String value) {
+    _searchTimer?.cancel();
+    _searchTimer = Timer(const Duration(milliseconds: 500), () {
+      if (value.isNotEmpty) {
+        final filter = ref.read(searchFilterProvider);
+        ref.read(searchSongsProvider.notifier).searchSongsByQuery(value, filter: filter);
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Buscar'),
-      ),
-      body: const Center(
-        child: Text('Buscar canciones o videos'),
+      backgroundColor: Colors.transparent,
+      body: Column(
+        children: [
+          const SizedBox(height: 40),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: TextField(
+              controller: _searchController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Buscar canciones o videos',
+                hintStyle: const TextStyle(color: Colors.white54),
+                prefixIcon: const Icon(Iconsax.search_normal_outline, color: Colors.white),
+                suffixIcon: _searchController.text.isNotEmpty 
+                  ? IconButton(
+                      icon: const Icon(Iconsax.close_square_outline, color: Colors.white),
+                      onPressed: () {
+                        _searchController.clear();
+                        ref.read(searchSongsProvider.notifier).clearResults();
+                      },
+                    )
+                  : null,
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.1),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              onChanged: _onSearchChanged,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: SearchResultsContent(
+              searchController: _searchController,
+            ),
+          ),
+        ],
       ),
     );
   }
