@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/opt/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/home/devp/Android/Sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/home/devp/Documentos/FlutterProjects/FinMusic/android/app/.cxx/Debug/4k35y32j/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/home/devp/Android/Sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/home/devp/Documentos/FlutterProjects/FinMusic/android/app/.cxx/Debug/4k35y32j/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}

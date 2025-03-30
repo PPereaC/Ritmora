@@ -1,0 +1,1 @@
+/home/devp/Documentos/FlutterProjects/FinMusic/build/app/intermediates/cxx/Debug/4k35y32j/obj/arm64-v8a

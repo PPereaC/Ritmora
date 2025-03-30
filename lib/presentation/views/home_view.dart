@@ -7,8 +7,6 @@ import 'package:icons_plus/icons_plus.dart';
 import 'package:marquee/marquee.dart';
 
 import '../../config/utils/responsive.dart';
-import '../../domain/entities/song.dart';
-import '../delegates/search_songs_delegate.dart';
 import '../providers/providers.dart';
 
 class HomeView extends ConsumerStatefulWidget {
@@ -31,7 +29,6 @@ class HomeViewState extends ConsumerState<HomeView> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
 
     // Estados de las diferentes listas
     final trendingSongs = ref.watch(trendingSongsProvider);
@@ -40,13 +37,7 @@ class HomeViewState extends ConsumerState<HomeView> {
 
     return SafeArea(
       child: Scaffold(
-        backgroundColor: colors.surface,
-        extendBodyBehindAppBar: true,
-        body: Stack(
-          children: [
-            const GradientWidget(),
-            
-            CustomScrollView(
+        body: CustomScrollView(
               slivers: [
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
@@ -63,55 +54,44 @@ class HomeViewState extends ConsumerState<HomeView> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                                         
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 5),
-                                      child: Image.asset(
-                                        'assets/images/logo.png',
-                                        width: 50,
-                                        height: 50,
-                                      ),
+                                    const Padding(
+                                      padding: EdgeInsets.only(left: 8),
+                                      child: Text(
+                                        'FinMusic',
+                                        style: TextStyle(
+                                          fontFamily: 'Titulo',
+                                          color: Colors.white,
+                                          fontSize: 30
+                                        ),
+                                      )
                                     ),
                                                         
                                     const Spacer(),
                                                         
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 5),
-                                      child: IconButton.filled(
-                                        onPressed: () async {
-                                          final searchQuery = ref.read(searchQueryProvider);
-                                          // ignore: unused_local_variable
-                                          final song = await showSearch<Song?>(
-                                            query: searchQuery,
-                                            context: context,
-                                            delegate: SearchSongsDelegate(
-                                              searchSongs: ref.read(searchSongsProvider.notifier).searchSongsByQuery,
-                                              colors: colors,
-                                            )
-                                          );
-                                        },
-                                        icon: const Icon(Iconsax.search_normal_1_outline),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Iconsax.notification_outline,
                                         color: Colors.white,
-                                        style: IconButton.styleFrom(
-                                          backgroundColor: colors.secondary.withOpacity(0.5),
-                                          padding: const EdgeInsets.all(10),
-                                        ),
                                       ),
+                                      onPressed: () {},
                                     ),
-                                                        
-                                    const SizedBox(width: 3),
-                                                        
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 5),
-                                      child: IconButton.filled(
-                                        onPressed: () {},
-                                        icon: const Icon(Iconsax.notification_outline),
+
+                                    IconButton(
+                                      icon: const Icon(
+                                        Iconsax.repeate_music_outline,
                                         color: Colors.white,
-                                        style: IconButton.styleFrom(
-                                          backgroundColor: colors.secondary.withOpacity(0.5),
-                                          padding: const EdgeInsets.all(10),
-                                        ),
                                       ),
+                                      onPressed: () {},
                                     ),
+
+                                    IconButton(
+                                      icon: const Icon(
+                                        Iconsax.setting_2_outline,
+                                        color: Colors.white,
+                                      ),
+                                      onPressed: () {},
+                                    ),
+
                                   ],
                                 ),
                               ),
@@ -162,8 +142,6 @@ class HomeViewState extends ConsumerState<HomeView> {
                 ),
               ],
             ),
-          ],
-        ),
       ),
     );
   }
