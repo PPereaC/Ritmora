@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
 import 'dart:io';
 
@@ -10,6 +10,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
 
 import '../../config/helpers/permissions_helper.dart';
@@ -269,75 +270,62 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
   
     return SafeArea(
       child: Scaffold(
-        backgroundColor: colors.surface,
-        extendBodyBehindAppBar: true,
-        body: Stack(
+        body: Column(
           children: [
-            const GradientWidget(),
-            
-            Column(
-              children: [
-                // Header con logo y botones
-                Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+            // Header con logo y botones
+            Padding(
+              padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+        
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Text(
+                      'Tu Biblioteca',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 25,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  
+                  const Spacer(),
+        
+                  Row(
                     children: [
-
-                      Padding(
-                        padding: const EdgeInsets.only(top: 5),
-                        child: Image.asset(
-                          'assets/images/logo.png',
-                          width: 50,
-                          height: 50,
-                        ),
+                      IconButton(
+                        onPressed: () => _importPlaylist(),
+                        icon: const Icon(Iconsax.import_2_outline),
+                        color: Colors.white,
                       ),
-                      
-                      const Spacer(),
-
-                      Row(
-                        children: [
-                          IconButton.filled(
-                            onPressed: () => _importPlaylist(),
-                            icon: const Icon(Iconsax.import_2_outline),
-                            color: Colors.white,
-                            style: IconButton.styleFrom(
-                              backgroundColor: colors.secondary.withOpacity(0.5),
-                              padding: const EdgeInsets.all(10),
-                            ),
-                          ),
-                          const SizedBox(width: 3),
-                          IconButton.filled(
-                            onPressed: () => _showCreatePlaylistDialog(),
-                            icon: const Icon(Iconsax.add_square_outline),
-                            color: Colors.white,
-                            style: IconButton.styleFrom(
-                              backgroundColor: colors.secondary.withOpacity(0.5),
-                              padding: const EdgeInsets.all(10),
-                            ),
-                          ),
-                        ],
+                      const SizedBox(width: 3),
+                      IconButton(
+                        onPressed: () => _showCreatePlaylistDialog(),
+                        icon: const Icon(Iconsax.add_square_outline),
+                        color: Colors.white,
                       ),
-                      
                     ],
                   ),
-                ),
-  
-                // TabBar
-                _tabBar(colors),
-  
-                // TabBarView con contenido
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildPlaylistsView(),
-                      _buildAlbumsView(),
-                      _buildArtistsView(),
-                    ],
-                  ),
-                ),
-              ],
+                  
+                ],
+              ),
+            ),
+          
+            // TabBar
+            _tabBar(colors),
+          
+            // TabBarView con contenido
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildPlaylistsView(),
+                  _buildAlbumsView(),
+                  _buildArtistsView(),
+                ],
+              ),
             ),
           ],
         ),

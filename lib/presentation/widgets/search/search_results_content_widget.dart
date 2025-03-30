@@ -53,7 +53,7 @@ class SearchResultsContent extends ConsumerWidget {
             ? const Center(
                 child: Text(
                   'Busca tus canciones favoritas',
-                  style: TextStyle(color: Colors.white54),
+                  style: TextStyle(color: Colors.white),
                 ),
               )
             : ListView.builder(
@@ -109,7 +109,7 @@ class FilterButton extends StatelessWidget {
       icon: Icon(icon, color: Colors.white),
       label: Text(label),
       style: FilledButton.styleFrom(
-        backgroundColor: isSelected ? colors.primary.withOpacity(0.9) : colors.primary.withOpacity(0.5),
+        backgroundColor: isSelected ? colors.primary : Colors.grey[900],
         foregroundColor: Colors.white,
       ),
     );

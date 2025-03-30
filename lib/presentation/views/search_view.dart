@@ -50,7 +50,7 @@ class SearchViewState extends ConsumerState<SearchView> {
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Buscar canciones o videos',
-                hintStyle: const TextStyle(color: Colors.white54),
+                hintStyle: const TextStyle(color: Colors.white),
                 prefixIcon: const Icon(Iconsax.search_normal_outline, color: Colors.white),
                 suffixIcon: _searchController.text.isNotEmpty 
                   ? IconButton(

@@ -75,7 +75,7 @@ class SongListTile extends ConsumerWidget {
             children: [
               ConstrainedBox(
                 constraints: BoxConstraints(
-                  maxWidth: 55,
+                  maxWidth: 50,
                   maxHeight: isVideo ? 45 : 60,
                 ),
                 child: AspectRatio(
