@@ -1,2 +1,0 @@
-/home/devp/Documentos/FlutterProjects/FinMusic/android/app/.cxx/Debug/4k35y32j/armeabi-v7a/CMakeFiles/edit_cache.dir
-/home/devp/Documentos/FlutterProjects/FinMusic/android/app/.cxx/Debug/4k35y32j/armeabi-v7a/CMakeFiles/rebuild_cache.dir
