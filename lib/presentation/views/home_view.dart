@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:marquee/marquee.dart';
 
-import '../../config/utils/responsive.dart';
 import '../providers/providers.dart';
 
 class HomeView extends ConsumerStatefulWidget {
