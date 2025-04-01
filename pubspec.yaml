@@ -1,6 +1,6 @@
 name: finmusic
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.6
 
 environment:
@@ -42,6 +42,7 @@ dependencies:
   youtube_explode_dart: ^2.3.6
 
 dev_dependencies:
+  build_runner: ^2.4.15
   flutter_lints: ^4.0.0
   flutter_test:
     sdk: flutter
