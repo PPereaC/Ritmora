@@ -74,28 +74,56 @@ jobs:
 
       - name: Generate AppImage
         run: |
-          # Verificar el nombre real del ejecutable
-          echo "Contenido del directorio bundle:"
+          # Verificar contenido del directorio bundle
+          echo "=== Contenido de build/linux/x64/release/bundle ==="
           ls -la build/linux/x64/release/bundle/
+      
+          # Nombre del ejecutable (en minúsculas)
+          EXECUTABLE="finmusic"
           
-          # Obtener el nombre exacto del ejecutable
-          EXECUTABLE=$(ls build/linux/x64/release/bundle/ | grep -v '\.desktop\|\.png\|\.so')
-          echo "Ejecutable detectado: $EXECUTABLE"
-          
+          # Verificar si existe el ejecutable
+          if [ ! -f "build/linux/x64/release/bundle/$EXECUTABLE" ]; then
+            echo "⚠️ El ejecutable no existe con ese nombre, buscando alternativas..."
+            EXECUTABLE=$(ls build/linux/x64/release/bundle | grep -E '^[a-z0-9_]+$' | grep -v '\.desktop\|\.so\|\.png')
+            echo "🔍 Usando ejecutable detectado: $EXECUTABLE"
+          fi
+      
+          # Verificar archivos esenciales
+          if [ ! -f "build/linux/x64/release/bundle/$EXECUTABLE" ]; then
+            echo "❌ Error: No se encontró el ejecutable principal"
+            exit 1
+          fi
+      
+          if [ ! -f "build/linux/x64/release/bundle/$EXECUTABLE.desktop" ]; then
+            echo "❌ Error: No se encontró el archivo .desktop"
+            exit 1
+          fi
+      
+          ICON_PATH="build/linux/x64/release/bundle/data/flutter_assets/assets/icon.png"
+          if [ ! -f "$ICON_PATH" ]; then
+            echo "⚠️ Advertencia: No se encontró el icono en la ruta esperada"
+            ICON_PATH=$(find build/linux/x64/release/bundle -name 'icon.png' | head -n 1)
+            [ -z "$ICON_PATH" ] && echo "❌ Error: No se encontró ningún icono" && exit 1
+            echo "🔍 Usando icono encontrado en: $ICON_PATH"
+          fi
+      
           # Descargar linuxdeploy
-          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
-          
-          # Generar AppImage
+      
+          # Generar AppImage (mostrando comandos para debug)
+          echo "▶️ Generando AppImage..."
           ./linuxdeploy-x86_64.AppImage \
             --appdir AppDir \
             --executable "build/linux/x64/release/bundle/$EXECUTABLE" \
             --desktop-file "build/linux/x64/release/bundle/$EXECUTABLE.desktop" \
-            --icon-file "build/linux/x64/release/bundle/data/flutter_assets/assets/icon.png" \
-            --output appimage
-          
-          # Renombrar el archivo resultante
+            --icon-file "$ICON_PATH" \
+            --output appimage \
+            --verbosity=3
+      
+          # Renombrar con versión
           mv *.AppImage "finmusic_${{ steps.version.outputs.version }}.AppImage"
+          echo "✅ AppImage generado correctamente!"
 
       - name: Create or Update Release
         uses: softprops/action-gh-release@v1
