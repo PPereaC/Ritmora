@@ -38,7 +38,7 @@ jobs:
           mkdir -p deb_package/usr/share/applications
           
           cp -r build/linux/x64/release/bundle/* deb_package/usr/local/bin/
-          cp assets/icons/icon.png deb_package/usr/share/icons/hicolor/512x512/apps/finmusic.png
+          cp assets/icon.png deb_package/usr/share/icons/hicolor/512x512/apps/finmusic.png
           
           cat > deb_package/usr/share/applications/finmusic.desktop <<'EOL'
           [Desktop Entry]
