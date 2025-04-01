@@ -74,15 +74,28 @@ jobs:
 
       - name: Generate AppImage
         run: |
+          # Verificar el nombre real del ejecutable
+          echo "Contenido del directorio bundle:"
+          ls -la build/linux/x64/release/bundle/
+          
+          # Obtener el nombre exacto del ejecutable
+          EXECUTABLE=$(ls build/linux/x64/release/bundle/ | grep -v '\.desktop\|\.png\|\.so')
+          echo "Ejecutable detectado: $EXECUTABLE"
+          
+          # Descargar linuxdeploy
           wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
+          
+          # Generar AppImage
           ./linuxdeploy-x86_64.AppImage \
             --appdir AppDir \
-            --executable build/linux/x64/release/bundle/finmusic \
-            --desktop-file build/linux/x64/release/bundle/finmusic.desktop \
-            --icon-file build/linux/x64/release/bundle/assets/icon.png \
+            --executable "build/linux/x64/release/bundle/$EXECUTABLE" \
+            --desktop-file "build/linux/x64/release/bundle/$EXECUTABLE.desktop" \
+            --icon-file "build/linux/x64/release/bundle/data/flutter_assets/assets/icon.png" \
             --output appimage
-          mv *.AppImage finmusic_${{ steps.version.outputs.version }}.AppImage
+          
+          # Renombrar el archivo resultante
+          mv *.AppImage "finmusic_${{ steps.version.outputs.version }}.AppImage"
 
       - name: Create or Update Release
         uses: softprops/action-gh-release@v1
