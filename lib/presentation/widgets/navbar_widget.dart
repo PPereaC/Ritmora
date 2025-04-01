@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,12 +21,12 @@ class BottomNavBarState extends ConsumerState<Navbar> {
       selectedIndex = index;
     });
 
-    switch (index){
+    switch (index) {
       case 0:
         context.go('/');
         break;
       case 1:
-        context.go('/favorites');
+        context.go('/search');
         break;
       case 2:
         context.go('/library');
@@ -34,73 +36,48 @@ class BottomNavBarState extends ConsumerState<Navbar> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-  
     return Container(
-      color: Colors.transparent,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color.lerp(colors.onSurface, colors.primary, 0.1) ?? colors.onSurface,
-              Color.lerp(colors.onSurface, colors.secondary, 0.2) ?? colors.onSurface,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      decoration: BoxDecoration(
+        color: Colors.black,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: colors.shadow.withOpacity(0.2),
-              offset: const Offset(0, 10),
-              blurRadius: 24,
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: colors.primary.withOpacity(0.05),
-              offset: const Offset(0, 4),
-              blurRadius: 12,
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: Colors.white.withOpacity(0.1),
-              offset: const Offset(0, -2),
-              blurRadius: 8,
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 5),
+        ],
+      ),
+      child: SafeArea(
+        child: Container(
+          height: 65,
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(
               bottomNavItems.length,
               (index) {
                 final isSelected = selectedIndex == index;
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                return Expanded(
                   child: InkWell(
                     onTap: () => onItemTapped(index),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.only(bottom: 8),
-                          height: 5,
-                          width: isSelected ? 20 : 0,
-                          decoration: BoxDecoration(
-                            color: colors.primary,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
                         Icon(
-                          bottomNavItems[index].icon,
-                          size: 28,
-                          color: Colors.white,
+                          isSelected
+                              ? bottomNavItems[index].iconSelected
+                              : bottomNavItems[index].icon,
+                          size: 26,
+                          color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          bottomNavItems[index].title,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+                            fontSize: 11,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                          ),
                         ),
                       ],
                     ),

@@ -29,6 +29,11 @@ class SearchedSongsNotifier extends StateNotifier<List<Song>> {
     required this.ref
   }) : super([]);
 
+  void clearResults() {
+    state = [];
+    _lastQuery = '';
+  }
+
   Future<List<Song>> searchSongsByQuery(String query, { String filter = "songs" }) async {
     // Si el query y filtro son iguales a los últimos y tenemos resultados, devolvemos el cache
     if (query == _lastQuery && filter == _lastFilter && state.isNotEmpty) {

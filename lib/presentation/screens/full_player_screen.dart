@@ -1,8 +1,12 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:animate_do/animate_do.dart';
+import 'package:finmusic/config/utils/pretty_print.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:marquee/marquee.dart';
 
 import '../../config/utils/constants.dart';
@@ -25,7 +29,6 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
   Widget build(BuildContext context) {
     final playerService = ref.watch(songPlayerProvider);
     final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -81,8 +84,9 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                 'FinMusic',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 20,
+                                  fontSize: 25,
                                   fontWeight: FontWeight.bold,
+                                  fontFamily: 'Titulo'
                                 ),
                               ),
                               IconButton(
@@ -99,54 +103,69 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                         // Carátula de la canción
                         Expanded(
                           flex: 2,
-                          child: Container(
-                            margin: EdgeInsets.symmetric(
-                              horizontal: screenWidth * 0.11,
-                              vertical: screenHeight * 0.04
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
-                                  blurRadius: 10,
-                                  spreadRadius: 5,
-                                  offset: const Offset(0, 5),
-                                ),
-                              ],
-                            ),
-                            child: Hero(
-                              tag: currentSong.songId,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: Image.network(
-                                  currentSong.thumbnailUrl,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) {
-                                      return FadeIn(child: child);
-                                    }
-                                    return const Center(
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final size = constraints.maxWidth * 0.8;
+                              return Center(
+                                child: SizedBox(
+                                  width: size,
+                                  child: AspectRatio(
+                                    aspectRatio: 1,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: Colors.white.withOpacity(0.15),
+                                          width: 1,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.5),
+                                            blurRadius: 20,
+                                            spreadRadius: 5,
+                                            offset: const Offset(0, 10),
+                                          ),
+                                          BoxShadow(
+                                            color: Colors.white.withOpacity(0.15),
+                                            blurRadius: 5,
+                                            spreadRadius: 1,
+                                            offset: const Offset(0, 0),
+                                          ),
+                                        ],
                                       ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, _) => Container(
-                                    color: Colors.grey[900],
-                                    child: Image.asset(
-                                      defaultPoster,
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                    )
+                                      child: Hero(
+                                        tag: currentSong.songId,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(20),
+                                          child: Image.network(
+                                            currentSong.thumbnailUrl,
+                                            fit: BoxFit.cover,
+                                            loadingBuilder: (context, child, loadingProgress) {
+                                              if (loadingProgress == null) {
+                                                return FadeIn(child: child);
+                                              }
+                                              return const Center(
+                                                child: CircularProgressIndicator(
+                                                  color: Colors.white,
+                                                  strokeWidth: 2,
+                                                ),
+                                              );
+                                            },
+                                            errorBuilder: (context, error, _) => Container(
+                                              color: Colors.grey[900],
+                                              child: Image.asset(
+                                                defaultPoster,
+                                                fit: BoxFit.cover,
+                                              )
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
+                              );
+                            },
                           ),
                         ),
 
@@ -239,57 +258,93 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                               SizedBox(height: screenHeight * 0.01),
                   
                               // Barra de progreso
-                              StreamBuilder<Duration>(
-                                stream: playerService.positionStream,
-                                builder: (context, positionSnapshot) {
-                                  return StreamBuilder<Duration?>(
-                                    stream: playerService.durationStream,
-                                    builder: (context, durationSnapshot) {
-                                      final position = positionSnapshot.data ?? Duration.zero;
-                                      final duration = durationSnapshot.data ?? Duration.zero;
-                                      return Column(
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 23),
-                                            child: MusicProgressBar(
-                                              currentPosition: position,
-                                              duration: duration,
-                                              onChanged: (newPosition) {
-                                                setState(() {
-                                                  _currentDraggingPosition = newPosition;
-                                                });
-                                              },
-                                              onChangeEnd: (position) {
-                                                playerService.seek(position);
-                                                setState(() {
-                                                  _currentDraggingPosition = null;
-                                                });
-                                              },
-                                            ),
+                              Consumer(
+                                builder: (context, ref, child) {
+                                  final isLoading = ref.watch(loadingProvider);
+                                  printINFO('Estado de carga en FullPlayerScreen: $isLoading');
+
+                                  if (isLoading) {
+                                    // Mostrar mensaje de carga mientras se obtiene el streamUrl
+                                    return Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        const SizedBox(height: 10),
+                                        SizedBox(
+                                          height: 20,
+                                          child: LoadingIndicator(
+                                            indicatorType: Indicator.ballPulseSync,
+                                            colors: [Colors.white.withOpacity(0.7)],
+                                            strokeWidth: 2,
                                           ),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                                            child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Text(
-                                                  _formatDuration(_currentDraggingPosition ?? position),
-                                                  style: const TextStyle(
-                                                    color: Colors.white70,
-                                                    fontSize: 13,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  _formatDuration(duration),
-                                                  style: const TextStyle(
-                                                    color: Colors.white70,
-                                                    fontSize: 13,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        const Text(
+                                          "Cargando canción...",
+                                          style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                        ],
+                                        ),
+                                      ],
+                                    );
+                                  }
+
+                                  // Mostrar barra de progreso y duración cuando no está cargando
+                                  return StreamBuilder<Duration>(
+                                    stream: playerService.positionStream,
+                                    builder: (context, positionSnapshot) {
+                                      return StreamBuilder<Duration?>(
+                                        stream: playerService.durationStream,
+                                        builder: (context, durationSnapshot) {
+                                          final position = positionSnapshot.data ?? Duration.zero;
+                                          final duration = durationSnapshot.data;
+
+                                          return Column(
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 23),
+                                                child: MusicProgressBar(
+                                                  currentPosition: position,
+                                                  duration: duration ?? Duration.zero,
+                                                  onChanged: (newPosition) {
+                                                    setState(() {
+                                                      _currentDraggingPosition = newPosition;
+                                                    });
+                                                  },
+                                                  onChangeEnd: (position) {
+                                                    playerService.seek(position);
+                                                    setState(() {
+                                                      _currentDraggingPosition = null;
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                                                child: Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                      _formatDuration(_currentDraggingPosition ?? position),
+                                                      style: const TextStyle(
+                                                        color: Colors.white70,
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      _formatDuration(duration ?? Duration.zero),
+                                                      style: const TextStyle(
+                                                        color: Colors.white70,
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
                                       );
                                     },
                                   );

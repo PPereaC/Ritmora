@@ -94,6 +94,12 @@ class JustAudioService extends BasePlayerService {
     await _justAudioPlayer.seek(position);
   }
 
+  @override
+  void updateCurrentSong(Song song) {
+    _currentSong = song;
+    _songController.add(song);
+  }
+
   // Reproducir una canción
   @override
   Future<void> playSong(Song song, [int retryCount = 0]) async {

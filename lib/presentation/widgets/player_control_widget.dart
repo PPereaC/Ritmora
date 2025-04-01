@@ -1,7 +1,10 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:palette_generator/palette_generator.dart';
 
 import '../../config/utils/constants.dart';
 import '../../config/utils/responsive.dart';
@@ -36,33 +39,40 @@ class PlayerControlWidget extends ConsumerWidget {
     final colors = Theme.of(context).colorScheme;
     final textStyles = Theme.of(context).textTheme;
     final size = MediaQuery.of(context).size;
-    final playerService = ref.read(songPlayerProvider);
+    final playerService = ref.watch(songPlayerProvider);
 
-    if (Responsive.isMobile(context)) {
-      return _MobilePlayerControl(
-        colors: colors,
-        size: size,
-        currentSong: currentSong,
-        textStyles: textStyles,
-        onPlayPause: onPlayPause,
-        isPlaying: isPlaying,
-        onQueueButtonPressed: onQueueButtonPressed,
-        onNextSong: onNextSong
-      );
-    } else if (Responsive.isTabletOrDesktop(context)) {
-      return _DesktopPlayerControl(
-        colors: colors,
-        size: size,
-        currentSong: currentSong,
-        textStyles: textStyles,
-        onPlayPause: onPlayPause,
-        isPlaying: isPlaying,
-        playerService: playerService,
-        onQueueButtonPressed: onQueueButtonPressed,
-      );
-    } else {
-      return const SizedBox.shrink();
-    }
+    return StreamBuilder<bool>(
+      stream: playerService.playingStream,
+      builder: (context, snapshot) {
+        final isCurrentlyPlaying = snapshot.data ?? false;
+
+        if (Responsive.isMobile(context)) {
+          return _MobilePlayerControl(
+            colors: colors,
+            size: size,
+            currentSong: currentSong,
+            textStyles: textStyles,
+            onPlayPause: () => playerService.togglePlay(),
+            isPlaying: isCurrentlyPlaying,
+            onQueueButtonPressed: onQueueButtonPressed,
+            onNextSong: onNextSong
+          );
+        } else if (Responsive.isTabletOrDesktop(context)) {
+          return _DesktopPlayerControl(
+            colors: colors,
+            size: size,
+            currentSong: currentSong,
+            textStyles: textStyles,
+            onPlayPause: () => playerService.togglePlay(),
+            isPlaying: isCurrentlyPlaying,
+            playerService: playerService,
+            onQueueButtonPressed: onQueueButtonPressed,
+          );
+        } else {
+          return const SizedBox.shrink();
+        }
+      }
+    );
   }
 }
 
@@ -305,8 +315,7 @@ class _DesktopPlayerControl extends ConsumerWidget {
   }
 }
 
-class _MobilePlayerControl extends StatelessWidget {
-  
+class _MobilePlayerControl extends ConsumerStatefulWidget {
   final ColorScheme colors;
   final Size size;
   final Song currentSong;
@@ -324,141 +333,188 @@ class _MobilePlayerControl extends StatelessWidget {
     required this.onPlayPause,
     required this.isPlaying,
     required this.onQueueButtonPressed,
-    required this.onNextSong
+    required this.onNextSong,
   });
+
+  @override
+  ConsumerState<_MobilePlayerControl> createState() => _MobilePlayerControlState();
+}
+
+class _MobilePlayerControlState extends ConsumerState<_MobilePlayerControl> {
+
+  String? _lastSongId;
+
+  Future<void> _updateColorIfNeeded() async {
+    if (_lastSongId != widget.currentSong.songId) {
+      _lastSongId = widget.currentSong.songId;
+      
+      final paletteGenerator = await PaletteGenerator.fromImageProvider(
+        NetworkImage(widget.currentSong.thumbnailUrl),
+        maximumColorCount: 20,
+      );
+      
+      // Obtener el color más frecuente de la imagen
+      final mostUsedColor = paletteGenerator.colors.reduce((value, element) {
+        final valuePopulation = paletteGenerator.colors.where((color) => 
+          color.value == value.value).length;
+        final elementPopulation = paletteGenerator.colors.where((color) => 
+          color.value == element.value).length;
+        return valuePopulation > elementPopulation ? value : element;
+      });
+      
+      final HSLColor hslColor = HSLColor.fromColor(mostUsedColor);
+      
+      final adjustedColor = hslColor
+          .withSaturation(0.8)
+          .withLightness(0.35)
+          .toColor();
+      
+      ref.read(songColorProvider.notifier).updateColor(adjustedColor);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
 
-    var isFullPlayerOpened = false;
+    // Actualizar color si es necesario
+    _updateColorIfNeeded();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 5),
-      child: GestureDetector(
-        onHorizontalDragEnd: (details) {
-          if (details.primaryVelocity != null && details.primaryVelocity! < 0) {
-            onNextSong();
-          }
-        },
-        child: SizedBox(
-          height: 60,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              color: colors.secondary,
-              child: InkWell(
-                onTap: () {
-                  if (!isFullPlayerOpened) {
-                    context.push('/full-player');
-                    isFullPlayerOpened = true;
-                  } else {
-                    context.pushNamed('/full-player');
-                  }
-                },
-                onLongPress: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) => Theme(
-                      data: Theme.of(context).copyWith(
-                        colorScheme: colors,
-                      ),
-                      child: const QueueBottomSheetBar()
-                    ),
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
-                  child: Row(
-                    children: [
-                      // Thumbnail
-                      SizedBox(
-                        width: size.width * 0.12,
-                        child: AspectRatio(
-                          aspectRatio: 1,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.network(
-                              currentSong.thumbnailUrl,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) {
-                                  return child;
-                                } else {
-                                  return Center(
-                                    child: Image.asset(
-                                      defaultLoader,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  );
-                                }
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: Colors.grey[900],
-                                  child: Image.asset(
-                                    defaultPoster,
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                  )
-                                );
-                              },
-                            )
-                          ),
-                        ),
-                      ),
-                      
-                      const SizedBox(width: 10),
-                      
-                      // Título y autor
-                      SizedBox(
-                        width: size.width * 0.6,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              currentSong.title,
-                              style: textStyles.titleMedium!.copyWith(
-                                color: Colors.white
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              currentSong.author,
-                              style: textStyles.bodyLarge!.copyWith(
-                                color: Colors.white60
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-            
-                      const Spacer(),
-            
-                      // Botón de opciones
-                      IconButton(
-                        onPressed: onPlayPause,
-                        icon: Icon(
-                          isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                          size: 30,
-                        ),
-                        color: Colors.white,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
+    // Obtener el color actual del provider
+    final backgroundColor = ref.watch(songColorProvider);
+    final playerService = ref.watch(songPlayerProvider);
+
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(10),
+        topRight: Radius.circular(10),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: backgroundColor,
+        ),
+        child: Material(
+          color: Colors.transparent,
+          elevation: 0,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: () => context.push('/full-player'),
+            onLongPress: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => Theme(
+                  data: Theme.of(context).copyWith(
+                    colorScheme: widget.colors,
                   ),
-                )
-              )
+                  child: const QueueBottomSheetBar(),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 8, left: 8, right: 16),
+              child: Row(
+                children: [
+                  // Thumbnail con sombra y bordes redondeados
+                  Hero(
+                    tag: 'current-song-thumbnail',
+                    child: Container(
+                      width: 45,
+                      height: 45,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 4,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.network(
+                          widget.currentSong.thumbnailUrl,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                                strokeWidth: 2,
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey[900],
+                              child: const Icon(
+                                Icons.music_note,
+                                color: Colors.white30,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+      
+                  const SizedBox(width: 12),
+      
+                  // Información de la canción
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          widget.currentSong.title,
+                          style: widget.textStyles.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          widget.currentSong.author,
+                          style: widget.textStyles.bodyMedium?.copyWith(
+                            color: Colors.white.withOpacity(0.85),
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+      
+                  // Botón Play/Pause
+                  StreamBuilder<bool>(
+                    stream: playerService.playingStream,
+                    builder: (context, snapshot) {
+                      final isCurrentlyPlaying = snapshot.data ?? false;
+                      
+                      return IconButton(
+                        onPressed: () => playerService.togglePlay(),
+                        icon: Icon(
+                          isCurrentlyPlaying 
+                              ? Icons.pause_rounded 
+                              : Icons.play_arrow_rounded,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                        padding: EdgeInsets.zero,
+                        splashRadius: 24,
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),

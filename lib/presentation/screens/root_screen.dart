@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,10 +14,10 @@ class RootScreen extends ConsumerStatefulWidget {
   const RootScreen({super.key, required this.navigationShell});
 
   @override
-  _RootScreenState createState() => _RootScreenState();
+  RootScreenState createState() => RootScreenState();
 }
 
-class _RootScreenState extends ConsumerState<RootScreen> {
+class RootScreenState extends ConsumerState<RootScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isQueuePanelVisible = false;
 
@@ -34,103 +36,82 @@ class _RootScreenState extends ConsumerState<RootScreen> {
   @override
   Widget build(BuildContext context) {
     final isMobile = Responsive.isMobile(context);
-    final playerService = ref.read(songPlayerProvider);
+    final playerService = ref.watch(songPlayerProvider);
     final navbarHeight = isMobile ? kBottomNavigationBarHeight : 0;
+    final playerHeight = 70.0; // Altura fija para el reproductor
 
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Colors.transparent,
       extendBody: true,
-      extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          const GradientWidget(),
-          // Row con sidebar y contenido principal
-          Row(
+          // Contenido principal
+          Column(
             children: [
-              if (!isMobile)
-                StreamBuilder<Song?>(
-                  stream: playerService.currentSongStream,
-                  builder: (context, snapshot) {
-                    final hasCurrentSong = snapshot.data != null;
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: hasCurrentSong ? 88 : 0
-                      ),
-                      child: const CustomMusicSidebar(),
-                    );
-                  },
-                ),
               Expanded(
-                child: StreamBuilder<Song?>(
-                  stream: playerService.currentSongStream,
-                  builder: (context, songSnapshot) {
-                    final currentSong = songSnapshot.data;
-                    final bottomPadding = currentSong != null 
-                      ? (Responsive.isMobile(context) ? navbarHeight.toDouble() + 20 : 80) 
-                      : 0.0;
-              
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: bottomPadding.toDouble(),
+                child: Row(
+                  children: [
+                    if (!isMobile)
+                      StreamBuilder<Song?>(
+                        stream: playerService.currentSongStream,
+                        builder: (context, snapshot) {
+                          final hasCurrentSong = snapshot.data != null;
+                          return Padding(
+                            padding: EdgeInsets.only(
+                              bottom: hasCurrentSong ? playerHeight : 0,
+                            ),
+                            child: const CustomMusicSidebar(),
+                          );
+                        },
                       ),
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: widget.navigationShell,
-                          ),
-                        ],
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          bottom: playerService.currentSong != null ? playerHeight + (isMobile ? navbarHeight : 0) : 0
+                        ),
+                        child: widget.navigationShell,
                       ),
-                    );
-                  },
+                    ),
+                    if (_isQueuePanelVisible) QueueSlidePanel(onClose: _hideQueuePanel),
+                  ],
                 ),
               ),
-              if (_isQueuePanelVisible)
-                QueueSlidePanel(onClose: _hideQueuePanel)
             ],
           ),
+
+          // Player Control en la parte inferior
           Positioned(
             left: 0,
             right: 0,
-            bottom: 0,
+            bottom: isMobile ? navbarHeight.toDouble() : 0,
             child: StreamBuilder<Song?>(
               stream: playerService.currentSongStream,
               builder: (context, songSnapshot) {
                 final currentSong = songSnapshot.data;
+                if (currentSong == null) return const SizedBox.shrink();
                 
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  height: currentSong != null 
-                    ? (Responsive.isMobile(context) ? navbarHeight.toDouble() + 80 : 80) 
-                    : 0,
-                  padding: EdgeInsets.only(
-                    bottom: Responsive.isMobile(context) ? navbarHeight.toDouble() + 20 : 0,
+                return Container(
+                  height: playerHeight,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.9),
                   ),
-                  child: currentSong != null 
-                    ? StreamBuilder<bool>(
-                        stream: playerService.playingStream,
-                        builder: (context, playingSnapshot) {
-                          
-                          return PlayerControlWidget(
-                            currentSong: currentSong,
-                            playerService: playerService,
-                            isPlaying: playingSnapshot.data ?? false,
-                            onPlayPause: () => playerService.togglePlay(),
-                            onQueueButtonPressed: _toggleQueuePanel,
-                            onNextSong: () => playerService.playNext(),
-                            onPreviousSong: () => playerService.playPrevious(),
-                          );
-
-                        },
-                      )
-                    : const SizedBox.shrink(),
+                  child: PlayerControlWidget(
+                    currentSong: currentSong,
+                    playerService: playerService,
+                    isPlaying: playerService.isPlaying,
+                    onPlayPause: () => playerService.togglePlay(),
+                    onQueueButtonPressed: _toggleQueuePanel,
+                    onNextSong: () => playerService.playNext(),
+                    onPreviousSong: () => playerService.playPrevious(),
+                  ),
                 );
               },
             ),
           ),
-        ]
+        ],
       ),
-      bottomNavigationBar: isMobile ? const Navbar() : null
+      bottomNavigationBar: isMobile ? const Navbar() : null,
     );
   }
 }
