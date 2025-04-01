@@ -97,6 +97,12 @@ class AudioPlayersService extends BasePlayerService {
   }
 
   @override
+  void updateCurrentSong(Song song) {
+    _currentSong = song;
+    _songController.add(song);
+  }
+
+  @override
   Future<void> playSong(Song song) async {
     if(song.streamUrl.isEmpty) {
       final streamUrl = await getStreamUrlInBackground(song.songId);

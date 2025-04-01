@@ -4,6 +4,7 @@ abstract class BasePlayerService {
   Future<void> playSong(Song song);
   Future<void> pause();
   Future<void> resume();
+  void updateCurrentSong(Song song);
   Future<void> togglePlay();
   Future<void> playNext();
   Future<void> playPrevious();
