@@ -353,14 +353,20 @@ class _MobilePlayerControlState extends ConsumerState<_MobilePlayerControl> {
         maximumColorCount: 20,
       );
       
-      // Obtener el color dominante y ajustarlo
-      final dominantColor = paletteGenerator.dominantColor?.color ?? Colors.black;
-      final HSLColor hslColor = HSLColor.fromColor(dominantColor);
+      // Obtener el color más frecuente de la imagen
+      final mostUsedColor = paletteGenerator.colors.reduce((value, element) {
+        final valuePopulation = paletteGenerator.colors.where((color) => 
+          color.value == value.value).length;
+        final elementPopulation = paletteGenerator.colors.where((color) => 
+          color.value == element.value).length;
+        return valuePopulation > elementPopulation ? value : element;
+      });
       
-      // Ajustar la saturación y el brillo para hacer el color más intenso
+      final HSLColor hslColor = HSLColor.fromColor(mostUsedColor);
+      
       final adjustedColor = hslColor
           .withSaturation(0.8)
-          .withLightness(0.4)
+          .withLightness(0.35)
           .toColor();
       
       ref.read(songColorProvider.notifier).updateColor(adjustedColor);
