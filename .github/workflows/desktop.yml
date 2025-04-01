@@ -33,13 +33,14 @@ jobs:
 
       - name: Generate .deb package
         run: |
-          mkdir -p deb_package/usr/local/bin
-          mkdir -p deb_package/usr/share/icons/hicolor/512x512/apps
-          mkdir -p deb_package/usr/share/applications
-          
+          # Crear estructura de directorios
+          mkdir -p deb_package/{usr/local/bin,usr/share/icons/hicolor/512x512/apps,usr/share/applications,DEBIAN}
+      
+          # Copiar archivos
           cp -r build/linux/x64/release/bundle/* deb_package/usr/local/bin/
           cp assets/icon.png deb_package/usr/share/icons/hicolor/512x512/apps/finmusic.png
-          
+      
+          # Archivo .desktop
           cat > deb_package/usr/share/applications/finmusic.desktop <<'EOL'
           [Desktop Entry]
           Name=FinMusic
@@ -48,8 +49,21 @@ jobs:
           Type=Application
           Categories=Audio;Music;
           EOL
-      
-          dpkg-deb --build deb_package finmusic_${{ github.ref_name }}.deb
+          
+          # Archivo control
+          cat > deb_package/DEBIAN/control <<EOL
+          Package: finmusic
+          Version: ${GITHUB_REF_NAME//v/}
+          Section: sound
+          Priority: optional
+          Architecture: amd64
+          Maintainer: Pablo <pereacampospablo@gmail.com>
+          Description: Reproductor de música FinMusic
+          Depends: libgtk-3-0, liblzma5, gstreamer1.0-plugins-base
+          EOL
+    
+          # Build .deb
+          dpkg-deb --build deb_package finmusic_${GITHUB_REF_NAME//v/}.deb
 
       - name: Generate AppImage
         run: |
