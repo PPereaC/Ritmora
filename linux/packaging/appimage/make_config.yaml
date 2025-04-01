@@ -1,0 +1,42 @@
+display_name: FinMusic
+package_name: finmusic
+
+version: "0.1.5"
+
+maintainer:
+  name: Pablo Perea
+  email: pereacampospablo@gmail.com
+
+priority: optional
+section: x11
+installed_size: 100000
+
+dependencies:
+  - mpv
+  - ninja-build
+  - cmake
+  - clang
+  - libgtk-3-dev
+  - libunwind-dev
+  - libgstreamer1.0-dev
+  - libgstreamer-plugins-base1.0-dev
+
+essential: false
+
+icon: linux/assets/icon.png
+
+postuninstall_scripts:
+  - echo "Lo siento que no te haya gustado."
+
+keywords:
+  - FinMusic
+  - Reproductor de música
+
+generic_name: Reproductor de música
+
+categories:
+  - AudioVideo
+  - Audio
+  - Video
+
+startup_notify: true
