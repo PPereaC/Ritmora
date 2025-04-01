@@ -1,4 +1,4 @@
-name: Flutter Linux Packaging
+name: Flutter Linux Packaging - FinMusic
 
 on:
   push:
@@ -23,37 +23,52 @@ jobs:
             gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
             gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly \
             libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
-            dpkg  # Necesario para .deb
-      
+            dpkg
+
       - name: Build Linux (Release)
         run: |
           flutter config --enable-linux-desktop
           flutter pub get
           flutter build linux --release
-      
+
       - name: Generate .deb package
         run: |
           mkdir -p deb_package/usr/local/bin
+          mkdir -p deb_package/usr/share/applications
+          # Copiar archivos
           cp -r build/linux/x64/release/bundle/* deb_package/usr/local/bin/
-          dpkg-deb --build deb_package local_api_server_${{ github.ref_name }}.deb
-      
+          # Crear .desktop (si no existe)
+          if [ ! -f deb_package/usr/local/bin/finmusic.desktop ]; then
+            cat > deb_package/usr/share/applications/finmusic.desktop <<EOL
+            [Desktop Entry]
+            Name=FinMusic
+            Exec=/usr/local/bin/finmusic
+            Icon=/usr/local/bin/assets/icons/icon.png
+            Type=Application
+            Categories=Audio;Music;
+            EOL
+          fi
+          # Empaquetar
+          dpkg-deb --build deb_package finmusic_${{ github.ref_name }}.deb
+
       - name: Generate AppImage
         run: |
           wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
           ./linuxdeploy-x86_64.AppImage \
             --appdir AppDir \
-            --executable build/linux/x64/release/bundle/your_app \
-            --desktop-file build/linux/x64/release/bundle/your_app.desktop \
+            --executable build/linux/x64/release/bundle/finmusic \
+            --desktop-file build/linux/x64/release/bundle/finmusic.desktop \
+            --icon-file build/linux/x64/release/bundle/assets/icon.png \
             --output appimage
-          mv *.AppImage local_api_server_${{ github.ref_name }}.AppImage
-      
+          mv *.AppImage finmusic_${{ github.ref_name }}.AppImage
+
       - name: Upload Release
         uses: softprops/action-gh-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
           tag_name: ${{ github.ref_name }}
           files: |
-            local_api_server_${{ github.ref_name }}.deb
-            local_api_server_${{ github.ref_name }}.AppImage
+            finmusic_${{ github.ref_name }}.deb
+            finmusic_${{ github.ref_name }}.AppImage
