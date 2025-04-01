@@ -14,6 +14,13 @@ jobs:
         with:
           channel: 'stable'
       
+      - name: Get version from pubspec.yaml
+        id: version
+        run: |
+          VERSION=$(grep 'version:' pubspec.yaml | awk '{print $2}' | tr -d '"')
+          echo "Extracted version: $VERSION"
+          echo "::set-output name=version::$VERSION"
+      
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -50,10 +57,10 @@ jobs:
           Categories=Audio;Music;
           EOL
           
-          # Archivo control
+          # Archivo control con versión del pubspec.yaml
           cat > deb_package/DEBIAN/control <<EOL
           Package: finmusic
-          Version: ${GITHUB_REF_NAME//v/}
+          Version: ${{ steps.version.outputs.version }}
           Section: sound
           Priority: optional
           Architecture: amd64
@@ -63,7 +70,7 @@ jobs:
           EOL
     
           # Build .deb
-          dpkg-deb --build deb_package finmusic_${GITHUB_REF_NAME//v/}.deb
+          dpkg-deb --build deb_package finmusic_${{ steps.version.outputs.version }}.deb
 
       - name: Generate AppImage
         run: |
@@ -75,14 +82,18 @@ jobs:
             --desktop-file build/linux/x64/release/bundle/finmusic.desktop \
             --icon-file build/linux/x64/release/bundle/assets/icon.png \
             --output appimage
-          mv *.AppImage finmusic_${{ github.ref_name }}.AppImage
+          mv *.AppImage finmusic_${{ steps.version.outputs.version }}.AppImage
 
-      - name: Upload Release
+      - name: Create or Update Release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: v${{ steps.version.outputs.version }}
+          release_name: FinMusic ${{ steps.version.outputs.version }}
           files: |
-            finmusic_${{ github.ref_name }}.deb
-            finmusic_${{ github.ref_name }}.AppImage
+            finmusic_${{ steps.version.outputs.version }}.deb
+            finmusic_${{ steps.version.outputs.version }}.AppImage
+          draft: false
+          prerelease: false
+          replace_assets: true
