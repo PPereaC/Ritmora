@@ -95,12 +95,6 @@ class RootScreenState extends ConsumerState<RootScreen> {
                   height: playerHeight,
                   decoration: BoxDecoration(
                     color: Colors.black.withOpacity(0.9),
-                    border: Border(
-                      top: BorderSide(
-                        color: Colors.white.withOpacity(0.2),
-                        width: 1.0,
-                      ),
-                    ),
                   ),
                   child: PlayerControlWidget(
                     currentSong: currentSong,
