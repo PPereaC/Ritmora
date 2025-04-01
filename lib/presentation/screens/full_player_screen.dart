@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,7 +27,6 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
   Widget build(BuildContext context) {
     final playerService = ref.watch(songPlayerProvider);
     final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -81,8 +82,9 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                 'FinMusic',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 20,
+                                  fontSize: 25,
                                   fontWeight: FontWeight.bold,
+                                  fontFamily: 'Titulo'
                                 ),
                               ),
                               IconButton(
@@ -99,54 +101,69 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                         // Carátula de la canción
                         Expanded(
                           flex: 2,
-                          child: Container(
-                            margin: EdgeInsets.symmetric(
-                              horizontal: screenWidth * 0.11,
-                              vertical: screenHeight * 0.04
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
-                                  blurRadius: 10,
-                                  spreadRadius: 5,
-                                  offset: const Offset(0, 5),
-                                ),
-                              ],
-                            ),
-                            child: Hero(
-                              tag: currentSong.songId,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: Image.network(
-                                  currentSong.thumbnailUrl,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) {
-                                      return FadeIn(child: child);
-                                    }
-                                    return const Center(
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final size = constraints.maxWidth * 0.8;
+                              return Center(
+                                child: SizedBox(
+                                  width: size,
+                                  child: AspectRatio(
+                                    aspectRatio: 1,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: Colors.white.withOpacity(0.15),
+                                          width: 1,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.5),
+                                            blurRadius: 20,
+                                            spreadRadius: 5,
+                                            offset: const Offset(0, 10),
+                                          ),
+                                          BoxShadow(
+                                            color: Colors.white.withOpacity(0.15),
+                                            blurRadius: 5,
+                                            spreadRadius: 1,
+                                            offset: const Offset(0, 0),
+                                          ),
+                                        ],
                                       ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, _) => Container(
-                                    color: Colors.grey[900],
-                                    child: Image.asset(
-                                      defaultPoster,
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                    )
+                                      child: Hero(
+                                        tag: currentSong.songId,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(20),
+                                          child: Image.network(
+                                            currentSong.thumbnailUrl,
+                                            fit: BoxFit.cover,
+                                            loadingBuilder: (context, child, loadingProgress) {
+                                              if (loadingProgress == null) {
+                                                return FadeIn(child: child);
+                                              }
+                                              return const Center(
+                                                child: CircularProgressIndicator(
+                                                  color: Colors.white,
+                                                  strokeWidth: 2,
+                                                ),
+                                              );
+                                            },
+                                            errorBuilder: (context, error, _) => Container(
+                                              color: Colors.grey[900],
+                                              child: Image.asset(
+                                                defaultPoster,
+                                                fit: BoxFit.cover,
+                                              )
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
+                              );
+                            },
                           ),
                         ),
 
