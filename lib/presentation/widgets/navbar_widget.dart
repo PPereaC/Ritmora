@@ -21,7 +21,7 @@ class BottomNavBarState extends ConsumerState<Navbar> {
       selectedIndex = index;
     });
 
-    switch (index){
+    switch (index) {
       case 0:
         context.go('/');
         break;
@@ -35,44 +35,56 @@ class BottomNavBarState extends ConsumerState<Navbar> {
   }
 
   @override
-  Widget build(BuildContext context) {  
+  Widget build(BuildContext context) {
     return Container(
-      color: Colors.transparent,
-      child: Container(
-        padding: const EdgeInsets.only(top: 8),
-        color: Colors.black.withOpacity(0.9),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(
-            bottomNavItems.length,
-            (index) {
-              final isSelected = selectedIndex == index;
-              return InkWell(
-                onTap: () => onItemTapped(index),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        isSelected ? bottomNavItems[index].iconSelected : bottomNavItems[index].icon,
-                        size: index == 2 ? 30 : 28,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        bottomNavItems[index].title,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      decoration: BoxDecoration(
+        color: Colors.black,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Container(
+          height: 65,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(
+              bottomNavItems.length,
+              (index) {
+                final isSelected = selectedIndex == index;
+                return Expanded(
+                  child: InkWell(
+                    onTap: () => onItemTapped(index),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isSelected
+                              ? bottomNavItems[index].iconSelected
+                              : bottomNavItems[index].icon,
+                          size: 26,
+                          color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        Text(
+                          bottomNavItems[index].title,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+                            fontSize: 11,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),

@@ -1,5 +1,5 @@
 
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:icons_plus/icons_plus.dart';
 
 class NavItemModel {
@@ -12,7 +12,7 @@ class NavItemModel {
 }
 
 List<NavItemModel> bottomNavItems = [
-  NavItemModel(title: 'Inicio', icon: Iconsax.home_2_outline, iconSelected: Iconsax.home_2_bold),
-  NavItemModel(title: 'Buscar', icon: Iconsax.search_normal_outline, iconSelected: Iconsax.search_normal_bold),
-  NavItemModel(title: 'Biblioteca', icon: Iconsax.music_library_2_outline, iconSelected: Iconsax.music_library_2_bold),
+  NavItemModel(title: 'Inicio', icon: MingCute.home_4_line, iconSelected: MingCute.home_4_fill),
+  NavItemModel(title: 'Buscar', icon: MingCute.search_line, iconSelected: MingCute.search_fill),
+  NavItemModel(title: 'Biblioteca', icon: MingCute.music_3_line, iconSelected: MingCute.music_3_fill),
 ];
