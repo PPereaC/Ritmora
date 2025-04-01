@@ -1,10 +1,12 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:animate_do/animate_do.dart';
+import 'package:finmusic/config/utils/pretty_print.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:marquee/marquee.dart';
 
 import '../../config/utils/constants.dart';
@@ -256,57 +258,93 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                               SizedBox(height: screenHeight * 0.01),
                   
                               // Barra de progreso
-                              StreamBuilder<Duration>(
-                                stream: playerService.positionStream,
-                                builder: (context, positionSnapshot) {
-                                  return StreamBuilder<Duration?>(
-                                    stream: playerService.durationStream,
-                                    builder: (context, durationSnapshot) {
-                                      final position = positionSnapshot.data ?? Duration.zero;
-                                      final duration = durationSnapshot.data ?? Duration.zero;
-                                      return Column(
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 23),
-                                            child: MusicProgressBar(
-                                              currentPosition: position,
-                                              duration: duration,
-                                              onChanged: (newPosition) {
-                                                setState(() {
-                                                  _currentDraggingPosition = newPosition;
-                                                });
-                                              },
-                                              onChangeEnd: (position) {
-                                                playerService.seek(position);
-                                                setState(() {
-                                                  _currentDraggingPosition = null;
-                                                });
-                                              },
-                                            ),
+                              Consumer(
+                                builder: (context, ref, child) {
+                                  final isLoading = ref.watch(loadingProvider);
+                                  printINFO('Estado de carga en FullPlayerScreen: $isLoading');
+
+                                  if (isLoading) {
+                                    // Mostrar mensaje de carga mientras se obtiene el streamUrl
+                                    return Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        const SizedBox(height: 10),
+                                        SizedBox(
+                                          height: 20,
+                                          child: LoadingIndicator(
+                                            indicatorType: Indicator.ballPulseSync,
+                                            colors: [Colors.white.withOpacity(0.7)],
+                                            strokeWidth: 2,
                                           ),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                                            child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Text(
-                                                  _formatDuration(_currentDraggingPosition ?? position),
-                                                  style: const TextStyle(
-                                                    color: Colors.white70,
-                                                    fontSize: 13,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  _formatDuration(duration),
-                                                  style: const TextStyle(
-                                                    color: Colors.white70,
-                                                    fontSize: 13,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        const Text(
+                                          "Cargando canción...",
+                                          style: TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                        ],
+                                        ),
+                                      ],
+                                    );
+                                  }
+
+                                  // Mostrar barra de progreso y duración cuando no está cargando
+                                  return StreamBuilder<Duration>(
+                                    stream: playerService.positionStream,
+                                    builder: (context, positionSnapshot) {
+                                      return StreamBuilder<Duration?>(
+                                        stream: playerService.durationStream,
+                                        builder: (context, durationSnapshot) {
+                                          final position = positionSnapshot.data ?? Duration.zero;
+                                          final duration = durationSnapshot.data;
+
+                                          return Column(
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 23),
+                                                child: MusicProgressBar(
+                                                  currentPosition: position,
+                                                  duration: duration ?? Duration.zero,
+                                                  onChanged: (newPosition) {
+                                                    setState(() {
+                                                      _currentDraggingPosition = newPosition;
+                                                    });
+                                                  },
+                                                  onChangeEnd: (position) {
+                                                    playerService.seek(position);
+                                                    setState(() {
+                                                      _currentDraggingPosition = null;
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                                                child: Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                      _formatDuration(_currentDraggingPosition ?? position),
+                                                      style: const TextStyle(
+                                                        color: Colors.white70,
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      _formatDuration(duration ?? Duration.zero),
+                                                      style: const TextStyle(
+                                                        color: Colors.white70,
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
                                       );
                                     },
                                   );
