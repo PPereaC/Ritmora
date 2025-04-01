@@ -34,21 +34,21 @@ jobs:
       - name: Generate .deb package
         run: |
           mkdir -p deb_package/usr/local/bin
+          mkdir -p deb_package/usr/share/icons/hicolor/512x512/apps
           mkdir -p deb_package/usr/share/applications
-          # Copiar archivos
+          
           cp -r build/linux/x64/release/bundle/* deb_package/usr/local/bin/
-          # Crear .desktop (si no existe)
-          if [ ! -f deb_package/usr/local/bin/finmusic.desktop ]; then
-            cat > deb_package/usr/share/applications/finmusic.desktop <<EOL
-            [Desktop Entry]
-            Name=FinMusic
-            Exec=/usr/local/bin/finmusic
-            Icon=/usr/local/bin/assets/icons/icon.png
-            Type=Application
-            Categories=Audio;Music;
-            EOL
-          fi
-          # Empaquetar
+          cp assets/icons/icon.png deb_package/usr/share/icons/hicolor/512x512/apps/finmusic.png
+          
+          cat > deb_package/usr/share/applications/finmusic.desktop <<'EOL'
+          [Desktop Entry]
+          Name=FinMusic
+          Exec=/usr/local/bin/finmusic
+          Icon=finmusic
+          Type=Application
+          Categories=Audio;Music;
+          EOL
+      
           dpkg-deb --build deb_package finmusic_${{ github.ref_name }}.deb
 
       - name: Generate AppImage
