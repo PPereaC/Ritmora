@@ -74,31 +74,25 @@ jobs:
 
       - name: Generate AppImage
         run: |
-          # 1. Identificar el ejecutable
-          EXECUTABLE="FinMusic"  # Nombre exacto del binario
-          echo "Ejecutable: $EXECUTABLE"
+          # 1. Configuración inicial
+          EXECUTABLE="FinMusic"
+          VERSION=${{ steps.version.outputs.version }}
+          echo "🔧 Versión: $VERSION"
       
-          # 2. Crear archivo .desktop CORRECTAMENTE FORMATEADO
-          DESKTOP_FILE="build/linux/x64/release/bundle/$EXECUTABLE.desktop"
-          mkdir -p "$(dirname "$DESKTOP_FILE")"
-          
-          # ¡Importante! Sin indentación en el contenido EOL
-          cat > "$DESKTOP_FILE" << 'EOL'
-            [Desktop Entry]
+          # 2. Crear .desktop (formato correcto sin indentación)
+          DESKTOP_CONTENT="[Desktop Entry]
             Name=FinMusic
-            Exec=FinMusic
+            Exec=$EXECUTABLE
             Icon=finmusic
             Type=Application
-            Categories=Audio;Music;
-            EOL
+            Categories=Audio;Music;"
       
-          # 3. Configurar paths para icono
-          ICON_FILE="build/linux/x64/release/bundle/data/flutter_assets/assets/icon.png"
-          if [ ! -f "$ICON_FILE" ]; then
-            echo "⚠️ Icono no encontrado en $ICON_FILE, buscando alternativas..."
-            ICON_FILE=$(find build/linux/x64/release/bundle -name icon.png | head -n1)
-            [ -z "$ICON_FILE" ] && ICON_FILE="/dev/null"
-          fi
+          echo "$DESKTOP_CONTENT" > "build/linux/x64/release/bundle/$EXECUTABLE.desktop"
+      
+          # 3. Buscar icono (con múltiples ubicaciones posibles)
+          find build/linux/x64/release/bundle -name '*.png' -exec ls -la {} \;
+          ICON_FILE=$(find build/linux/x64/release/bundle -name 'icon.png' | head -n1)
+          [ -z "$ICON_FILE" ] && ICON_FILE="/dev/null"
       
           # 4. Generar AppImage
           wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
@@ -107,13 +101,34 @@ jobs:
           ./linuxdeploy-x86_64.AppImage \
             --appdir AppDir \
             --executable "build/linux/x64/release/bundle/$EXECUTABLE" \
-            --desktop-file "$DESKTOP_FILE" \
+            --desktop-file "build/linux/x64/release/bundle/$EXECUTABLE.desktop" \
             --icon-file "$ICON_FILE" \
-            --output appimage
+            --output appimage 2>&1 | tee linuxdeploy.log
       
-          # 5. Renombrar el archivo final
-          VERSION=${{ steps.version.outputs.version }}
-          mv *.AppImage "finmusic_$VERSION.AppImage"
+          # 5. Renombrar y verificar
+          APPIMAGE_FILE="FinMusic-$VERSION.AppImage"
+          mv *.AppImage "$APPIMAGE_FILE"
+          
+          echo "=== Archivos generados ==="
+          ls -la *.AppImage *.deb
+          echo "=== Log de linuxdeploy ==="
+          cat linuxdeploy.log
+      
+          # 6. Hacer el AppImage ejecutable (requerido para GitHub Releases)
+          chmod +x "$APPIMAGE_FILE"
+      
+          # 7. Salida para el paso de release
+          echo "APPIMAGE_FILE=$APPIMAGE_FILE" >> $GITHUB_ENV
+      
+      - name: Upload Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          files: |
+            FinMusic-${{ steps.version.outputs.version }}.deb
+            ${{ env.APPIMAGE_FILE }}
 
       - name: Create or Update Release
         uses: softprops/action-gh-release@v1
