@@ -9,7 +9,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Necesario para operaciones de tag
+
+      - name: Setup Git Config
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git config --global push.default simple  # Evita ambigüedad en push
+
       - uses: subosito/flutter-action@v1
         with:
           channel: 'stable'
@@ -19,8 +28,9 @@ jobs:
         run: |
           VERSION=$(grep 'version:' pubspec.yaml | awk '{print $2}' | tr -d '"')
           echo "Extracted version: $VERSION"
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "::set-output name=version::$VERSION"
-      
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -40,14 +50,10 @@ jobs:
 
       - name: Generate .deb package
         run: |
-          # Crear estructura de directorios
           mkdir -p deb_package/{usr/local/bin,usr/share/icons/hicolor/512x512/apps,usr/share/applications,DEBIAN}
-      
-          # Copiar archivos
           cp -r build/linux/x64/release/bundle/* deb_package/usr/local/bin/
           cp assets/icon.png deb_package/usr/share/icons/hicolor/512x512/apps/finmusic.png
-      
-          # Archivo .desktop
+          
           cat > deb_package/usr/share/applications/finmusic.desktop <<'EOL'
           [Desktop Entry]
           Name=FinMusic
@@ -57,10 +63,9 @@ jobs:
           Categories=Audio;Music;
           EOL
           
-          # Archivo control con versión del pubspec.yaml
           cat > deb_package/DEBIAN/control <<EOL
           Package: finmusic
-          Version: ${{ steps.version.outputs.version }}
+          Version: ${{ env.VERSION }}
           Section: sound
           Priority: optional
           Architecture: amd64
@@ -69,77 +74,56 @@ jobs:
           Depends: libgtk-3-0, liblzma5, gstreamer1.0-plugins-base
           EOL
     
-          # Build .deb
-          dpkg-deb --build deb_package finmusic_${{ steps.version.outputs.version }}.deb
+          dpkg-deb --build deb_package finmusic_${{ env.VERSION }}.deb
+          echo "DEB_FILE=finmusic_${{ env.VERSION }}.deb" >> $GITHUB_ENV
 
       - name: Generate AppImage
         run: |
-          # 1. Configuración inicial
           EXECUTABLE="FinMusic"
-          VERSION=${{ steps.version.outputs.version }}
-          echo "🔧 Versión: $VERSION"
-      
-          # 2. Crear .desktop (formato correcto sin indentación)
-          DESKTOP_CONTENT="[Desktop Entry]
-            Name=FinMusic
-            Exec=$EXECUTABLE
-            Icon=finmusic
-            Type=Application
-            Categories=Audio;Music;"
-      
-          echo "$DESKTOP_CONTENT" > "build/linux/x64/release/bundle/$EXECUTABLE.desktop"
-      
-          # 3. Buscar icono (con múltiples ubicaciones posibles)
-          find build/linux/x64/release/bundle -name '*.png' -exec ls -la {} \;
-          ICON_FILE=$(find build/linux/x64/release/bundle -name 'icon.png' | head -n1)
+          
+          # Crear .desktop
+          cat > "build/linux/x64/release/bundle/$EXECUTABLE.desktop" <<'EOL'
+          [Desktop Entry]
+          Name=FinMusic
+          Exec=$EXECUTABLE
+          Icon=finmusic
+          Type=Application
+          Categories=Audio;Music;
+          EOL
+          
+          # Buscar icono
+          ICON_FILE=$(find build/linux/x64/release/bundle -name 'icon.png' | head -n1 || echo "")
           [ -z "$ICON_FILE" ] && ICON_FILE="/dev/null"
-      
-          # 4. Generar AppImage
+          
           wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
-      
+          
           ./linuxdeploy-x86_64.AppImage \
             --appdir AppDir \
             --executable "build/linux/x64/release/bundle/$EXECUTABLE" \
             --desktop-file "build/linux/x64/release/bundle/$EXECUTABLE.desktop" \
             --icon-file "$ICON_FILE" \
-            --output appimage 2>&1 | tee linuxdeploy.log
-      
-          # 5. Renombrar y verificar
-          APPIMAGE_FILE="FinMusic-$VERSION.AppImage"
-          mv *.AppImage "$APPIMAGE_FILE"
+            --output appimage
           
-          echo "=== Archivos generados ==="
-          ls -la *.AppImage *.deb
-          echo "=== Log de linuxdeploy ==="
-          cat linuxdeploy.log
-      
-          # 6. Hacer el AppImage ejecutable (requerido para GitHub Releases)
-          chmod +x "$APPIMAGE_FILE"
-      
-          # 7. Salida para el paso de release
-          echo "APPIMAGE_FILE=$APPIMAGE_FILE" >> $GITHUB_ENV
-      
-      - name: Upload Release
+          mv *.AppImage "FinMusic-${{ env.VERSION }}.AppImage"
+          chmod +x "FinMusic-${{ env.VERSION }}.AppImage"
+          echo "APPIMAGE_FILE=FinMusic-${{ env.VERSION }}.AppImage" >> $GITHUB_ENV
+
+      - name: Create Tag
+        run: |
+          git tag -a "v${{ env.VERSION }}" -m "Release v${{ env.VERSION }}"
+          git push origin "v${{ env.VERSION }}"
+
+      - name: Create Release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.version.outputs.version }}
+          tag_name: v${{ env.VERSION }}
+          name: FinMusic ${{ env.VERSION }}
           files: |
-            FinMusic-${{ steps.version.outputs.version }}.deb
+            ${{ env.DEB_FILE }}
             ${{ env.APPIMAGE_FILE }}
-
-      - name: Create or Update Release
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        with:
-          tag_name: v${{ steps.version.outputs.version }}
-          release_name: FinMusic ${{ steps.version.outputs.version }}
-          files: |
-            finmusic_${{ steps.version.outputs.version }}.deb
-            finmusic_${{ steps.version.outputs.version }}.AppImage
           draft: false
           prerelease: false
           replace_assets: true
