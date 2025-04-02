@@ -74,82 +74,46 @@ jobs:
 
       - name: Generate AppImage
         run: |
-          # 1. Verificar estructura del directorio bundle
-          echo "=== Estructura del directorio bundle ==="
-          find build/linux/x64/release/bundle -type f -print
+          # 1. Identificar el ejecutable
+          EXECUTABLE="FinMusic"  # Nombre exacto del binario
+          echo "Ejecutable: $EXECUTABLE"
       
-          # 2. Identificar el ejecutable principal (binario ELF)
-          EXECUTABLE=$(find build/linux/x64/release/bundle -maxdepth 1 -type f -executable -exec file {} \; | grep ELF | cut -d: -f1 | xargs basename)
+          # 2. Crear archivo .desktop CORRECTAMENTE FORMATEADO
+          DESKTOP_FILE="build/linux/x64/release/bundle/$EXECUTABLE.desktop"
+          mkdir -p "$(dirname "$DESKTOP_FILE")"
           
-          if [ -z "$EXECUTABLE" ]; then
-            echo "❌ Error crítico: No se encontró ningún binario ejecutable ELF"
-            echo "Posibles causas:"
-            echo "1. La compilación falló silenciosamente"
-            echo "2. El ejecutable tiene permisos incorrectos"
-            echo "3. La estructura de directorios cambió"
-            exit 1
-          fi
-      
-          echo "✅ Ejecutable identificado: $EXECUTABLE"
-      
-          # 3. Verificar archivos esenciales
-          DESKTOP_FILE="${EXECUTABLE}.desktop"
-          if [ ! -f "build/linux/x64/release/bundle/$DESKTOP_FILE" ]; then
-            echo "⚠️ Advertencia: Archivo .desktop no encontrado, generando uno básico"
-            cat > "build/linux/x64/release/bundle/$DESKTOP_FILE" <<EOL
+          # ¡Importante! Sin indentación en el contenido EOL
+          cat > "$DESKTOP_FILE" << 'EOL'
             [Desktop Entry]
             Name=FinMusic
-            Exec=$EXECUTABLE
+            Exec=FinMusic
             Icon=finmusic
             Type=Application
             Categories=Audio;Music;
             EOL
+      
+          # 3. Configurar paths para icono
+          ICON_FILE="build/linux/x64/release/bundle/data/flutter_assets/assets/icon.png"
+          if [ ! -f "$ICON_FILE" ]; then
+            echo "⚠️ Icono no encontrado en $ICON_FILE, buscando alternativas..."
+            ICON_FILE=$(find build/linux/x64/release/bundle -name icon.png | head -n1)
+            [ -z "$ICON_FILE" ] && ICON_FILE="/dev/null"
           fi
       
-          # 4. Manejo del icono (con múltiples ubicaciones posibles)
-          ICON_PATHS=(
-            "build/linux/x64/release/bundle/data/flutter_assets/assets/icon.png"
-            "build/linux/x64/release/bundle/icon.png"
-            "assets/icon.png"
-          )
-      
-          for path in "${ICON_PATHS[@]}"; do
-            if [ -f "$path" ]; then
-              ICON_FILE="$path"
-              break
-            fi
-          done
-      
-          if [ -z "$ICON_FILE" ]; then
-            echo "⚠️ Advertencia: No se encontró el archivo de icono"
-            ICON_FILE="/dev/null"
-          fi
-      
-          # 5. Generar AppImage con verificación exhaustiva
-          echo "▶️ Preparando para generar AppImage..."
-          echo "Ejecutable: build/linux/x64/release/bundle/$EXECUTABLE"
-          echo "Desktop file: build/linux/x64/release/bundle/$DESKTOP_FILE"
-          echo "Icon file: $ICON_FILE"
-      
+          # 4. Generar AppImage
           wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           chmod +x linuxdeploy-x86_64.AppImage
       
           ./linuxdeploy-x86_64.AppImage \
             --appdir AppDir \
             --executable "build/linux/x64/release/bundle/$EXECUTABLE" \
-            --desktop-file "build/linux/x64/release/bundle/$DESKTOP_FILE" \
+            --desktop-file "$DESKTOP_FILE" \
             --icon-file "$ICON_FILE" \
             --output appimage
       
-          # 6. Nombrar el archivo final
+          # 5. Renombrar el archivo final
           VERSION=${{ steps.version.outputs.version }}
-          if [ -f *.AppImage ]; then
-            mv *.AppImage "finmusic_$VERSION.AppImage"
-            echo "✅ AppImage generado exitosamente: finmusic_$VERSION.AppImage"
-          else
-            echo "❌ Error inesperado: No se generó el archivo AppImage"
-            exit 1
-          fi
+          mv *.AppImage "finmusic_$VERSION.AppImage"
 
       - name: Create or Update Release
         uses: softprops/action-gh-release@v1
