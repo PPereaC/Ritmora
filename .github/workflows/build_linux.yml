@@ -18,7 +18,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.29.0'
+          flutter-version-file: pubspec.yaml
           cache: true
 
       - name: Install dependencies
@@ -26,8 +26,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ninja-build libgtk-3-dev imagemagick
           sudo apt-get install -y \
-            clang cmake ninja-build pkg-config \
-            libgtk-3-dev liblzma-dev \
             libgstreamer1.0-dev \
             libgstreamer-plugins-base1.0-dev \
             gstreamer1.0-plugins-good \
@@ -46,8 +44,7 @@ jobs:
       - name: Build Linux release
         run: |
           flutter build linux --release
-          # Verificar el nombre del ejecutable generado
-          ls -la build/linux/x64/release/bundle/
+          ls -la build/linux/x64/release/bundle/  # Verificar contenido
 
       - name: Prepare .deb package structure
         run: |
@@ -58,21 +55,15 @@ jobs:
           # Copiar todos los archivos del bundle
           cp -r build/linux/x64/release/bundle/* deb_package/usr/bin/
           
-          # Renombrar el ejecutable si es necesario (depende del nombre de tu app)
-          EXECUTABLE=$(ls build/linux/x64/release/bundle/ | grep -E '^finmusic$|\.so$' | head -n1)
-          if [ -z "$EXECUTABLE" ]; then
-            EXECUTABLE="finmusic"  # Nombre por defecto
-            echo "No se encontró ejecutable claro, usando $EXECUTABLE"
-          fi
-          echo "EXECUTABLE=$EXECUTABLE" >> $GITHUB_ENV
-          
+          # Configurar icono (usando tu assets/icon.png)
           cp assets/icon.png deb_package/usr/share/icons/hicolor/512x512/apps/finmusic.png
           
+          # Crear archivo .desktop
           cat <<EOF > deb_package/usr/share/applications/finmusic.desktop
           [Desktop Entry]
           Name=FinMusic
           Comment=Reproductor de música
-          Exec=/usr/bin/$EXECUTABLE
+          Exec=/usr/bin/finmusic
           Icon=finmusic
           Terminal=false
           Type=Application
@@ -96,8 +87,15 @@ jobs:
           find deb_package/ -type d -exec chmod 755 {} \;
           find deb_package/ -type f -exec chmod 644 {} \;
           
-          # Dar permisos de ejecución al binario
-          chmod +x deb_package/usr/bin/${{ env.EXECUTABLE }}
+          # Dar permisos de ejecución (verifica el nombre exacto del binario)
+          if [ -f "deb_package/usr/bin/finmusic" ]; then
+            chmod +x deb_package/usr/bin/finmusic
+          else
+            echo "El ejecutable finmusic no existe, buscando alternativas..."
+            EXECUTABLE=$(ls deb_package/usr/bin/ | head -n1)
+            chmod +x "deb_package/usr/bin/$EXECUTABLE"
+            mv "deb_package/usr/bin/$EXECUTABLE" "deb_package/usr/bin/finmusic"
+          fi
           
           # Construir el paquete .deb
           dpkg-deb --build deb_package finmusic_${{ steps.package-version.outputs.version }}_amd64.deb
