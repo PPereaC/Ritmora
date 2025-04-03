@@ -109,7 +109,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.package-version.outputs.version }}
-          name: FinMusic v${{ steps.package-version.outputs.version }}
+          name: v${{ steps.package-version.outputs.version }}
           body: Linux .deb package
           files: finmusic_${{ steps.package-version.outputs.version }}_amd64.deb
           draft: false
