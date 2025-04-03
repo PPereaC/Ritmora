@@ -4,16 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       build-type:
-        description: ''
+        description: 'Tipo de build (APK)'
         required: true
         default: 'apk'
         type: choice
         options:
-        - apk
-      version-override:
-        description: ''
-        required: false
-        type: string
+          - apk
 
 jobs:  
   android_build:
@@ -30,34 +26,40 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set Up Flutter
+      - name: Set Up Flutter (with correct Dart SDK)
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'
+          flutter-version: '3.29.0'
           channel: 'stable'
 
-      - name: Verify Dart SDK
-        run: dart --version
+      - name: Verify Versions
+        run: |
+          flutter --version
+          dart --version
 
       - name: Install Dependencies
         run: |
           flutter pub get
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build
+          sudo apt-get install -y cmake ninja-build libsecret-1-dev
 
-      - name: Decode Keystore
+      - name: Setup Keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
-          
-      - name: Create key.properties
-        run: |
           echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=keystore.jks" >> android/key.properties
 
-      - name: Build Release APK
+      - name: Build APK
         run: flutter build apk --release --split-per-abi
+
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p release_apks
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk "release_apks/FinMusic-${{ steps.version.outputs.version }}-armeabi-v7a.apk"
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "release_apks/FinMusic-${{ steps.version.outputs.version }}-arm64-v8a.apk"
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk "release_apks/FinMusic-${{ steps.version.outputs.version }}-x86_64.apk"
 
       - name: Get Version
         id: version
@@ -65,20 +67,12 @@ jobs:
           VERSION=$(grep 'version:' pubspec.yaml | awk '{print $2}' | tr -d '"')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Rename APK Files
-        run: |
-          mkdir -p build/apks
-          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk build/apks/finmusic-${{ steps.version.outputs.version }}-armeabi-v7a.apk
-          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/apks/finmusic-${{ steps.version.outputs.version }}-arm64-v8a.apk
-          cp build/app/outputs/flutter-apk/app-x86_64-release.apk build/apks/finmusic-${{ steps.version.outputs.version }}-x86_64.apk
-
       - name: Upload Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.version.outputs.version }}
-          name: v${{ steps.version.outputs.version }}
-          files: |
-            build/apks/finmusic-${{ steps.version.outputs.version }}-*.apk
+          name: FinMusic v${{ steps.version.outputs.version }}
+          files: release_apks/*.apk
           draft: false
           prerelease: false
           token: ${{ secrets.TOKEN }}
