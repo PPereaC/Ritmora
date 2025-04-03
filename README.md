@@ -32,8 +32,7 @@ Reproductor multiplataforma de música de YouTube Music sin necesidad de suscrip
 - 🚫 **No es un producto oficial** de Google, YouTube ni YouTube Music.  
 - 📚 Su desarrollo es **solamente educativo**, sin ánimo de lucro ni competencia con servicios existentes.  
 - 🔐 **No almacena ni gestiona credenciales de usuarios** (como contraseñas o tokens de acceso).  
-- ⚠️ **El uso es bajo tu propia responsabilidad**: El proyecto podría dejar de funcionar por cambios en las APIs de YouTube.  
-- 📜 **Cumplimiento legal**: Este software respeta los [Términos de Servicio de YouTube](https://www.youtube.com/t/terms). Si eres el propietario de contenido y deseas su eliminación, contacta conmigo.  
+- ⚠️ **El uso es bajo tu propia responsabilidad**: El proyecto podría dejar de funcionar por cambios en las APIs de YouTube.
 
 ## 📢 Nota sobre derechos de autor  
 🎵 La música y los contenidos reproducidos pertenecen a sus respectivos autores y plataformas (YouTube/Google). Este proyecto **no distribuye material con derechos de autor**, solo actúa como interfaz para la reproducción de la música.  
