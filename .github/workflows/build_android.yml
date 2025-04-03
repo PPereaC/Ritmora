@@ -57,9 +57,9 @@ jobs:
       - name: Prepare Artifacts
         run: |
           mkdir -p release_apks
-          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk "release_apks/FinMusic-${{ steps.version.outputs.version }}-armeabi-v7a.apk"
-          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "release_apks/FinMusic-${{ steps.version.outputs.version }}-arm64-v8a.apk"
-          cp build/app/outputs/flutter-apk/app-x86_64-release.apk "release_apks/FinMusic-${{ steps.version.outputs.version }}-x86_64.apk"
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk "release_apks/finmusic${{ steps.version.outputs.version }}_armeabi_v7a.apk"
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "release_apks/finmusic${{ steps.version.outputs.version }}_arm64_v8a.apk"
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk "release_apks/finmusic${{ steps.version.outputs.version }}_x86_64.apk"
 
       - name: Get Version
         id: version
