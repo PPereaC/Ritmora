@@ -1,7 +1,7 @@
 # FinMusic
 Reproductor multiplataforma de música de YouTube Music sin necesidad de suscripción ni inicio de sesión. Importa, crea y gestiona playlists, y busca cualquier canción o video musical de forma gratuita.
 
-## ✨ Características
+# ✨ Características
 * Vista inicial con las selecciones rápidas, videos musicales en tendencia y recomendaciones de playlists/albumes.
 * Reproducción gratuita de música de YouTube Music.
 * Sin necesidad de suscripción.
@@ -9,13 +9,36 @@ Reproductor multiplataforma de música de YouTube Music sin necesidad de suscrip
 * Manejo total de tus propias playlists, añadir, modificar o eliminar.
 * Búsqueda y reproducción de cualquier canción o video musical.
 
-## 📷 Capturas de pantalla
+# 📷 Capturas de pantalla
 <div align="left">
-  <img src="https://i.imgur.com/d7HsnSh.png" width="24%" />
-  <img src="https://i.imgur.com/TrfE3en.png" width="24%" />
-  <img src="https://i.imgur.com/pHuhfk0.png" width="24%" />
-  <img src="https://i.imgur.com/CEDvPoC.png" width="24%" />
+  <img src="https://i.imgur.com/d7HsnSh.png" width="48%" />
+  <img src="https://i.imgur.com/TrfE3en.png" width="48%" />
 </div>
+
+<div align="left">
+  <img src="https://i.imgur.com/H01JPeG.jpg" width="19%" height="10%" />
+  <img src="https://i.imgur.com/84hdkTT.jpg" width="19%" />
+  <img src="https://i.imgur.com/cyZyUUx.jpg" width="19%" />
+  <img src="https://i.imgur.com/optQq5i.jpg" width="19%" />
+  <img src="https://i.imgur.com/UeFY9Dy.jpg" width="19%" />
+</div>
+
+# 📜 Disclaimer  
+
+**FinMusic** es un **proyecto personal y educativo**, desarrollado con fines de aprendizaje y experimentación tecnológica.  
+
+## 📌 Aclaraciones importantes  
+
+- 🚫 **No es un producto oficial** de Google, YouTube ni YouTube Music.  
+- 📚 Su desarrollo es **solamente educativo**, sin ánimo de lucro ni competencia con servicios existentes.  
+- 🔐 **No almacena ni gestiona credenciales de usuarios** (como contraseñas o tokens de acceso).  
+- ⚠️ **El uso es bajo tu propia responsabilidad**: El proyecto podría dejar de funcionar por cambios en las APIs de YouTube.  
+- 📜 **Cumplimiento legal**: Este software respeta los [Términos de Servicio de YouTube](https://www.youtube.com/t/terms). Si eres el propietario de contenido y deseas su eliminación, contacta conmigo.  
+
+## 📢 Nota sobre derechos de autor  
+🎵 La música y los contenidos reproducidos pertenecen a sus respectivos autores y plataformas (YouTube/Google). Este proyecto **no distribuye material con derechos de autor**, solo actúa como interfaz para la reproducción de la música.  
+
+_Última actualización: 2025-04-03_  
 
 ## 📘 Paquetes utilizados
 * go_router: ^14.6.0 - Navegación entre ventanas.
