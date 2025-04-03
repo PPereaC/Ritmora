@@ -1,4 +1,4 @@
-name: Build and Release Linux .deb
+name: FinMusic Linux .deb Package
 
 on:
   push:
@@ -50,56 +50,57 @@ jobs:
         run: |
           mkdir -p deb_package/usr/bin
           mkdir -p deb_package/usr/share/applications
-          mkdir -p deb_package/usr/share/icons/hicolor/{256x256,48x48,32x32}/apps
+          mkdir -p deb_package/usr/share/icons/hicolor/512x512/apps
           
           cp -r build/linux/x64/release/bundle/* deb_package/usr/bin/
           
-          convert assets/icons/logo.png -resize 256x256 deb_package/usr/share/icons/hicolor/256x256/apps/pmusic.png
-          convert assets/icons/logo.png -resize 48x48 deb_package/usr/share/icons/hicolor/48x48/apps/pmusic.png
-          convert assets/icons/logo.png -resize 32x32 deb_package/usr/share/icons/hicolor/32x32/apps/pmusic.png
+          cp assets/icon.png deb_package/usr/share/icons/hicolor/512x512/apps/finmusic.png
           
-          cat <<EOF > deb_package/usr/share/applications/pmusic.desktop
+          # Crear archivo .desktop
+          cat <<EOF > deb_package/usr/share/applications/finmusic.desktop
           [Desktop Entry]
-          Name=PMusic
-          Comment=Reproductor de música privado y gratuito
-          Exec=/usr/bin/pmusic
-          Icon=pmusic
+          Name=FinMusic
+          Comment=Reproductor de música
+          Exec=/usr/bin/finmusic
+          Icon=finmusic
           Terminal=false
           Type=Application
           Categories=Audio;Music;Player;
-          StartupWMClass=pmusic
+          StartupWMClass=finmusic
           EOF
 
       - name: Create .deb package
         run: |
           mkdir -p deb_package/DEBIAN
           cat <<EOF > deb_package/DEBIAN/control
-          Package: pmusic
+          Package: finmusic
           Version: ${{ steps.package-version.outputs.version }}
           Architecture: amd64
-          Maintainer: Tu Nombre <tu@email.com>
-          Description: Reproductor de música privado y gratuito
-          Depends: libgtk-3-0, libgstreamer1.0-0, gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad, gstreamer1.0-plugins-ugly, gstreamer1.0-libav
+          Maintainer: Pablo <pereacampospablo@gmail.com>
+          Description: Reproductor de música FinMusic
+          Depends: libgtk-3-0, libgstreamer1.0-0, gstreamer1.0-plugins-base
           EOF
           
+          # Ajustar permisos
           find deb_package/ -type d -exec chmod 755 {} \;
           find deb_package/ -type f -exec chmod 644 {} \;
-          chmod +x deb_package/usr/bin/pmusic
+          chmod +x deb_package/usr/bin/finmusic
           
-          dpkg-deb --build deb_package pmusic_${{ steps.package-version.outputs.version }}_amd64.deb
+          # Construir el paquete .deb
+          dpkg-deb --build deb_package finmusic_${{ steps.package-version.outputs.version }}_amd64.deb
 
       - name: Verify .deb file
         run: |
           ls -la *.deb
-          dpkg -c pmusic_${{ steps.package-version.outputs.version }}_amd64.deb
+          dpkg -c finmusic_${{ steps.package-version.outputs.version }}_amd64.deb
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.package-version.outputs.version }}
-          name: Release v${{ steps.package-version.outputs.version }}
+          name: FinMusic v${{ steps.package-version.outputs.version }}
           body: Linux .deb package
-          files: pmusic_${{ steps.package-version.outputs.version }}_amd64.deb
+          files: finmusic_${{ steps.package-version.outputs.version }}_amd64.deb
           draft: false
           prerelease: false
           token: ${{ secrets.TOKEN }}
