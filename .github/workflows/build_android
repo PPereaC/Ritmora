@@ -1,0 +1,71 @@
+name: FinMusic Android Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:  
+  android_build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set Up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.2'
+          channel: 'stable'
+
+      - name: Install Dependencies
+        run: |
+          flutter pub get
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build
+
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+          
+      - name: Create key.properties
+        run: |
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=keystore.jks" >> android/key.properties
+
+      - name: Build Release APK
+        run: flutter build apk --release --split-per-abi
+
+      - name: Get Version
+        id: version
+        run: |
+          VERSION=$(grep 'version:' pubspec.yaml | awk '{print $2}' | tr -d '"')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Rename APK Files
+        run: |
+          mkdir -p build/apks
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk build/apks/finmusic-${{ steps.version.outputs.version }}-armeabi-v7a.apk
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk build/apks/finmusic-${{ steps.version.outputs.version }}-arm64-v8a.apk
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk build/apks/finmusic-${{ steps.version.outputs.version }}-x86_64.apk
+
+      - name: Upload Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          files: |
+            build/apks/finmusic-${{ steps.version.outputs.version }}-*.apk
+          draft: false
+          prerelease: false
+          token: ${{ secrets.TOKEN }}
