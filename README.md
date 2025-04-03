@@ -37,7 +37,7 @@ Reproductor multiplataforma de música de YouTube Music sin necesidad de suscrip
 ## 📢 Nota sobre derechos de autor  
 🎵 La música y los contenidos reproducidos pertenecen a sus respectivos autores y plataformas (YouTube/Google). Este proyecto **no distribuye material con derechos de autor**, solo actúa como interfaz para la reproducción de la música.  
 
-_Última actualización: 2025-04-03_  
+_Última actualización: 03-04-2025_  
 
 ## 📘 Paquetes utilizados
 * go_router: ^14.6.0 - Navegación entre ventanas.
