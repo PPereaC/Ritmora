@@ -11,8 +11,8 @@ Reproductor multiplataforma de música de YouTube Music sin necesidad de suscrip
 
 # 📷 Capturas de pantalla
 <div align="left">
-  <img src="https://i.imgur.com/d7HsnSh.png" width="48%" />
-  <img src="https://i.imgur.com/TrfE3en.png" width="48%" />
+  <img src="https://i.imgur.com/d7HsnSh.png" width="48.15%" />
+  <img src="https://i.imgur.com/TrfE3en.png" width="48.15%" />
 </div>
 
 <div align="left">
