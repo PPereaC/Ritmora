@@ -1,9 +1,19 @@
 name: FinMusic Android Build
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      build-type:
+        description: ''
+        required: true
+        default: 'apk'
+        type: choice
+        options:
+        - apk
+      version-override:
+        description: ''
+        required: false
+        type: string
 
 jobs:  
   android_build:
@@ -23,8 +33,11 @@ jobs:
       - name: Set Up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.2'
+          flutter-version: '3.19.0'
           channel: 'stable'
+
+      - name: Verify Dart SDK
+        run: dart --version
 
       - name: Install Dependencies
         run: |
