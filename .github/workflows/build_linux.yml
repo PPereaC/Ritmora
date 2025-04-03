@@ -1,0 +1,106 @@
+name: FinMusic Linux .deb Package
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libgtk-3-dev imagemagick
+          sudo apt-get install -y \
+            clang cmake ninja-build pkg-config \
+            libgtk-3-dev liblzma-dev \
+            libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev \
+            gstreamer1.0-plugins-good \
+            gstreamer1.0-plugins-bad \
+            gstreamer1.0-plugins-ugly \
+            gstreamer1.0-libav \
+            debhelper dh-make build-essential
+
+      - name: Get package version
+        id: package-version
+        run: |
+          VERSION=$(grep 'version:' pubspec.yaml | awk '{print $2}' | tr -d '"')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Package version: $VERSION"
+
+      - name: Build Linux release
+        run: flutter build linux --release
+
+      - name: Prepare .deb package structure
+        run: |
+          mkdir -p deb_package/usr/bin
+          mkdir -p deb_package/usr/share/applications
+          mkdir -p deb_package/usr/share/icons/hicolor/512x512/apps
+          
+          cp -r build/linux/x64/release/bundle/* deb_package/usr/bin/
+          
+          cp assets/icon.png deb_package/usr/share/icons/hicolor/512x512/apps/finmusic.png
+          
+          # Crear archivo .desktop
+          cat <<EOF > deb_package/usr/share/applications/finmusic.desktop
+          [Desktop Entry]
+          Name=FinMusic
+          Comment=Reproductor de música
+          Exec=/usr/bin/finmusic
+          Icon=finmusic
+          Terminal=false
+          Type=Application
+          Categories=Audio;Music;Player;
+          StartupWMClass=finmusic
+          EOF
+
+      - name: Create .deb package
+        run: |
+          mkdir -p deb_package/DEBIAN
+          cat <<EOF > deb_package/DEBIAN/control
+          Package: finmusic
+          Version: ${{ steps.package-version.outputs.version }}
+          Architecture: amd64
+          Maintainer: Pablo <pereacampospablo@gmail.com>
+          Description: Reproductor de música FinMusic
+          Depends: libgtk-3-0, libgstreamer1.0-0, gstreamer1.0-plugins-base
+          EOF
+          
+          # Ajustar permisos
+          find deb_package/ -type d -exec chmod 755 {} \;
+          find deb_package/ -type f -exec chmod 644 {} \;
+          chmod +x deb_package/usr/bin/finmusic
+          
+          # Construir el paquete .deb
+          dpkg-deb --build deb_package finmusic_${{ steps.package-version.outputs.version }}_amd64.deb
+
+      - name: Verify .deb file
+        run: |
+          ls -la *.deb
+          dpkg -c finmusic_${{ steps.package-version.outputs.version }}_amd64.deb
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.package-version.outputs.version }}
+          name: FinMusic v${{ steps.package-version.outputs.version }}
+          body: Linux .deb package
+          files: finmusic_${{ steps.package-version.outputs.version }}_amd64.deb
+          draft: false
+          prerelease: false
+          token: ${{ secrets.TOKEN }}
