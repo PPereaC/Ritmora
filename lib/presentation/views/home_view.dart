@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:marquee/marquee.dart';
 
+import '../../config/utils/responsive.dart';
 import '../providers/providers.dart';
 
 class HomeView extends ConsumerStatefulWidget {
@@ -33,110 +34,119 @@ class HomeViewState extends ConsumerState<HomeView> {
     final quickPicks = ref.watch(quickPicksProvider);
     final homePlaylists = ref.watch(homePlaylistsProvider);
 
+    bool isDesktop = Responsive.isTabletOrDesktop(context);
+
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Container(
-              height: 10,
-              color: Theme.of(context).scaffoldBackgroundColor,
-            ),
-          ),
-          SliverAppBar(
-            floating: true,
-            pinned: false,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(left: 8),
-                        child: Text(
-                          'FinMusic',
-                          style: TextStyle(
-                            fontFamily: 'Titulo',
-                            color: Colors.white,
-                            fontSize: 30
-                          ),
-                        )
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(
-                          Iconsax.notification_outline,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Iconsax.repeate_music_outline,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Iconsax.setting_2_outline,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Container(
+                  height: 10,
+                  color: Theme.of(context).scaffoldBackgroundColor,
                 ),
               ),
-            ),
-          ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const _SectionTitle('Selecciones rápidas', showViewAll: false),
-                      const SizedBox(height: 15),
-                      SongGridHorizontalListview(songs: quickPicks),
-                      
-                      const _SectionTitle('En tendencia'),
-                      const SizedBox(height: 15),
-                      SongHorizontalListview(songs: trendingSongs),
-                      
-                      // Iteramos sobre cada categoría de playlists
-                      ...homePlaylists.entries.map((entry) => [
-                        _SectionTitle(entry.key, showViewAll: false),
-                        const SizedBox(height: 15),
-                        PlaylistHorizontalListview(
-                          onTap: (playlist) {
-                            context.go(
-                              '/library/playlist/1/${playlist.playlistId}',
-                              extra: playlist
-                            );
-                          },
-                          playlists: entry.value
+          
+              !isDesktop
+                ? SliverAppBar(
+                  floating: true,
+                  pinned: false,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Container(
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(left: 8),
+                              child: Text(
+                                'FinMusic',
+                                style: TextStyle(
+                                  fontFamily: 'Titulo',
+                                  color: Colors.white,
+                                  fontSize: 30
+                                ),
+                              )
+                            ),
+                            const Spacer(),
+                            IconButton(
+                              icon: const Icon(
+                                Iconsax.notification_outline,
+                                color: Colors.white,
+                              ),
+                              onPressed: () {},
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Iconsax.repeate_music_outline,
+                                color: Colors.white,
+                              ),
+                              onPressed: () {},
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Iconsax.setting_2_outline,
+                                color: Colors.white,
+                              ),
+                              onPressed: () {},
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 20), // Espaciado entre secciones
-                      ]).expand((widgets) => widgets),
-                    ],
+                      ),
+                    ),
                   ),
-                );
-              },
-              childCount: 1,
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Container(
-              height: 70,
-              color: Theme.of(context).scaffoldBackgroundColor,
-            ),
-          ),
-        ],
+                )
+                : const SliverAppBar(toolbarHeight: 10),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const _SectionTitle('Selecciones rápidas', showViewAll: false),
+                          const SizedBox(height: 15),
+                          SongGridHorizontalListview(songs: quickPicks),
+                          
+                          const _SectionTitle('En tendencia'),
+                          const SizedBox(height: 15),
+                          SongHorizontalListview(songs: trendingSongs),
+                          
+                          // Iteramos sobre cada categoría de playlists
+                          ...homePlaylists.entries.map((entry) => [
+                            _SectionTitle(entry.key, showViewAll: false),
+                            const SizedBox(height: 15),
+                            PlaylistHorizontalListview(
+                              onTap: (playlist) {
+                                context.go(
+                                  '/library/playlist/1/${playlist.playlistId}',
+                                  extra: playlist
+                                );
+                              },
+                              playlists: entry.value
+                            ),
+                            const SizedBox(height: 20), // Espaciado entre secciones
+                          ]).expand((widgets) => widgets),
+                        ],
+                      ),
+                    );
+                  },
+                  childCount: 1,
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Container(
+                  height: 70,
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                ),
+              ),
+            ],
+          );
+        }
       ),
     );
   }
@@ -157,13 +167,14 @@ class _SectionTitle extends StatelessWidget {
     final textStyle = Theme.of(context).textTheme;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    return Padding(
+    return Container(
+      constraints: BoxConstraints(maxWidth: screenWidth),
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           SizedBox(
-            width: screenWidth * 0.9,
+            width: screenWidth * 0.8,
             child: title.length > 30
                 ? SizedBox(
                     height: textStyle.titleLarge?.fontSize != null
