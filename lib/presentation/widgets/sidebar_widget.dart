@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
 
 import '../providers/playlist/playlist_provider.dart';
@@ -138,26 +139,25 @@ class CustomMusicSidebarState extends ConsumerState<CustomMusicSidebar> {
   Widget _buildHeader(ColorScheme colors) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: 16.0,
+        horizontal: 16,
         vertical: 16,
       ),
       child: Row(
         children: [
           Image.asset(
             'assets/images/logo.png',
-            width: 32,
-            height: 32,
+            width: 40,
+            height: 40,
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Text(
               'FinMusic',
-              style: TextStyle(
+              style: GoogleFonts.play().copyWith(
                 color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                letterSpacing: -0.5,
-              ),
+                fontSize: 28,
+                fontWeight: FontWeight.w500,
+              )
             ),
           ),
         ],
