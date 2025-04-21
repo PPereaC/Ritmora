@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:icons_plus/icons_plus.dart';
+import '../../config/utils/responsive.dart';
 import '../providers/providers.dart';
 import '../widgets/widgets.dart';
 
@@ -38,11 +39,18 @@ class SearchViewState extends ConsumerState<SearchView> {
 
   @override
   Widget build(BuildContext context) {
+
+    bool isDesktop = Responsive.isTabletOrDesktop(context);
+
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.black,
       body: Column(
         children: [
-          const SizedBox(height: 40),
+
+          !isDesktop 
+          ? const SizedBox(height: 40)
+          : const SizedBox(height: 20),
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
@@ -62,7 +70,7 @@ class SearchViewState extends ConsumerState<SearchView> {
                     )
                   : null,
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.1),
+                fillColor: Colors.white.withOpacity(0.3),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
                   borderSide: BorderSide.none,
