@@ -240,45 +240,48 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
 
                 const SizedBox(height: 8.0),
 
-                Row(
-                  children: [
-
-                    // Ordenar canciones
-                    if (index == 0) 
-                      IconButton(
-                        icon: Icon(
-                          _showReversed 
-                            ? Icons.arrow_downward
-                            : Icons.arrow_upward,
-                          color: Colors.white,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    children: [
+                  
+                      // Ordenar canciones
+                      if (index == 0) 
+                        IconButton(
+                          icon: Icon(
+                            _showReversed 
+                              ? Icons.arrow_downward
+                              : Icons.arrow_upward,
+                            color: Colors.white,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _showReversed = !_showReversed;
+                            });
+                          },
                         ),
-                        onPressed: () {
-                          setState(() {
-                            _showReversed = !_showReversed;
-                          });
-                        },
-                      ),
-
-                    if (index == 0) 
-                      Text(
-                        'Posición',
-                        style: textStyle.bodyLarge!.copyWith(
-                          color: Colors.white
+                  
+                      if (index == 0) 
+                        Text(
+                          'Posición',
+                          style: textStyle.bodyLarge!.copyWith(
+                            color: Colors.white
+                          ),
                         ),
-                      ),
-
-                    const Spacer(),
-
-                    // Botón de búsqueda
-                    if (index == 0)
-                      IconButton(
-                        icon: const Icon(Iconsax.search_normal_1_outline, size: 22, color: Colors.white),
-                        onPressed: () { // Acción de búsqueda de canciones
-                          
-                        },
-                      ),
-
-                  ],  
+                  
+                      const Spacer(),
+                  
+                      // Botón de búsqueda
+                      if (index == 0)
+                        IconButton(
+                          icon: const Icon(MingCute.search_line, size: 22, color: Colors.white),
+                          onPressed: () { // Acción de búsqueda de canciones
+                            
+                          },
+                        ),
+                  
+                    ],  
+                  ),
                 ),
                 
                 SongListTile(
@@ -459,7 +462,9 @@ class _MobilePlaylistHeader extends ConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(height: 16.0),
+
+          const SizedBox(height: 16),
+
           Text(
             title,
             style: const TextStyle(
@@ -469,35 +474,49 @@ class _MobilePlaylistHeader extends ConsumerWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16.0),
-          // Botones de play y shuffle
+          
+          const SizedBox(height: 16),
+          
+          // Botones de control
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              FilledButton(
+              // Reproducir playlist
+              _ControlButton(
+                icon: Icons.play_arrow_rounded,
                 onPressed: () {},
-                child: const Row(
-                  children: [
-                    Icon(Icons.play_arrow_rounded, size: 32),
-                    SizedBox(width: 8),
-                    Text('Reproducir', style: TextStyle(fontSize: 16)),
-                  ],
-                ),
               ),
-              FilledButton(
+          
+              const SizedBox(width: 8),
+          
+              // Reproducir en modo aleatorio
+              _ControlButton(
+                icon: MingCute.shuffle_2_line,
                 onPressed: () {
                   songs = songs..shuffle();
                   final playerProvider = ref.read(songPlayerProvider);
                   playerProvider.playSong(songs.first);
-                  // playerProvider.addSongsToQueue(songs);
                 },
-                child: const Row(
-                  children: [
-                    Icon(Icons.shuffle_rounded, size: 32),
-                    SizedBox(width: 8),
-                    Text('Aleatorio', style: TextStyle(fontSize: 16)),
-                  ],
-                ),
+              ),
+          
+              const SizedBox(width: 8),
+          
+              // Marcar como favorita
+              _ControlButton(
+                icon: MingCute.heart_line,
+                onPressed: () {
+                  // TODO: Implementar marcar playlist como favorita
+                },
+              ),
+          
+              const SizedBox(width: 8),
+          
+              // Recargar playlist y todas sus canciones (sincronizar)
+              _ControlButton(
+                icon: MingCute.refresh_1_line,
+                onPressed: () {
+                  // TODO: Implementar recargar playlist (sincronizar)
+                },
               ),
             ],
           ),
@@ -511,7 +530,7 @@ class _MobilePlaylistHeader extends ConsumerWidget {
 class _TabletDesktopPlaylistHeader extends ConsumerWidget {
   final String title;
   final String thumbnail;
-  final String playlistID;  // Changed from int to String
+  final String playlistID;
   final bool isLocalPlaylist;
   List<Song> songs;
 
@@ -525,7 +544,6 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colors = Theme.of(context).colorScheme;
 
     Future<void> updateThumbnail() async {
       if(Platform.isAndroid) {
@@ -580,138 +598,178 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: InkWell(
-              onLongPress: () {
-                updateThumbnail();
-              },
-              child: SizedBox(
-                width: 260,
-                height: 260,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20.0),
-                  child: Image(
-                    image: isLocalPlaylist 
-                      ? (thumbnail.startsWith('assets/')
-                          ? AssetImage(thumbnail)
-                          : FileImage(File(thumbnail)) as ImageProvider)
-                      : NetworkImage(thumbnail) as ImageProvider,
-                    height: 260,
+          Column(
+            children: [
+              // Carátula de la playlist
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: InkWell(
+                  onLongPress: () {
+                    updateThumbnail();
+                  },
+                  child: SizedBox(
                     width: 260,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      height: 260,
-                      width: 260,
-                      color: Colors.grey[900],
-                      child: Image.asset(
-                        defaultPoster,
+                    height: 260,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20.0),
+                      child: Image(
+                        image: isLocalPlaylist 
+                          ? (thumbnail.startsWith('assets/')
+                              ? AssetImage(thumbnail)
+                              : FileImage(File(thumbnail)) as ImageProvider)
+                          : NetworkImage(thumbnail) as ImageProvider,
+                        height: 260,
+                        width: 260,
                         fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                      )
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          height: 260,
+                          width: 260,
+                          color: Colors.grey[900],
+                          child: Image.asset(
+                            defaultPoster,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                          )
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
       
           const SizedBox(height: 16.0),
       
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-            
-                const Padding(
-                  padding: EdgeInsets.only(left: 16, top: 10),
-                  child: Text(
-                    'Lista Local',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-            
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 80.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-      
-                const SizedBox(height: 16.0),
-      
-                // Botones de play y shuffle
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
+            child: SizedBox(
+              height: 260,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.black26,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: colors.primary,
-                              width: 2,
-                            ),
-                          ),
-                          child: IconButton(
-                            padding: const EdgeInsets.all(16),
-                            iconSize: 40,
-                            icon: const Icon(
-                              Icons.play_arrow_rounded,
-                              color: Colors.white,
-                            ),
-                            onPressed: () {},
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16, top: 10),
+                        child: Text(
+                          isLocalPlaylist
+                            ? 'Lista Local'
+                            : 'Lista de Youtube',
+                          style: const TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.black26,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: colors.primary,
-                              width: 2,
-                            ),
+                  
+                      Padding(
+                        padding: const EdgeInsets.only(right: 40, left: 10),
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 55,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
-                          child: IconButton(
-                            padding: const EdgeInsets.all(12),
-                            iconSize: 34,
-                            icon: const Icon(
-                              Icons.shuffle_rounded,
-                              color: Colors.white,
-                            ),
-                            onPressed: () {
-                              songs = songs..shuffle();
-                              final playerProvider = ref.read(songPlayerProvider);
-                              playerProvider.playSong(songs.first);
-                              // playerProvider.addSongsToQueue(songs);
-                            },
-                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
+
+                  // Botones de control
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10, bottom: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        // Reproducir playlist
+                        _ControlButton(
+                          icon: Icons.play_arrow_rounded,
+                          onPressed: () {},
+                        ),
+                    
+                        const SizedBox(width: 8),
+                    
+                        // Reproducir en modo aleatorio
+                        _ControlButton(
+                          icon: MingCute.shuffle_2_line,
+                          onPressed: () {
+                            songs = songs..shuffle();
+                            final playerProvider = ref.read(songPlayerProvider);
+                            playerProvider.playSong(songs.first);
+                          },
+                        ),
+                    
+                        const SizedBox(width: 8),
+                    
+                        // Marcar como favorita
+                        _ControlButton(
+                          icon: MingCute.heart_line,
+                          onPressed: () {
+                            // TODO: Implementar marcar playlist como favorita
+                          },
+                        ),
+                    
+                        const SizedBox(width: 8),
+                    
+                        // Recargar playlist y todas sus canciones (sincronizar)
+                        _ControlButton(
+                          icon: MingCute.refresh_1_line,
+                          onPressed: () {
+                            // TODO: Implementar recargar playlist (sincronizar)
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ControlButton extends StatelessWidget {
+  final IconData icon;
+  final Function()? onPressed;
+
+  const _ControlButton({
+    required this.icon,
+    this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: colors.primary.withOpacity(0.5),
+          width: 1,
+        ),
+      ),
+      child: IconButton(
+        icon: Icon(
+          icon,
+          color: Colors.white,
+          size: 28,
+        ),
+        onPressed: onPressed,
+        style: IconButton.styleFrom(
+          padding: const EdgeInsets.all(8),
+        ),
       ),
     );
   }
