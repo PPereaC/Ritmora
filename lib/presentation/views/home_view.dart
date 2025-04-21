@@ -122,6 +122,7 @@ class HomeViewState extends ConsumerState<HomeView> {
                             const SizedBox(height: 15),
                             PlaylistHorizontalListview(
                               onTap: (playlist) {
+                                
                                 context.go(
                                   '/library/playlist/1/${playlist.playlistId}',
                                   extra: playlist

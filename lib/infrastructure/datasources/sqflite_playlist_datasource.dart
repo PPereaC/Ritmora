@@ -203,24 +203,29 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
   @override
   Future<List<Song>> getSongsFromPlaylist(int playlistID) async {
     final db = await _getDB();
-    final List<Map<String, dynamic>> songs = await db.query(
-      'playlist_song',
-      where: 'playlistId = ?',
-      whereArgs: [playlistID]
-    );
+    try {
+      final List<Map<String, dynamic>> songs = await db.query(
+        'playlist_song',
+        where: 'playlistId = ?',
+        whereArgs: [playlistID]
+      );
 
-    return songs.map((map) => Song(
-      title: map['title'],
-      author: map['author'],
-      thumbnailUrl: map['thumbnailUrl'],
-      streamUrl: map['streamUrl'],
-      endUrl: map['endUrl'],
-      songId: map['songId'],
-      duration: map['duration'],
-      videoId: map['videoId'],
-      isVideo: map['isVideo'],
-      isLiked: map['isLiked'],
-    )).toList();
+      return songs.map((map) => Song(
+        title: map['title'],
+        author: map['author'],
+        thumbnailUrl: map['thumbnailUrl'],
+        streamUrl: map['streamUrl'],
+        endUrl: map['endUrl'],
+        songId: map['songId'],
+        duration: map['duration'],
+        videoId: map['videoId'] ?? '',
+        isVideo: (map['isVideo'] == 1) ? 1 : 0,
+        isLiked: (map['isLiked'] == 1) ? 1 : 0,
+      )).toList();
+    } catch (e) {
+      printINFO('Error getting songs from playlist: $e');
+      return [];
+    }
   }
 
   @override

@@ -11,9 +11,11 @@ import 'package:icons_plus/icons_plus.dart';
 
 import '../../config/helpers/permissions_helper.dart';
 import '../../config/utils/constants.dart';
+import '../../config/utils/pretty_print.dart';
 import '../../config/utils/responsive.dart';
 import '../../domain/entities/playlist.dart';
 import '../../domain/entities/song.dart';
+import '../../infrastructure/services/youtube_service.dart';
 import '../widgets/image_picker_widget.dart';
 import '../widgets/widgets.dart';
 
@@ -58,25 +60,19 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
     }
   }
 
-  Future<List<Song>> getPlaylistSongs(int playlistID) async {
-    return await ref.read(playlistProvider.notifier).getSongsFromPlaylist(playlistID);
-    // try {
-    //   if (widget.isLocalPlaylist == '0') {
-        
-    //   }
-
-      
-      
-    //   Para playlists de YouTube
-    //   await ref.read(playlistSongsProvider(playlistID).notifier).loadPlaylist();
-    //   return ref.read(playlistSongsProvider(playlistID));
-    // } catch (e) {
-    //   return Playlist(
-    //     title: 'Error',
-    //     author: '',
-    //     thumbnailUrl: ''
-    //   );
-    // }
+  Future<List<Song>> getPlaylistSongs(String playlistID) async {
+    try {
+      if (widget.isLocalPlaylist == '0') { // Para playlists locales
+        return await ref.read(playlistProvider.notifier).getSongsFromPlaylist(int.parse(playlistID));
+      } else { // Para playlists de youtube
+        final ytService = YoutubeService();
+        final songs = await ytService.getPlaylistSongs(playlistID);
+        return songs;
+      }
+    } catch (e) {
+      printERROR('Hola Error $e');
+      return [];
+    }
   }
 
   @override
@@ -134,7 +130,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
               ),
             ),
       body: FutureBuilder<List<Song>>(
-        future: getPlaylistSongs(int.parse(widget.playlistID)),
+        future: getPlaylistSongs(widget.playlistID),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -144,7 +140,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
           
           if (snapshot.hasError) {
             return Center(
-              child: Text('Error: ${snapshot.error}'),
+              child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.white)),
             );
           }
           
@@ -183,14 +179,14 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                         ? _TabletDesktopPlaylistHeader(
                             title: widget.playlist?.title ?? '',
                             thumbnail: widget.playlist?.thumbnailUrl ?? '',
-                            playlistID: int.parse(widget.playlistID),
+                            playlistID: widget.playlistID,
                             isLocalPlaylist: widget.isLocalPlaylist == '0',
                             songs: songs,
                           )
                         : _MobilePlaylistHeader(
                             title: widget.playlist?.title ?? '',
                             thumbnail: widget.playlist?.thumbnailUrl ?? '',
-                            playlistID: int.parse(widget.playlistID),
+                            playlistID: widget.playlistID,
                             isLocalPlaylist: widget.isLocalPlaylist == '0',
                             songs: songs,
                           ),
@@ -314,7 +310,7 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
 class _MobilePlaylistHeader extends ConsumerWidget {
   final String title;
   final String thumbnail;
-  final int playlistID;
+  final String playlistID;  // Changed from int to String
   final bool isLocalPlaylist;
   List<Song> songs;
 
@@ -347,7 +343,7 @@ class _MobilePlaylistHeader extends ConsumerWidget {
                   if (isGranted) {
                     final image = await ImagePickerWidget.pickImage(context);
                     if (image != null) {
-                      ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, image.path);
+                      ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), image.path);
                       context.push('/library');
                     }
                   }
@@ -360,7 +356,7 @@ class _MobilePlaylistHeader extends ConsumerWidget {
       } else {
         final image = await ImagePickerWidget.pickImage(context);
         if (image != null) {
-          ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, image.path);
+          ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), image.path);
           context.push('/library');
         }
       }
@@ -515,7 +511,7 @@ class _MobilePlaylistHeader extends ConsumerWidget {
 class _TabletDesktopPlaylistHeader extends ConsumerWidget {
   final String title;
   final String thumbnail;
-  final int playlistID;
+  final String playlistID;  // Changed from int to String
   final bool isLocalPlaylist;
   List<Song> songs;
 
@@ -548,7 +544,7 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                     if (isGranted) {
                       final image = await ImagePickerWidget.pickImage(context);
                       if (image != null) {
-                        ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, image.path);
+                        ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), image.path);
                         context.push('/library');
                       }
                     }
@@ -561,7 +557,7 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
         } else {
           final image = await ImagePickerWidget.pickImage(context);
           if (image != null) {
-            ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, image.path);
+            ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), image.path);
             context.push('/library');
           }
         }
@@ -573,7 +569,7 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
           dialogTitle: 'Seleccionar imagen',
         );
         if (result != null && result.files.single.path != null) {
-          ref.read(playlistProvider.notifier).updatePlaylistThumbnail(playlistID, result.files.single.path!);
+          ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), result.files.single.path!);
           context.push('/library');
         }
       }
