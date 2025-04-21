@@ -2,6 +2,7 @@ import 'package:finmusic/domain/datasources/playlist_datasource.dart';
 import 'package:finmusic/domain/entities/playlist.dart';
 import 'package:finmusic/domain/entities/song.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/repositories/playlist_repository.dart';
 
@@ -50,5 +51,9 @@ class PlaylistRepositoryImpl extends PlaylistRepository {
   Future<List<Song>> getSongsFromPlaylist(int playlistID) {
     return datasource.getSongsFromPlaylist(playlistID);
   }
-
+  
+  @override
+  Future<void> createLocalPlaylist(BuildContext context, final TextEditingController playlistNameController, WidgetRef ref) {
+    return datasource.createLocalPlaylist(context, playlistNameController, ref);
+  }
 }

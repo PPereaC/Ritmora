@@ -6,9 +6,14 @@ import 'package:finmusic/domain/entities/playlist.dart';
 import 'package:finmusic/domain/entities/song.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:synchronized/synchronized.dart';
+
+import '../../config/utils/constants.dart';
+import '../../presentation/providers/playlist/playlist_provider.dart';
+import '../../presentation/widgets/widgets.dart';
 
 class SqflitePlaylistDatasource extends PlaylistDatasource {
   static SqflitePlaylistDatasource? _instance;
@@ -264,5 +269,38 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
         _database = null;
       }
     });
+  }
+  
+  @override
+  Future<void> createLocalPlaylist(BuildContext context, final TextEditingController playlistNameController, WidgetRef ref) {
+    return showDialog(
+      context: context,
+      builder: (context) => CustomDialog(
+        title: 'Nueva Playlist',
+        hintText: 'Nombre de la playlist',
+        cancelButtonText: 'Cancelar',
+        confirmButtonText: 'Crear',
+        controller: playlistNameController,
+        onCancel: () {
+          playlistNameController.clear();
+          Navigator.pop(context);
+        },
+        onConfirm: (value) async {
+          final playlist = Playlist(
+            title: value,
+            author: 'anonymous',
+            thumbnailUrl: defaultPoster,
+            playlistId: 'XXXXX'
+          );
+          
+          await ref.read(playlistProvider.notifier).addPlaylist(playlist);
+          
+          if (context.mounted) {
+            Navigator.pop(context);
+          }
+          playlistNameController.clear();
+        },
+      ),
+    );
   }
 }

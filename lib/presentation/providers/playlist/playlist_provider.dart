@@ -118,6 +118,17 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
     }
   }
 
+  Future<void> createLocalPlaylist(BuildContext context, final TextEditingController playlistNameController, WidgetRef ref) async {
+    try {
+      await _repository.createLocalPlaylist(context, playlistNameController, ref);
+      await loadPlaylists(); // Recargar la lista
+    } catch (e) {
+      state = state.copyWith(
+        errorMessage: 'Error al añadir la playlist: $e',
+      );
+    }
+  }
+
 }
 
 final playlistProvider = StateNotifierProvider<PlaylistNotifier, PlaylistState>(

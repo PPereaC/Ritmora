@@ -34,6 +34,8 @@ class CustomMusicSidebarState extends ConsumerState<CustomMusicSidebar> {
     final colors = Theme.of(context).colorScheme;
     final textStyles = Theme.of(context).textTheme;
 
+    final TextEditingController playlistNameController = TextEditingController();
+
     return Container(
       width: 220,
       decoration: BoxDecoration(
@@ -95,8 +97,8 @@ class CustomMusicSidebarState extends ConsumerState<CustomMusicSidebar> {
                             ),
                             const Spacer(),
                             IconButton(
-                              onPressed: () {
-                                // TODO: Implementar añadir playlist
+                              onPressed: () { // Crear playlist local
+                                ref.read(playlistProvider.notifier).createLocalPlaylist(context, playlistNameController, ref);
                               },
                               icon: const Icon(
                                 Iconsax.add_circle_outline,

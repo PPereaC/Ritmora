@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../entities/playlist.dart';
 import '../entities/song.dart';
@@ -13,5 +14,6 @@ abstract class PlaylistRepository {
   Future<void> addSongToPlaylist(BuildContext context, int playlistID, Song song, {bool showNotifications = true, bool reloadPlaylists = true});
   Future<Playlist> getPlaylistByID(int playlistID);
   Future<void> updatePlaylistThumbnail(int playlistID, String thumbnailURL);
+  Future<void> createLocalPlaylist(BuildContext context, final TextEditingController playlistNameController, WidgetRef ref);
 
 }

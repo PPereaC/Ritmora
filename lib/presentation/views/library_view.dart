@@ -29,7 +29,7 @@ class LibraryView extends ConsumerStatefulWidget {
 
 class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final TextEditingController _playlistNameController = TextEditingController();
+  final TextEditingController playlistNameController = TextEditingController();
 
   @override
   void initState() {
@@ -45,7 +45,7 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
   @override
   void dispose() {
     _tabController.dispose();
-    _playlistNameController.dispose();
+    playlistNameController.dispose();
     super.dispose();
   }
 
@@ -97,39 +97,6 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
     );
     return result ?? false;
   }
-
-  Future<void> _showCreatePlaylistDialog() {
-    return showDialog(
-      context: context,
-      builder: (context) => CustomDialog(
-        title: 'Nueva Playlist',
-        hintText: 'Nombre de la playlist',
-        cancelButtonText: 'Cancelar',
-        confirmButtonText: 'Crear',
-        controller: _playlistNameController,
-        onCancel: () {
-          _playlistNameController.clear();
-          Navigator.pop(context);
-        },
-        onConfirm: (value) async {
-          final playlist = Playlist(
-            title: value,
-            author: 'anonymous',
-            thumbnailUrl: defaultPoster,
-            playlistId: 'XXXXX'
-          );
-          
-          await ref.read(playlistProvider.notifier).addPlaylist(playlist);
-          
-          if (context.mounted) {
-            Navigator.pop(context);
-          }
-          _playlistNameController.clear();
-        },
-      ),
-    );
-  }
-  
   
   Future<void> _importPlaylist() async {
       List<Song> songList = [];
@@ -302,7 +269,9 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
                       ),
                       const SizedBox(width: 3),
                       IconButton(
-                        onPressed: () => _showCreatePlaylistDialog(),
+                        onPressed: () {
+                          ref.read(playlistProvider.notifier).createLocalPlaylist(context, playlistNameController, ref);
+                        },
                         icon: const Icon(Iconsax.add_square_outline),
                         color: Colors.white,
                       ),
