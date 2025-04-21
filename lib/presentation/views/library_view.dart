@@ -234,6 +234,7 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    bool isDesktop = Responsive.isTabletOrDesktop(context);
   
     return SafeArea(
       child: Scaffold(
@@ -241,7 +242,7 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
           children: [
             // Header con logo y botones
             Padding(
-              padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+              padding: EdgeInsets.only(left: 10, right: 10, bottom: 10, top: isDesktop ? 15 : 0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
