@@ -247,9 +247,9 @@ class _DesktopPlayerControl extends ConsumerWidget {
                         const SizedBox(width: 16),
                         IconButton(
                           onPressed: () => playerService.playPrevious(),
-                          icon: Icon(
-                            Iconsax.previous_outline,
-                            color: Colors.white.withOpacity(0.7),
+                          icon: const Icon(
+                            Iconsax.previous_bold,
+                            color: Colors.white,
                             size: 24,
                           ),
                           splashRadius: 24,
@@ -278,9 +278,9 @@ class _DesktopPlayerControl extends ConsumerWidget {
                         const SizedBox(width: 12),
                         IconButton(
                           onPressed: () => playerService.playNext(),
-                          icon: Icon(
-                            Iconsax.next_outline,
-                            color: Colors.white.withOpacity(0.7),
+                          icon: const Icon(
+                            Iconsax.next_bold,
+                            color: Colors.white,
                             size: 24,
                           ),
                           splashRadius: 24,
@@ -316,9 +316,9 @@ class _DesktopPlayerControl extends ConsumerWidget {
                             onTap: onQueueButtonPressed,
                             child: Container(
                               padding: const EdgeInsets.all(8),
-                              child: Icon(
+                              child: const Icon(
                                 Iconsax.music_square_outline,
-                                color: Colors.white.withOpacity(0.7),
+                                color: Colors.white,
                                 size: 24,
                               ),
                             ),

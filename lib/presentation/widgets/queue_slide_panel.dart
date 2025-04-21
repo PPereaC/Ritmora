@@ -102,8 +102,8 @@ class QueueSlidePanel extends ConsumerWidget {
                                     ),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Iconsax.close_circle_outline),
-                                    color: Colors.white70,
+                                    icon: const Icon(MingCute.layout_right_line),
+                                    color: Colors.white,
                                     onPressed: onClose,
                                     tooltip: 'Cerrar cola',
                                     splashRadius: 24,
@@ -138,10 +138,10 @@ class QueueSlidePanel extends ConsumerWidget {
                                             color: colors.primary,
                                           ),
                                           const SizedBox(height: 16),
-                                          Text(
+                                          const Text(
                                             'No hay canciones en cola',
                                             style: TextStyle(
-                                              color: Colors.white.withOpacity(0.7),
+                                              color: Colors.white,
                                               fontSize: 15,
                                             ),
                                           ),
