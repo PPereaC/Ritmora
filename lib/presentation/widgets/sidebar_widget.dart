@@ -242,66 +242,19 @@ class CustomMusicSidebarState extends ConsumerState<CustomMusicSidebar> {
                   color: Colors.white12,
                 ),
                 clipBehavior: Clip.antiAlias,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image(
-                      image: playlist.thumbnailUrl.startsWith('assets/')
-                          ? AssetImage(playlist.thumbnailUrl)
-                          : FileImage(File(playlist.thumbnailUrl)) as ImageProvider,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: Colors.grey[900],
-                        child: const Icon(
-                          Iconsax.music_playlist_outline,
-                          size: 24,
-                          color: Colors.white70,
-                        ),
-                      ),
+                child: Image(
+                  image: playlist.thumbnailUrl.startsWith('assets/')
+                      ? AssetImage(playlist.thumbnailUrl)
+                      : FileImage(File(playlist.thumbnailUrl)) as ImageProvider,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: Colors.grey[900],
+                    child: const Icon(
+                      Iconsax.music_playlist_outline,
+                      size: 24,
+                      color: Colors.white70,
                     ),
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.7),
-                            ],
-                          ),
-                        ),
-                        padding: const EdgeInsets.all(8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              playlist.title,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            if (playlist.isLocal == 0)
-                              const Text(
-                                'Playlist Local',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 9,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             );
