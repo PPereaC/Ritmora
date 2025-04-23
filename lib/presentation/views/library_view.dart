@@ -18,7 +18,6 @@ import '../../config/utils/constants.dart';
 import '../../config/utils/responsive.dart';
 import '../../domain/entities/playlist.dart';
 import '../../domain/entities/song.dart';
-import '../../domain/entities/youtube_playlist.dart';
 import '../../infrastructure/mappers/piped_search_songs_mapper.dart';
 import '../../infrastructure/services/youtube_service.dart';
 
@@ -393,126 +392,90 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
   }
 
   Widget _buildPlaylistsView() {
+  final bool isTabletOrDesktop = Responsive.isTablet(context) || Responsive.isDesktop(context);
 
-    final bool isTabletOrDesktop = Responsive.isTablet(context) || Responsive.isDesktop(context);
+  return Consumer(
+    builder: (context, ref, child) {
+      final playlistState = ref.watch(playlistProvider);
 
-    return Consumer(
-      builder: (context, ref, child) {
-        final playlistState = ref.watch(playlistProvider);
-  
-        if (playlistState.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-  
-        if (playlistState.errorMessage != null) {
-          return Center(
-            child: Text(
-              playlistState.errorMessage!,
-              style: const TextStyle(
-                color: Colors.white,
-              ),
-            ),
-          );
-        }
-  
-        if (playlistState.playlists.isEmpty) {
-          return const Center(
-            child: Text(
-              'No hay playlists creadas',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
-            ),
-          );
-        }
-  
-        return GridView.builder(
-          padding: const EdgeInsets.all(16),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: Responsive.isMobile(context) ? 2 : Responsive.isDesktop(context) ? 8 : Responsive.isTablet(context) ? 4 : 5,
-            childAspectRatio: isTabletOrDesktop ? 0.7 : 0.8,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
+      if (playlistState.isLoading) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      if (playlistState.errorMessage != null) {
+        return Center(
+          child: Text(
+            playlistState.errorMessage!,
+            style: const TextStyle(color: Colors.white),
           ),
-          itemCount: playlistState.playlists.length,
-          itemBuilder: (context, index) {
-            final playlist = playlistState.playlists[index];
-            return MouseRegion(
-              child: InkWell(
-                hoverColor: Colors.transparent,
-                splashColor: Colors.transparent,
-                onTap: () {
-                  context.go(
-                    '/library/playlist/0/${playlist.id}',
-                    extra: playlist,
-                  );
-                },
-                onLongPress: () async {
-                  final shouldDelete = await showConfirmationDialog(
-                    context,
-                    '¿Seguro que quieres eliminar la playlist?',
-                    'Esta acción no se puede deshacer',
-                    'Cancelar',
-                    'Eliminar',
-                  );
-                  if (shouldDelete) {
-                    await ref.read(playlistProvider.notifier).deletePlaylist(playlist);
-                    if (context.mounted && context.canPop()) {
-                      context.pop();
-                    }
-                  }
-                },
-                child: Column(
-                  children: [
-                    AspectRatio(
-                      aspectRatio: 1.1,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10.0),
-                        child: Image(
-                          image: playlist.thumbnailUrl.startsWith('assets/')
-                              ? AssetImage(playlist.thumbnailUrl)
-                              : FileImage(File(playlist.thumbnailUrl)) as ImageProvider,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            color: Colors.grey[900],
-                            child: Image.asset(
-                              defaultPoster,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
-                            )
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          playlist.title,
-                          style: const TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          textAlign: TextAlign.start,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
         );
-      },
-    );
-  }
+      }
+
+      final allPlaylists = [
+        ...playlistState.playlists,
+        ...playlistState.youtubePlaylists.map((yt) => 
+          Playlist(
+            id: 0,
+            title: yt.title,
+            author: yt.author,
+            thumbnailUrl: yt.thumbnailUrl,
+            playlistId: yt.playlistId,
+            isLocal: 1
+          )
+        )
+      ];
+
+      if (allPlaylists.isEmpty) {
+        return const Center(
+          child: Text(
+            'No hay playlists creadas',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+            ),
+          ),
+        );
+      }
+
+      return GridView.builder(
+        padding: const EdgeInsets.all(16),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: Responsive.isMobile(context) ? 2 : Responsive.isDesktop(context) ? 8 : Responsive.isTablet(context) ? 4 : 5,
+          childAspectRatio: isTabletOrDesktop ? 0.7 : 0.8,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: allPlaylists.length,
+        itemBuilder: (context, index) {
+          final playlist = allPlaylists[index];
+          return PlaylistCard(
+            playlist: playlist,
+            onTap: () {
+              context.go(
+                '/library/playlist/${playlist.isLocal}/${playlist.isLocal == 0 ? playlist.id : playlist.playlistId}',
+                extra: playlist,
+              );
+            },
+            onLongPress: () async {
+              if (playlist.isLocal == 1) {
+                final shouldDelete = await showConfirmationDialog(
+                  context,
+                  '¿Seguro que quieres eliminar la playlist?',
+                  'Esta acción no se puede deshacer',
+                  'Cancelar',
+                  'Eliminar',
+                );
+                if (shouldDelete) {
+                  await ref.read(playlistProvider.notifier).deletePlaylist(playlist);
+                }
+              }
+            },
+          );
+        },
+      );
+    },
+  );
+}
 
   Widget _buildAlbumsView() {
     return Container(); // TODO: Implementación futura

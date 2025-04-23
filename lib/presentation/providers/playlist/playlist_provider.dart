@@ -11,22 +11,26 @@ import 'playlist_repository_provider.dart';
 
 class PlaylistState {
   final List<Playlist> playlists;
+  final List<YoutubePlaylist> youtubePlaylists;
   final bool isLoading;
   final String? errorMessage;
 
   PlaylistState({
     required this.playlists,
+    required this.youtubePlaylists,
     this.isLoading = false,
     this.errorMessage,
   });
 
   PlaylistState copyWith({
     List<Playlist>? playlists,
+    List<YoutubePlaylist>? youtubePlaylists,
     bool? isLoading,
     String? errorMessage,
   }) {
     return PlaylistState(
       playlists: playlists ?? this.playlists,
+      youtubePlaylists: youtubePlaylists ?? this.youtubePlaylists,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage ?? this.errorMessage,
     );
@@ -37,7 +41,7 @@ class PlaylistState {
 class PlaylistNotifier extends StateNotifier<PlaylistState> {
   final PlaylistRepositoryImpl _repository;
 
-  PlaylistNotifier(this._repository) : super(PlaylistState(playlists: [])) {
+  PlaylistNotifier(this._repository) : super(PlaylistState(playlists: [], youtubePlaylists: [])) {
     loadPlaylists();
   }
 
@@ -45,7 +49,12 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final playlists = await _repository.getPlaylists();
-      state = state.copyWith(playlists: playlists, isLoading: false);
+      final youtubePlaylists = await _repository.getYoutubePlaylists();
+      state = state.copyWith(
+        playlists: playlists,
+        youtubePlaylists: youtubePlaylists,
+        isLoading: false
+      );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,

@@ -15,6 +15,7 @@ import '../../config/utils/pretty_print.dart';
 import '../../config/utils/responsive.dart';
 import '../../domain/entities/playlist.dart';
 import '../../domain/entities/song.dart';
+import '../../domain/entities/youtube_song.dart';
 import '../../infrastructure/services/youtube_service.dart';
 import '../widgets/image_picker_widget.dart';
 import '../widgets/widgets.dart';
@@ -60,17 +61,15 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
     }
   }
 
-  Future<List<Song>> getPlaylistSongs(String playlistID) async {
+  Future<List<dynamic>> getPlaylistSongs(String playlistID) async {
     try {
       if (widget.isLocalPlaylist == '0') { // Para playlists locales
         return await ref.read(playlistProvider.notifier).getSongsFromPlaylist(int.parse(playlistID));
       } else { // Para playlists de youtube
-        final ytService = YoutubeService();
-        final songs = await ytService.getPlaylistSongs(playlistID);
-        return songs;
+        return await YoutubeService().getYoutubePlaylistSongs('https://www.youtube.com/playlist?list=$playlistID');
       }
     } catch (e) {
-      printERROR('Hola Error $e');
+      printERROR('Error al obtener canciones: $e');
       return [];
     }
   }
@@ -129,7 +128,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                 },
               ),
             ),
-      body: FutureBuilder<List<Song>>(
+      body: FutureBuilder<List<dynamic>>(
         future: getPlaylistSongs(widget.playlistID),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -146,7 +145,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
           
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(
-              child: Text('No hay canciones en esta playlist'),
+              child: Text('No hay canciones en esta playlist', style: TextStyle(color: Colors.white)),
             );
           }
           
@@ -181,14 +180,36 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                             thumbnail: widget.playlist?.thumbnailUrl ?? '',
                             playlistID: widget.playlistID,
                             isLocalPlaylist: widget.isLocalPlaylist == '0',
-                            songs: songs,
+                            songs: songs.map((song) => widget.isLocalPlaylist == '0' ? (song as Song) : Song(
+                              title: (song as YoutubeSong).title,
+                              author: song.author,
+                              thumbnailUrl: song.thumbnailUrl,
+                              streamUrl: song.streamUrl,
+                              endUrl: song.endUrl,
+                              songId: song.songId,
+                              duration: song.duration,
+                              videoId: song.videoId,
+                              isVideo: song.isVideo,
+                              isLiked: song.isLiked,
+                            )).toList(),
                           )
                         : _MobilePlaylistHeader(
                             title: widget.playlist?.title ?? '',
                             thumbnail: widget.playlist?.thumbnailUrl ?? '',
                             playlistID: widget.playlistID,
                             isLocalPlaylist: widget.isLocalPlaylist == '0',
-                            songs: songs,
+                            songs: songs.map((song) => widget.isLocalPlaylist == '0' ? (song as Song) : Song(
+                              title: (song as YoutubeSong).title,
+                              author: song.author,
+                              thumbnailUrl: song.thumbnailUrl,
+                              streamUrl: song.streamUrl,
+                              endUrl: song.endUrl,
+                              songId: song.songId,
+                              duration: song.duration,
+                              videoId: song.videoId,
+                              isVideo: song.isVideo,
+                              isLiked: song.isLiked,
+                            )).toList(),
                           ),
                   ],
                 ),
@@ -207,7 +228,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
 
 class _PlaylistSongsList extends StatefulWidget {
   final String isLocalPlaylist;
-  final List<Song> songs;
+  final List<dynamic> songs;
   
   const _PlaylistSongsList({
     required this.songs,
@@ -223,8 +244,8 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
 
   @override
   Widget build(BuildContext context) {
-
     final textStyle = Theme.of(context).textTheme;
+    final isLocal = widget.isLocalPlaylist == '0';
 
     return SliverPadding(
       padding: const EdgeInsets.only(bottom: 5),
@@ -235,17 +256,28 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
               ? (widget.songs.length - 1 - index) 
               : index;
 
+            final currentSong = widget.songs[songIndex];
+            final song = isLocal ? currentSong : Song(
+              title: currentSong.title,
+              author: currentSong.author,
+              thumbnailUrl: currentSong.thumbnailUrl,
+              streamUrl: currentSong.streamUrl,
+              endUrl: currentSong.endUrl,
+              songId: currentSong.songId,
+              duration: currentSong.duration,
+              videoId: currentSong.videoId,
+              isVideo: currentSong.isVideo,
+              isLiked: currentSong.isLiked,
+            );
+
             return Column(
               children: [
-
                 const SizedBox(height: 8.0),
 
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Row(
                     children: [
-                  
-                      // Ordenar canciones
                       if (index == 0) 
                         IconButton(
                           icon: Icon(
@@ -271,33 +303,29 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
                   
                       const Spacer(),
                   
-                      // Botón de búsqueda
                       if (index == 0)
                         IconButton(
                           icon: const Icon(MingCute.search_line, size: 22, color: Colors.white),
-                          onPressed: () { // Acción de búsqueda de canciones
-                            
-                          },
+                          onPressed: () {},
                         ),
-                  
                     ],  
                   ),
                 ),
                 
                 SongListTile(
-                  song: widget.songs[songIndex],
+                  song: song,
                   onSongOptions: () {
                     showModalBottomSheet(
                       context: context,
                       builder: (context) {
                         return BottomSheetBarWidget(
-                          song: widget.songs[songIndex],
+                          song: song,
                         );
                       },
                     );
                   },
-                  isPlaylist: widget.isLocalPlaylist == '0' ? true : false,
-                  isVideo: widget.songs[songIndex].author.contains('Video') || widget.songs[songIndex].author.contains('Episode'),
+                  isPlaylist: isLocal,
+                  isVideo: song.author.contains('Video') || song.author.contains('Episode'),
                 ),
               ],
             );

@@ -424,4 +424,19 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
     }
   }
   
+  @override
+  Future<List<YoutubePlaylist>> getYoutubePlaylists() async {
+    
+    final db = await _getDB();
+    final List<Map<String, dynamic>> playlists = await db.query('youtube_playlists');
+
+    return playlists.map((map) => YoutubePlaylist(
+      playlistId: map['playlistId'],
+      title: map['title'],
+      author: map['author'],
+      thumbnailUrl: map['thumbnailUrl'],
+    )).toList();
+
+  }
+  
 }

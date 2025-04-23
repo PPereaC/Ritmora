@@ -6,6 +6,7 @@ import 'package:finmusic/domain/entities/youtube_song.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../config/utils/pretty_print.dart';
 import '../../domain/repositories/playlist_repository.dart';
 
 class PlaylistRepositoryImpl extends PlaylistRepository {
@@ -67,5 +68,15 @@ class PlaylistRepositoryImpl extends PlaylistRepository {
   @override
   Future<void> addYoutubePlaylist(YoutubePlaylist playlist) {
     return datasource.addYoutubePlaylist(playlist);
+  }
+
+  @override
+  Future<List<YoutubePlaylist>> getYoutubePlaylists() async {
+    try {
+      return await datasource.getYoutubePlaylists();
+    } catch (e) {
+      printERROR('Error al cargar playlists de YouTube: $e');
+      return [];
+    }
   }
 }

@@ -19,5 +19,6 @@ abstract class PlaylistDatasource {
   Future<void> createLocalPlaylist(BuildContext context, final TextEditingController playlistNameController, WidgetRef ref);
   Future<void> addYoutubePlaylist(YoutubePlaylist playlist);
   Future<void> addSongsToYoutubePlaylist(String playlistID, List<YoutubeSong> songs);
+  Future<List<YoutubePlaylist>> getYoutubePlaylists();
 
 }
