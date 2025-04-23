@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../entities/playlist.dart';
 import '../entities/song.dart';
+import '../entities/youtube_playlist.dart';
+import '../entities/youtube_song.dart';
 
 abstract class PlaylistDatasource {
 
@@ -15,5 +17,7 @@ abstract class PlaylistDatasource {
   Future<Playlist> getPlaylistByID(int playlistID);
   Future<void> updatePlaylistThumbnail(int playlistID, String thumbnailURL);
   Future<void> createLocalPlaylist(BuildContext context, final TextEditingController playlistNameController, WidgetRef ref);
+  Future<void> addYoutubePlaylist(YoutubePlaylist playlist);
+  Future<void> addSongsToYoutubePlaylist(String playlistID, List<YoutubeSong> songs);
 
 }

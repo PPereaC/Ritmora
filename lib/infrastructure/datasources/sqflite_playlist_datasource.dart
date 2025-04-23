@@ -4,6 +4,8 @@ import 'package:finmusic/config/utils/pretty_print.dart';
 import 'package:finmusic/domain/datasources/playlist_datasource.dart';
 import 'package:finmusic/domain/entities/playlist.dart';
 import 'package:finmusic/domain/entities/song.dart';
+import 'package:finmusic/domain/entities/youtube_playlist.dart';
+import 'package:finmusic/domain/entities/youtube_song.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -339,4 +341,87 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
       ),
     );
   }
+
+  @override
+  Future<void> addYoutubePlaylist(YoutubePlaylist playlist) async {
+    final db = await _getDB();
+    await db.transaction((txn) async {
+      await txn.rawInsert(
+        '''
+        INSERT INTO youtube_playlists (
+          playlistId,
+          title,
+          author,
+          thumbnailUrl
+        ) VALUES (?, ?, ?, ?)
+        ''',
+        [
+          playlist.playlistId,
+          playlist.title,
+          playlist.author,
+          playlist.thumbnailUrl
+        ]
+      );
+    });
+  }
+
+  @override
+  Future<void> addSongsToYoutubePlaylist(String playlistID, List<YoutubeSong> songs) async {
+    final db = await _getDB();
+    
+    try {
+      await db.transaction((txn) async {
+        // Primero verificamos que la playlist exista
+        final playlistExists = await txn.rawQuery(
+          'SELECT 1 FROM playlists WHERE playlistId = ? LIMIT 1',
+          [playlistID]
+        );
+        
+        if (playlistExists.isEmpty) {
+          throw Exception('La playlist con id $playlistID no existe');
+        }
+        
+        // Insertamos cada canción
+        for (final song in songs) {
+          await txn.rawInsert(
+            '''
+            INSERT OR REPLACE INTO playlist_song (
+              playlistId,
+              title,
+              author,
+              thumbnailUrl,
+              streamUrl,
+              endUrl,
+              songId,
+              isLiked,
+              duration,
+              videoId,
+              isVideo
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''',
+            [
+              playlistID,
+              song.title,
+              song.author,
+              song.thumbnailUrl,
+              song.streamUrl,
+              song.endUrl,
+              song.songId,
+              song.isLiked,
+              song.duration,
+              song.videoId,
+              song.isVideo
+            ]
+          );
+          printINFO('Canción añadida: ${song.title} - ${song.author} - ${song.songId}');
+        }
+      });
+      
+      printINFO('Se han añadido ${songs.length} canciones a la playlist $playlistID');
+    } catch (e) {
+      printERROR('Error al añadir canciones a la playlist: $e');
+      rethrow;
+    }
+  }
+  
 }

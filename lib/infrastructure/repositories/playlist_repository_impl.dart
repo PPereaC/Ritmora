@@ -1,6 +1,8 @@
 import 'package:finmusic/domain/datasources/playlist_datasource.dart';
 import 'package:finmusic/domain/entities/playlist.dart';
 import 'package:finmusic/domain/entities/song.dart';
+import 'package:finmusic/domain/entities/youtube_playlist.dart';
+import 'package:finmusic/domain/entities/youtube_song.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -55,5 +57,15 @@ class PlaylistRepositoryImpl extends PlaylistRepository {
   @override
   Future<void> createLocalPlaylist(BuildContext context, final TextEditingController playlistNameController, WidgetRef ref) {
     return datasource.createLocalPlaylist(context, playlistNameController, ref);
+  }
+
+  @override
+  Future<void> addSongsToYoutubePlaylist(String playlistID, List<YoutubeSong> songs) {
+    return datasource.addSongsToYoutubePlaylist(playlistID, songs);
+  }
+
+  @override
+  Future<void> addYoutubePlaylist(YoutubePlaylist playlist) {
+    return datasource.addYoutubePlaylist(playlist);
   }
 }
