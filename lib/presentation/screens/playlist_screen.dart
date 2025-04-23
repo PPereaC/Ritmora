@@ -1,6 +1,7 @@
-// ignore_for_file: use_build_context_synchronously, deprecated_member_use
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use, no_leading_underscores_for_local_identifiers
 
 import 'dart:io';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:finmusic/presentation/providers/playlist/playlist_provider.dart';
 import 'package:finmusic/presentation/providers/providers.dart';
@@ -95,6 +96,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
 
     // bool isLocalPlaylist = widget.isLocalPlaylist == '0';
     final bool isTabletOrDesktop = Responsive.isTabletOrDesktop(context);
+    final textStyle = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: isTabletOrDesktop
@@ -175,18 +177,39 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                   children: [
                     if (isTabletOrDesktop)
                       Padding(
-                        padding: const EdgeInsets.only(top: 10, left: 5),
+                        padding: const EdgeInsets.only(left: 20, top: 20),
                         child: Align(
                           alignment: Alignment.topLeft,
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-                            onPressed: () {
-                              if (widget.isLocalPlaylist == '0') {
-                                context.go('/library');
-                              } else {
-                                context.go('/');
-                              }
-                            },
+                          child: MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              onTap: () {
+                                if (widget.isLocalPlaylist == '0') {
+                                  context.go('/library');
+                                } else {
+                                  context.go('/library');
+                                }
+                              },
+                              child: Row(
+                                children: [
+                              
+                                  // Icono de retroceso
+                                  const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+                              
+                                  const SizedBox(width: 5),
+                              
+                                  // Texto de retroceso
+                                  Text(
+                                    'Atrás',
+                                    style: textStyle.titleLarge?.copyWith(
+                                      color: Colors.white,
+                                      fontSize: 22
+                                    )
+                                  )
+                              
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -208,6 +231,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                               isVideo: song.isVideo,
                               isLiked: song.isLiked,
                             )).toList(),
+                            owner: widget.playlist!.author,
                           )
                         : _MobilePlaylistHeader(
                             title: widget.playlist?.title ?? '',
@@ -577,6 +601,7 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
   final String playlistID;
   final bool isLocalPlaylist;
   List<Song> songs;
+  final String owner;
 
   _TabletDesktopPlaylistHeader({
     required this.title, 
@@ -584,10 +609,52 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
     required this.playlistID,
     required this.isLocalPlaylist,
     required this.songs,
+    this.owner = 'Anónimo',
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
+    int _durationStringToSeconds(String duration) {
+      final parts = duration.split(':');
+      
+      if (parts.length == 2) {
+        // Formato mm:ss
+        final minutes = int.parse(parts[0]);
+        final seconds = int.parse(parts[1]);
+        return minutes * 60 + seconds;
+      } else if (parts.length == 3) {
+        // Formato h:mm:ss
+        final hours = int.parse(parts[0]);
+        final minutes = int.parse(parts[1]);
+        final seconds = int.parse(parts[2]);
+        return hours * 3600 + minutes * 60 + seconds;
+      }
+      
+      return 0; // En caso de formato desconocido
+    }
+
+    // Formatea segundos totales a "Xh Ym" o "Ym" si menos de 1 hora
+    String _formatDuration(int totalSeconds) {
+      final hours = totalSeconds ~/ 3600;
+      final minutes = (totalSeconds % 3600) ~/ 60;
+      
+      if (hours > 0) {
+        return '$hours h $minutes min aproximadamente';
+      } else {
+        return '${minutes}m';
+      }
+    }
+
+    String getTotalPlaylistDuration() {
+      int totalSeconds = 0;
+      
+      for (final song in songs) {
+        totalSeconds += _durationStringToSeconds(song.duration);
+      }
+      
+      return _formatDuration(totalSeconds);
+    }
 
     Future<void> updateThumbnail() async {
       if(Platform.isAndroid) {
@@ -652,8 +719,8 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                     updateThumbnail();
                   },
                   child: SizedBox(
-                    width: 260,
-                    height: 260,
+                    width: 220,
+                    height: 220,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20.0),
                       child: Image(
@@ -681,6 +748,53 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                   ),
                 ),
               ),
+
+              // Botones de control
+              Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Row(
+                  children: [
+                    // Reproducir playlist
+                    _ControlButton(
+                      icon: Icons.play_arrow_rounded,
+                      onPressed: () {},
+                    ),
+                
+                    const SizedBox(width: 8),
+                
+                    // Reproducir en modo aleatorio
+                    _ControlButton(
+                      icon: MingCute.shuffle_2_line,
+                      onPressed: () {
+                        songs = songs..shuffle();
+                        final playerProvider = ref.read(songPlayerProvider);
+                        playerProvider.playSong(songs.first);
+                      },
+                    ),
+                
+                    const SizedBox(width: 8),
+                
+                    // Marcar como favorita
+                    _ControlButton(
+                      icon: MingCute.heart_line,
+                      onPressed: () {
+                        // TODO: Implementar marcar playlist como favorita
+                      },
+                    ),
+                
+                    const SizedBox(width: 8),
+                
+                    // Recargar playlist y todas sus canciones (sincronizar)
+                    _ControlButton(
+                      icon: MingCute.refresh_1_line,
+                      onPressed: () {
+                        // TODO: Implementar recargar playlist (sincronizar)
+                      },
+                    ),
+                  ],
+                ),
+              ),
+
             ],
           ),
       
@@ -688,10 +802,10 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
       
           Expanded(
             child: SizedBox(
-              height: 260,
+              height: 180,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -702,76 +816,93 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                           isLocalPlaylist
                             ? 'Lista Local'
                             : 'Lista de Youtube',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 20.0,
                             fontWeight: FontWeight.bold,
-                            color: Colors.grey,
+                            color: Colors.grey[300],
                           ),
                         ),
                       ),
                   
                       Padding(
                         padding: const EdgeInsets.only(right: 40, left: 10),
-                        child: Text(
+                        child: AutoSizeText(
                           title,
                           style: const TextStyle(
                             fontSize: 55,
-                            fontWeight: FontWeight.bold,
                             color: Colors.white,
+                            fontWeight: FontWeight.bold
                           ),
-                          maxLines: 2,
+                          minFontSize: 18,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                        ),
+                        )
                       ),
                     ],
                   ),
 
-                  // Botones de control
+                  // Canciones en la playlist y tiempo en total de todas las canciones
                   Padding(
-                    padding: const EdgeInsets.only(left: 10, bottom: 10),
+                    padding: const EdgeInsets.only(left: 10, top: 10),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        // Reproducir playlist
-                        _ControlButton(
-                          icon: Icons.play_arrow_rounded,
-                          onPressed: () {},
+                        // Icono
+                        const Icon(
+                          MingCute.user_1_line,
+                          size: 28
                         ),
-                    
+
                         const SizedBox(width: 8),
-                    
-                        // Reproducir en modo aleatorio
-                        _ControlButton(
-                          icon: MingCute.shuffle_2_line,
-                          onPressed: () {
-                            songs = songs..shuffle();
-                            final playerProvider = ref.read(songPlayerProvider);
-                            playerProvider.playSong(songs.first);
-                          },
+
+                        // Propietario de la playlist
+                        Text(
+                          owner,
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[200]
+                          )
                         ),
-                    
-                        const SizedBox(width: 8),
-                    
-                        // Marcar como favorita
-                        _ControlButton(
-                          icon: MingCute.heart_line,
-                          onPressed: () {
-                            // TODO: Implementar marcar playlist como favorita
-                          },
+
+                        const SizedBox(width: 2),
+
+                        Text(
+                          ' 🔹 ',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[200]
+                          )
                         ),
-                    
-                        const SizedBox(width: 8),
-                    
-                        // Recargar playlist y todas sus canciones (sincronizar)
-                        _ControlButton(
-                          icon: MingCute.refresh_1_line,
-                          onPressed: () {
-                            // TODO: Implementar recargar playlist (sincronizar)
-                          },
+
+                        // Canciones en total
+                        Text(
+                          '${songs.length} canciones',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[200]
+                          )
                         ),
+
+                        const SizedBox(width: 2),
+
+                        Text(
+                          ' 🔹 ',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[200]
+                          )
+                        ),
+
+                        // Duración en total de la playlist
+                        Text(
+                          getTotalPlaylistDuration(),
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[200]
+                          )
+                        )
                       ],
                     ),
-                  ),
+                  )
                 ],
               ),
             ),
@@ -800,7 +931,7 @@ class _ControlButton extends StatelessWidget {
         color: colors.primary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: colors.primary.withOpacity(0.5),
+          color: colors.primary,
           width: 1,
         ),
       ),
@@ -808,7 +939,7 @@ class _ControlButton extends StatelessWidget {
         icon: Icon(
           icon,
           color: Colors.white,
-          size: 28,
+          size: 30,
         ),
         onPressed: onPressed,
         style: IconButton.styleFrom(
