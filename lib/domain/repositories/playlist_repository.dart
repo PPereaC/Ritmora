@@ -20,5 +20,6 @@ abstract class PlaylistRepository {
   Future<void> addYoutubePlaylist(YoutubePlaylist playlist);
   Future<void> addSongsToYoutubePlaylist(String playlistID, List<YoutubeSong> songs);
   Future<List<YoutubePlaylist>> getYoutubePlaylists();
+  Future<List<YoutubeSong>> getYoutubeSongsFromPlaylist(String playlistId);
 
 }

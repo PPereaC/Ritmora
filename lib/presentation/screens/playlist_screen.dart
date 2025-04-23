@@ -63,10 +63,26 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
 
   Future<List<dynamic>> getPlaylistSongs(String playlistID) async {
     try {
-      if (widget.isLocalPlaylist == '0') { // Para playlists locales
+      if (widget.isLocalPlaylist == '0') {
+        // Para playlists locales
         return await ref.read(playlistProvider.notifier).getSongsFromPlaylist(int.parse(playlistID));
-      } else { // Para playlists de youtube
-        return await YoutubeService().getYoutubePlaylistSongs('https://www.youtube.com/playlist?list=$playlistID');
+      } else {
+        // Para playlists de YouTube
+        final localSongs = await ref.read(playlistProvider.notifier).getYoutubeSongsFromPlaylist(playlistID);
+        
+        if (localSongs.isNotEmpty) {
+          printINFO('Usando canciones guardadas localmente');
+          return localSongs;
+        }
+  
+        // Si no hay canciones locales, obtener de YouTube y guardarlas
+        printINFO('Obteniendo canciones de YouTube');
+        final youtubeSongs = await YoutubeService().getYoutubePlaylistSongs('https://www.youtube.com/playlist?list=$playlistID');
+        
+        // Guardar las canciones localmente
+        await ref.read(playlistProvider.notifier).addSongsToYoutubePlaylist(playlistID, youtubeSongs);
+        
+        return youtubeSongs;
       }
     } catch (e) {
       printERROR('Error al obtener canciones: $e');

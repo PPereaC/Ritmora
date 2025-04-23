@@ -79,4 +79,9 @@ class PlaylistRepositoryImpl extends PlaylistRepository {
       return [];
     }
   }
+  
+  @override
+  Future<List<YoutubeSong>> getYoutubeSongsFromPlaylist(String playlistId) {
+    return datasource.getYoutubeSongsFromPlaylist(playlistId);
+  }
 }

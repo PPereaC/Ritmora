@@ -439,4 +439,38 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
 
   }
   
+  @override
+  Future<List<YoutubeSong>> getYoutubeSongsFromPlaylist(String playlistId) async {
+    final db = await _getDB();
+    try {
+      // Verificar si existen canciones para esta playlist
+      final List<Map<String, dynamic>> songs = await db.query(
+        'youtube_songs',
+        where: 'playlistId = ?',
+        whereArgs: [playlistId]
+      );
+
+      if (songs.isEmpty) {
+        return [];
+      }
+
+      return songs.map((map) => YoutubeSong(
+        songId: map['songId'],
+        playlistId: map['playlistId'],
+        title: map['title'],
+        author: map['author'],
+        thumbnailUrl: map['thumbnailUrl'],
+        streamUrl: map['streamUrl'],
+        endUrl: map['endUrl'],
+        isLiked: map['isLiked'],
+        duration: map['duration'],
+        videoId: map['videoId'],
+        isVideo: map['isVideo'],
+      )).toList();
+    } catch (e) {
+      printERROR('Error obteniendo canciones de YouTube: $e');
+      return [];
+    }
+  }
+  
 }

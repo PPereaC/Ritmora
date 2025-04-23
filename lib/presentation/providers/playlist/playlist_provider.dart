@@ -158,6 +158,15 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
     }
   }
 
+  Future<List<YoutubeSong>> getYoutubeSongsFromPlaylist(String playlistId) async {
+    try {
+      return await _repository.getYoutubeSongsFromPlaylist(playlistId);
+    } catch (e) {
+      printERROR('Error obteniendo canciones de YouTube del repositorio: $e');
+      return [];
+    }
+  }
+
 }
 
 final playlistProvider = StateNotifierProvider<PlaylistNotifier, PlaylistState>(
