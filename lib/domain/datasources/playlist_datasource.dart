@@ -21,5 +21,6 @@ abstract class PlaylistDatasource {
   Future<void> addSongsToYoutubePlaylist(String playlistID, List<YoutubeSong> songs);
   Future<List<YoutubePlaylist>> getYoutubePlaylists();
   Future<List<YoutubeSong>> getYoutubeSongsFromPlaylist(String playlistId);
+  Future<void> updateYoutubePlaylistThumbnail(String playlistID, String thumbnailURL);
 
 }

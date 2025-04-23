@@ -84,4 +84,10 @@ class PlaylistRepositoryImpl extends PlaylistRepository {
   Future<List<YoutubeSong>> getYoutubeSongsFromPlaylist(String playlistId) {
     return datasource.getYoutubeSongsFromPlaylist(playlistId);
   }
+  
+  @override
+  Future<void> updateYoutubePlaylistThumbnail(String playlistID, String thumbnailURL) {
+    return datasource.updateYoutubePlaylistThumbnail(playlistID, thumbnailURL);
+  }
+  
 }

@@ -167,6 +167,15 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
     }
   }
 
+  Future<void> updateYoutubePlaylistThumbnail(String playlistID, String thumbnailURL) async {
+    try {
+      await _repository.updateYoutubePlaylistThumbnail(playlistID, thumbnailURL);
+      await loadPlaylists(); // Recargar la lista
+    } catch (e) {
+      printERROR('Error al actualizar la carátula de la playlist de Youtube: $e');
+    }
+  }
+    
 }
 
 final playlistProvider = StateNotifierProvider<PlaylistNotifier, PlaylistState>(

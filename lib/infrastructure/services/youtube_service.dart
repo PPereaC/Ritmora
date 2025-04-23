@@ -77,11 +77,12 @@ class YoutubeService {
   }
 
   Future<List<YoutubeSong>> getYoutubePlaylistSongs(String playlistUrl) async {
-    
     String playlistId = playlistUrl.split('list=').last;
-    printINFO('Alarmaaaaa: $playlistId');
-    return MusicService().getAllPlaylistSongs(playlistId);
     
+    // Eliminar cualquier parámetro adicional después del & (si existe)
+    playlistId = playlistId.split('&').first;
+    
+    return MusicService().getAllPlaylistSongs(playlistId);
   }
 
 

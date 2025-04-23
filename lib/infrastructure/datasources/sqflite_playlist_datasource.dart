@@ -473,4 +473,15 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
     }
   }
   
+  @override
+  Future<void> updateYoutubePlaylistThumbnail(String playlistID, String thumbnailURL) async {
+    final db = await _getDB();
+    await db.update(
+      'youtube_playlists',
+      {'thumbnailUrl': thumbnailURL},
+      where: 'playlistId = ?',
+      whereArgs: [playlistID]
+    );
+  }
+  
 }

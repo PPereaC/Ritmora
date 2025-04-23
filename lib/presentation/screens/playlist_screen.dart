@@ -123,7 +123,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                         if (widget.isLocalPlaylist == '0') {
                           context.go('/library');
                         } else {
-                          context.go('/');
+                          context.go('/library');
                         }
                       },
                     ),
@@ -381,7 +381,7 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
 class _MobilePlaylistHeader extends ConsumerWidget {
   final String title;
   final String thumbnail;
-  final String playlistID;  // Changed from int to String
+  final String playlistID;
   final bool isLocalPlaylist;
   List<Song> songs;
 
@@ -414,7 +414,11 @@ class _MobilePlaylistHeader extends ConsumerWidget {
                   if (isGranted) {
                     final image = await ImagePickerWidget.pickImage(context);
                     if (image != null) {
-                      ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), image.path);
+                      if (isLocalPlaylist) {
+                        ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), image.path);
+                      } else {
+                        ref.read(playlistProvider.notifier).updateYoutubePlaylistThumbnail(playlistID, image.path);
+                      }
                       context.push('/library');
                     }
                   }
@@ -427,7 +431,11 @@ class _MobilePlaylistHeader extends ConsumerWidget {
       } else {
         final image = await ImagePickerWidget.pickImage(context);
         if (image != null) {
-          ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), image.path);
+          if (isLocalPlaylist) {
+            ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), image.path);
+          } else {
+            ref.read(playlistProvider.notifier).updateYoutubePlaylistThumbnail(playlistID, image.path);
+          }
           context.push('/library');
         }
       }
@@ -441,7 +449,7 @@ class _MobilePlaylistHeader extends ConsumerWidget {
             width: double.infinity,
             child: MouseRegion(
               child: GestureDetector(
-                onLongPress: () {
+                onTap: () {
                   showModalBottomSheet(
                     context: context,
                     backgroundColor: Colors.transparent,
@@ -503,11 +511,9 @@ class _MobilePlaylistHeader extends ConsumerWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(20.0),
                         child: Image(
-                          image: isLocalPlaylist 
-                            ? (thumbnail.startsWith('assets/')
-                                ? AssetImage(thumbnail)
-                                : FileImage(File(thumbnail)) as ImageProvider)
-                            : NetworkImage(thumbnail) as ImageProvider,
+                          image: (thumbnail.startsWith('assets/')
+                            ? AssetImage(thumbnail)
+                            : FileImage(File(thumbnail)) as ImageProvider),
                           height: 260,
                           width: 260,
                           fit: BoxFit.cover,
@@ -673,7 +679,11 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                     if (isGranted) {
                       final image = await ImagePickerWidget.pickImage(context);
                       if (image != null) {
-                        ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), image.path);
+                        if (isLocalPlaylist) {
+                          ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), image.path);
+                        } else {
+                          ref.read(playlistProvider.notifier).updateYoutubePlaylistThumbnail(playlistID, image.path);
+                        }
                         context.push('/library');
                       }
                     }
@@ -698,7 +708,11 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
           dialogTitle: 'Seleccionar imagen',
         );
         if (result != null && result.files.single.path != null) {
-          ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), result.files.single.path!);
+          if (isLocalPlaylist) {
+            ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), result.files.single.path!);
+          } else {
+            ref.read(playlistProvider.notifier).updateYoutubePlaylistThumbnail(playlistID, result.files.single.path!);
+          }
           context.push('/library');
         }
       }
@@ -715,7 +729,7 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: InkWell(
-                  onLongPress: () {
+                  onTap: () {
                     updateThumbnail();
                   },
                   child: SizedBox(
@@ -724,11 +738,9 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20.0),
                       child: Image(
-                        image: isLocalPlaylist 
-                          ? (thumbnail.startsWith('assets/')
+                        image: (thumbnail.startsWith('assets/')
                               ? AssetImage(thumbnail)
-                              : FileImage(File(thumbnail)) as ImageProvider)
-                          : NetworkImage(thumbnail) as ImageProvider,
+                              : FileImage(File(thumbnail)) as ImageProvider),
                         height: 260,
                         width: 260,
                         fit: BoxFit.cover,
