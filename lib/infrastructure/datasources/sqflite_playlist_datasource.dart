@@ -115,7 +115,7 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
               duration TEXT,
               videoId TEXT,
               isVideo INTEGER,
-              FOREIGN KEY (playlistId) REFERENCES playlists(playlistId)
+              FOREIGN KEY (playlistId) REFERENCES youtube_playlists(playlistId)
             )
             '''
           );
@@ -373,7 +373,7 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
       await db.transaction((txn) async {
         // Primero verificamos que la playlist exista
         final playlistExists = await txn.rawQuery(
-          'SELECT 1 FROM playlists WHERE playlistId = ? LIMIT 1',
+          'SELECT 1 FROM youtube_playlists WHERE playlistId = ? LIMIT 1',
           [playlistID]
         );
         
@@ -385,7 +385,7 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
         for (final song in songs) {
           await txn.rawInsert(
             '''
-            INSERT OR REPLACE INTO playlist_song (
+            INSERT OR REPLACE INTO youtube_songs (
               playlistId,
               title,
               author,

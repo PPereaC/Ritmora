@@ -18,7 +18,9 @@ import '../../config/utils/constants.dart';
 import '../../config/utils/responsive.dart';
 import '../../domain/entities/playlist.dart';
 import '../../domain/entities/song.dart';
+import '../../domain/entities/youtube_playlist.dart';
 import '../../infrastructure/mappers/piped_search_songs_mapper.dart';
+import '../../infrastructure/services/youtube_service.dart';
 
 class LibraryView extends ConsumerStatefulWidget {
   const LibraryView({super.key});
@@ -30,6 +32,8 @@ class LibraryView extends ConsumerStatefulWidget {
 class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController playlistNameController = TextEditingController();
+  final TextEditingController youtubePlaylistUrlController = TextEditingController();
+
 
   @override
   void initState() {
@@ -235,6 +239,8 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     bool isDesktop = Responsive.isTabletOrDesktop(context);
+
+    var playlistP = ref.watch(playlistProvider.notifier);
   
     return SafeArea(
       child: Scaffold(
@@ -260,15 +266,62 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
                   ),
                   
                   const Spacer(),
-        
+
+                  // Fila de botones de control de playlists
                   Row(
                     children: [
+
+                      // Botón para guardar playlist de Youtube
+                      IconButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => CustomDialog(
+                              title: 'Guardar Playlist de Youtube',
+                              hintText: 'URL de la playlist',
+                              cancelButtonText: 'Cancelar',
+                              confirmButtonText: 'Guardar',
+                              controller: youtubePlaylistUrlController,
+                              onCancel: () {
+                                youtubePlaylistUrlController.clear();
+                                Navigator.pop(context);
+                              },
+                              onConfirm: (value) async {
+                                
+                                var yt = YoutubeService();
+
+                                // Guardar playlist de Youtube
+                                var youtubePlaylist = await yt.getYoutubePlaylistInfo(youtubePlaylistUrlController.text);
+                                playlistP.addYoutubePlaylist(youtubePlaylist);
+
+                                // Agregar canciones a esta playlist de youtube
+                                var songs = await yt.getYoutubePlaylistSongs(youtubePlaylistUrlController.text);
+                                playlistP.addSongsToYoutubePlaylist(youtubePlaylist.playlistId, songs);
+                                
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                }
+                                youtubePlaylistUrlController.clear();
+                              },
+                            ),
+                          );
+                        },
+                        icon: const Icon(MingCute.youtube_line, size: 30),
+                        color: Colors.white,
+                      ),
+
+                      const SizedBox(width: 3),
+
+                      // Botón para importar playlist desde el sistema de archivos del dispositivo
                       IconButton(
                         onPressed: () => _importPlaylist(),
                         icon: const Icon(Iconsax.import_2_outline),
                         color: Colors.white,
                       ),
+
                       const SizedBox(width: 3),
+
+                      // Botón para crear una playlist local
                       IconButton(
                         onPressed: () {
                           ref.read(playlistProvider.notifier).createLocalPlaylist(context, playlistNameController, ref);
@@ -276,6 +329,7 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
                         icon: const Icon(Iconsax.add_square_outline),
                         color: Colors.white,
                       ),
+
                     ],
                   ),
                   

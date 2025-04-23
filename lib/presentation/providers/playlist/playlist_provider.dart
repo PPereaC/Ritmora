@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:finmusic/domain/entities/playlist.dart';
 
 import '../../../domain/entities/song.dart';
+import '../../../domain/entities/youtube_playlist.dart';
+import '../../../domain/entities/youtube_song.dart';
 import '../../../infrastructure/repositories/playlist_repository_impl.dart';
 import 'playlist_repository_provider.dart';
 
@@ -126,6 +128,24 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
       state = state.copyWith(
         errorMessage: 'Error al añadir la playlist: $e',
       );
+    }
+  }
+
+  Future<void> addYoutubePlaylist(YoutubePlaylist playlist) async {
+    try {
+      await _repository.addYoutubePlaylist(playlist);
+      await loadPlaylists(); // Recargar la lista
+    } catch (e) {
+      printERROR('Error al añadir la playlist de Youtubee: $e');
+    }
+  }
+
+  Future<void> addSongsToYoutubePlaylist(String playlistID, List<YoutubeSong> songs) async {
+    try {
+      await _repository.addSongsToYoutubePlaylist(playlistID, songs);
+      await loadPlaylists(); // Recargar la lista
+    } catch (e) {
+      printERROR('Error al añadir las canciones a la playlist de Youtubee: $e');
     }
   }
 
