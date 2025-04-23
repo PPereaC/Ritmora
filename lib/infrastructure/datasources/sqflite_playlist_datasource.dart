@@ -87,6 +87,37 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
             )
             '''
           );
+
+          await db.execute(
+            '''
+            CREATE TABLE youtube_playlists (
+              playlistId TEXT PRIMARY KEY,
+              title TEXT,
+              author TEXT,
+              thumbnailUrl TEXT
+            )
+            '''
+          );
+
+          await db.execute(
+            '''
+            CREATE TABLE youtube_songs (
+              songId TEXT PRIMARY KEY,
+              playlistId TEXT,
+              title TEXT,
+              author TEXT,
+              thumbnailUrl TEXT,
+              streamUrl TEXT,
+              endUrl TEXT,
+              isLiked INTEGER,
+              duration TEXT,
+              videoId TEXT,
+              isVideo INTEGER,
+              FOREIGN KEY (playlistId) REFERENCES playlists(playlistId)
+            )
+            '''
+          );
+
         },
       );
     }, timeout: _timeout);
