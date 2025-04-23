@@ -2,6 +2,8 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import '../../config/utils/pretty_print.dart';
 import '../../domain/entities/song.dart';
+import '../../domain/entities/youtube_playlist.dart';
+import '../../domain/entities/youtube_song.dart';
 
 class YoutubeService {
   static final YoutubeService _instance = YoutubeService._internal();
@@ -52,7 +54,52 @@ class YoutubeService {
       );
     }
     return songs;
-  } 
+  }
+
+  Future<YoutubePlaylist> getYoutubePlaylistInfo(String playlistUrl) async {
+
+    var playlist = await yt.playlists.get(playlistUrl);
+
+    YoutubePlaylist youtubePlaylist = YoutubePlaylist(
+      playlistId: playlist.id.toString(),
+      title: playlist.title,
+      author: playlist.author,
+      thumbnailUrl: playlist.thumbnails.highResUrl
+    );
+
+    return youtubePlaylist;
+
+  }
+
+  static String _getHighQualityThumbnail(String videoId) {
+    return 'https://i.ytimg.com/vi/$videoId/maxresdefault.jpg';
+  }
+
+  Future<List<YoutubeSong>> getYoutubePlaylistSongs(String playlistUrl) async {
+
+    var playlist = await yt.playlists.get(playlistUrl);
+
+    List<YoutubeSong> youtubeSongs = [];
+
+    await for (var song in yt.playlists.getVideos(playlist.id)) {
+      youtubeSongs.add(
+        YoutubeSong(
+          songId: song.id.toString(),
+          playlistId: playlist.id.toString(),
+          title: song.title,
+          author: song.author,
+          thumbnailUrl: _getHighQualityThumbnail(song.id.toString()),
+          streamUrl: '',
+          endUrl: '/watch?v=${song.id}',
+          duration: song.duration.toString()
+        )
+      );
+    }
+
+    return youtubeSongs;
+
+  }
+
 
 }
 
