@@ -10,6 +10,7 @@ import 'package:icons_plus/icons_plus.dart';
 
 import '../../config/utils/background_tasks.dart';
 import '../../config/utils/constants.dart';
+import '../../config/utils/responsive.dart';
 import '../../domain/entities/song.dart';
 
 class SongListTile extends ConsumerWidget {
@@ -29,6 +30,8 @@ class SongListTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textStyles = Theme.of(context).textTheme;
+
+    bool isDesktop = Responsive.isTabletOrDesktop(context);
 
     return Dismissible(
       key: Key(song.songId),
@@ -59,7 +62,9 @@ class SongListTile extends ConsumerWidget {
           ref.read(songPlayerProvider).updateCurrentSong(song);
           
           // Navegar al full player
-          context.push('/full-player');
+          if (!isDesktop) {
+            context.push('/full-player');
+          }
           
           // Obtener URL y reproducir en segundo plano
           try {
