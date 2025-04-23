@@ -4,6 +4,7 @@ import '../../config/utils/pretty_print.dart';
 import '../../domain/entities/song.dart';
 import '../../domain/entities/youtube_playlist.dart';
 import '../../domain/entities/youtube_song.dart';
+import 'music_service.dart';
 
 class YoutubeService {
   static final YoutubeService _instance = YoutubeService._internal();
@@ -76,38 +77,11 @@ class YoutubeService {
   }
 
   Future<List<YoutubeSong>> getYoutubePlaylistSongs(String playlistUrl) async {
-    List<YoutubeSong> youtubeSongs = [];
     
-    try {
-      var playlist = await yt.playlists.get(playlistUrl);
-      
-      // Utilizamos getAllVideos en lugar de getVideos para asegurar que obtenemos todos los elementos
-      var videos = await yt.playlists.getVideos(playlist.id).toList();
-      
-      printINFO('📝 Obteniendo ${videos.length} canciones de la playlist ${playlist.title}');
-  
-      for (var song in videos) {
-        youtubeSongs.add(
-          YoutubeSong(
-            songId: song.id.toString(),
-            playlistId: playlist.id.toString(),
-            title: song.title,
-            author: song.author,
-            thumbnailUrl: _getHighQualityThumbnail(song.id.toString()),
-            streamUrl: '',
-            endUrl: '/watch?v=${song.id}',
-            duration: song.duration.toString()
-          )
-        );
-      }
-  
-      printINFO('✅ Se obtuvieron ${youtubeSongs.length} canciones exitosamente');
-      return youtubeSongs;
-  
-    } catch (e) {
-      printERROR('Error obteniendo canciones de la playlist: $e');
-      return youtubeSongs;
-    }
+    String playlistId = playlistUrl.split('list=').last;
+    printINFO('Alarmaaaaa: $playlistId');
+    return MusicService().getAllPlaylistSongs(playlistId);
+    
   }
 
 
