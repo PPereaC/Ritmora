@@ -90,4 +90,9 @@ class PlaylistRepositoryImpl extends PlaylistRepository {
     return datasource.updateYoutubePlaylistThumbnail(playlistID, thumbnailURL);
   }
   
+  @override
+  Future<void> removeYoutubePlaylist(YoutubePlaylist playlist) {
+    return datasource.removeYoutubePlaylist(playlist);
+  }
+  
 }

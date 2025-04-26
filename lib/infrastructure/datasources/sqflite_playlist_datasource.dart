@@ -484,4 +484,14 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
     );
   }
   
+  @override
+  Future<void> removeYoutubePlaylist(YoutubePlaylist playlist) async {
+    final db = await _getDB();
+    await db.delete(
+      'youtube_playlists',
+      where: 'playlistId = ?',
+      whereArgs: [playlist.playlistId]
+    );
+  }
+  
 }
