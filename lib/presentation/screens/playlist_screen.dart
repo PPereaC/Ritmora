@@ -120,11 +120,17 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                     leading: IconButton(
                       icon: const Icon(Icons.arrow_back_ios_new_rounded),
                       onPressed: () {
+
+                        if (widget.playlist!.thumbnailUrl.startsWith('https') || widget.playlist!.thumbnailUrl.startsWith('http')) {
+                          context.go('/');
+                        }
+
                         if (widget.isLocalPlaylist == '0') {
                           context.go('/library');
-                        } else {
+                        } else if (widget.isLocalPlaylist == '1') {
                           context.go('/library');
                         }
+
                       },
                     ),
                     actions: [
@@ -184,6 +190,11 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                             cursor: SystemMouseCursors.click,
                             child: GestureDetector(
                               onTap: () {
+                                if (widget.playlist!.thumbnailUrl.startsWith('https') || widget.playlist!.thumbnailUrl.startsWith('http')) {
+                                  context.go('/');
+                                  return;
+                                }
+
                                 if (widget.isLocalPlaylist == '0') {
                                   context.go('/library');
                                 } else {
@@ -511,9 +522,11 @@ class _MobilePlaylistHeader extends ConsumerWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(20.0),
                         child: Image(
-                          image: (thumbnail.startsWith('assets/')
-                            ? AssetImage(thumbnail)
-                            : FileImage(File(thumbnail)) as ImageProvider),
+                          image: (thumbnail.startsWith('http://') || thumbnail.startsWith('https://'))
+                            ? NetworkImage(thumbnail)
+                            : (thumbnail.startsWith('assets/')
+                                ? AssetImage(thumbnail)
+                                : FileImage(File(thumbnail)) as ImageProvider),
                           height: 260,
                           width: 260,
                           fit: BoxFit.cover,
@@ -738,9 +751,11 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20.0),
                       child: Image(
-                        image: (thumbnail.startsWith('assets/')
-                              ? AssetImage(thumbnail)
-                              : FileImage(File(thumbnail)) as ImageProvider),
+                        image: (thumbnail.startsWith('http://') || thumbnail.startsWith('https://'))
+                            ? NetworkImage(thumbnail)
+                            : (thumbnail.startsWith('assets/')
+                                ? AssetImage(thumbnail)
+                                : FileImage(File(thumbnail)) as ImageProvider),
                         height: 260,
                         width: 260,
                         fit: BoxFit.cover,
@@ -868,7 +883,7 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
 
                         // Propietario de la playlist
                         Text(
-                          owner,
+                          owner.isEmpty ? 'Youtube' : owner,
                           style: TextStyle(
                             fontSize: 18,
                             color: Colors.grey[200]
