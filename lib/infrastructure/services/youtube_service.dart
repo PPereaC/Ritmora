@@ -82,7 +82,7 @@ class YoutubeService {
     // Eliminar cualquier parámetro adicional después del & (si existe)
     playlistId = playlistId.split('&').first;
     
-    return MusicService().getAllPlaylistSongs(playlistId);
+    return await MusicService().getPlaylistSongs(playlistUrl);
   }
 
 
