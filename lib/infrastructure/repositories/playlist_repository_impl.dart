@@ -91,8 +91,8 @@ class PlaylistRepositoryImpl extends PlaylistRepository {
   }
   
   @override
-  Future<void> removeYoutubePlaylist(YoutubePlaylist playlist) {
-    return datasource.removeYoutubePlaylist(playlist);
+  Future<void> removeYoutubePlaylist(String youtubePlaylistID) {
+    return datasource.removeYoutubePlaylist(youtubePlaylistID);
   }
   
   @override

@@ -485,19 +485,28 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
   }
   
   @override
-  Future<void> removeYoutubePlaylist(YoutubePlaylist playlist) async {
+  Future<void> removeYoutubePlaylist(String youtubePlaylistID) async {
     final db = await _getDB();
+
+    final log = await db.delete(
+      'youtube_songs',
+      where: 'playlistId = ?',
+      whereArgs: [youtubePlaylistID]
+    );
+
+    printINFO('Eliminadas sus $log canciones');
+
     await db.delete(
       'youtube_playlists',
       where: 'playlistId = ?',
-      whereArgs: [playlist.playlistId]
+      whereArgs: [youtubePlaylistID]
     );
   }
   
   @override
   Future<bool> isThisYoutubePlaylistSaved(String playlistID) async {
     final db = await _getDB();
-    
+
     final List<Map<String, dynamic>> result = await db.query(
       'youtube_playlists',
       where: 'playlistId = ?',

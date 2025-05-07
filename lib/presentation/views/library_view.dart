@@ -457,7 +457,9 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
                 );
               },
               onLongPress: () async {
-                if (playlist.isLocal == 1) {
+
+                // SI es una playlist local
+                if (playlist.isLocal == 0) {
                   final shouldDelete = await showConfirmationDialog(
                     context,
                     '¿Seguro que quieres eliminar la playlist?',
@@ -469,6 +471,21 @@ class _LibraryViewState extends ConsumerState<LibraryView> with SingleTickerProv
                     await ref.read(playlistProvider.notifier).deletePlaylist(playlist);
                   }
                 }
+
+                // SI es una playlist de youtube
+                if (playlist.isLocal == 1) {
+                  final shouldDelete = await showConfirmationDialog(
+                    context,
+                    '¿Seguro que quieres eliminar la playlist?',
+                    'Esta acción no se puede deshacer',
+                    'Cancelar',
+                    'Eliminar',
+                  );
+                  if (shouldDelete) {
+                    await ref.read(playlistProvider.notifier).removeYoutubePlaylist(playlist.playlistId);
+                  }
+                }
+
               },
             );
           },

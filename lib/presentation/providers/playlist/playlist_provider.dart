@@ -120,10 +120,10 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
     }
   }
 
-  Future<void> removeYoutubePlaylist(YoutubePlaylist playlist) async {
+  Future<void> removeYoutubePlaylist(String youtubePlaylistID) async {
     try {
-      printINFO('Eliminando la playlist de Youtube: ${playlist.title}');
-      await _repository.removeYoutubePlaylist(playlist);
+      printINFO('Eliminando la playlist de Youtube: $youtubePlaylistID');
+      await _repository.removeYoutubePlaylist(youtubePlaylistID);
       await loadPlaylists(); // Recargar la lista
     } catch (e) {
       printERROR('Error al eliminar la playlist de Youtube: $e');

@@ -22,7 +22,7 @@ abstract class PlaylistDatasource {
   Future<List<YoutubePlaylist>> getYoutubePlaylists();
   Future<List<YoutubeSong>> getYoutubeSongsFromPlaylist(String playlistId);
   Future<void> updateYoutubePlaylistThumbnail(String playlistID, String thumbnailURL);
-  Future<void> removeYoutubePlaylist(YoutubePlaylist playlist);
+  Future<void> removeYoutubePlaylist(String youtubePlaylistID);
   Future<bool> isThisYoutubePlaylistSaved(String playlistID);
 
 }
