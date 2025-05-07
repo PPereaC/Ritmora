@@ -63,7 +63,7 @@ class PlaylistCard extends StatelessWidget {
                     color: Colors.white,
                   ),
                   overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
+                  maxLines: 2,
                   textAlign: TextAlign.start,
                 ),
               ),
