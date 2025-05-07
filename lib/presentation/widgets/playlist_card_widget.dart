@@ -23,6 +23,7 @@ class PlaylistCard extends StatelessWidget {
       child: InkWell(
         hoverColor: Colors.transparent,
         splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
         onTap: onTap,
         onLongPress: onLongPress,
         child: Column(
