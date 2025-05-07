@@ -8,6 +8,9 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
 
+import '../../config/utils/constants.dart';
+import '../../domain/entities/playlist.dart';
+import '../../domain/entities/youtube_playlist.dart';
 import '../providers/playlist/playlist_provider.dart';
 
 class CustomMusicSidebar extends ConsumerStatefulWidget {
@@ -171,7 +174,7 @@ class CustomMusicSidebarState extends ConsumerState<CustomMusicSidebar> {
     return Consumer(
       builder: (context, ref, child) {
         final playlistState = ref.watch(playlistProvider);
-  
+
         if (playlistState.isLoading) {
           return const Padding(
             padding: EdgeInsets.all(16),
@@ -180,7 +183,7 @@ class CustomMusicSidebarState extends ConsumerState<CustomMusicSidebar> {
             ),
           );
         }
-  
+
         if (playlistState.errorMessage != null) {
           return Padding(
             padding: const EdgeInsets.all(16),
@@ -196,8 +199,23 @@ class CustomMusicSidebarState extends ConsumerState<CustomMusicSidebar> {
             ),
           );
         }
-  
-        if (playlistState.playlists.isEmpty) {
+
+        // Combinamos ambas listas en una lista de objetos Playlist
+        final allPlaylists = [
+          ...playlistState.playlists,
+          ...playlistState.youtubePlaylists.map((yt) => 
+            Playlist(
+              id: 0,
+              title: yt.title,
+              author: yt.author,
+              thumbnailUrl: yt.thumbnailUrl,
+              playlistId: yt.playlistId,
+              isLocal: 1
+            )
+          )
+        ];
+
+        if (allPlaylists.isEmpty) {
           return const Padding(
             padding: EdgeInsets.all(16),
             child: Center(
@@ -212,7 +230,7 @@ class CustomMusicSidebarState extends ConsumerState<CustomMusicSidebar> {
             ),
           );
         }
-  
+
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -226,13 +244,13 @@ class CustomMusicSidebarState extends ConsumerState<CustomMusicSidebar> {
             crossAxisSpacing: 12,
             childAspectRatio: 1,
           ),
-          itemCount: playlistState.playlists.length,
+          itemCount: allPlaylists.length,
           itemBuilder: (context, index) {
-            final playlist = playlistState.playlists[index];
+            final playlist = allPlaylists[index];
             return InkWell(
               onTap: () {
                 context.go(
-                  '/library/playlist/0/${playlist.id}',
+                  '/library/playlist/${playlist.isLocal}/${playlist.isLocal == 0 ? playlist.id : playlist.playlistId}',
                   extra: playlist,
                 );
               },
@@ -242,25 +260,69 @@ class CustomMusicSidebarState extends ConsumerState<CustomMusicSidebar> {
                   color: Colors.white12,
                 ),
                 clipBehavior: Clip.antiAlias,
-                child: Image(
-                  image: playlist.thumbnailUrl.startsWith('assets/')
-                      ? AssetImage(playlist.thumbnailUrl)
-                      : FileImage(File(playlist.thumbnailUrl)) as ImageProvider,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: Colors.grey[900],
-                    child: const Icon(
-                      Iconsax.music_playlist_outline,
-                      size: 24,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ),
+                child: playlist is YoutubePlaylist
+                    ? _buildYoutubePlaylistThumbnail(playlist as YoutubePlaylist)
+                    : _buildLocalPlaylistThumbnail(playlist),
               ),
             );
           },
         );
       },
+    );
+  }
+
+  Widget _buildYoutubePlaylistThumbnail(YoutubePlaylist playlist) {
+    // Primero intentamos cargar como File si existe localmente
+    try {
+      final file = File(playlist.thumbnailUrl);
+      if (file.existsSync()) {
+        return Image.file(
+          file,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => _buildDefaultThumbnail(),
+        );
+      }
+    } catch (e) {
+      print('Error al cargar imagen local: $e');
+    }
+    
+    // Si no existe como File, mostramos defaultPoster
+    return Image.asset(
+      defaultPoster,
+      fit: BoxFit.cover,
+    );
+  }
+
+  Widget _buildLocalPlaylistThumbnail(Playlist playlist) {
+    // Para playlists locales con imagen de assets
+    if (playlist.thumbnailUrl.startsWith('assets/')) {
+      return Image.asset(
+        playlist.thumbnailUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildDefaultThumbnail(),
+      );
+    }
+    
+    // Para playlists locales con imagen de archivo
+    try {
+      return Image.file(
+        File(playlist.thumbnailUrl),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildDefaultThumbnail(),
+      );
+    } catch (e) {
+      return _buildDefaultThumbnail();
+    }
+  }
+
+  Widget _buildDefaultThumbnail() {
+    return Container(
+      color: Colors.grey[900],
+      child: const Icon(
+        Iconsax.music_playlist_outline,
+        size: 24,
+        color: Colors.white70,
+      ),
     );
   }
 }
