@@ -95,4 +95,9 @@ class PlaylistRepositoryImpl extends PlaylistRepository {
     return datasource.removeYoutubePlaylist(playlist);
   }
   
+  @override
+  Future<bool> isThisYoutubePlaylistSaved(String playlistID) {
+    return datasource.isThisYoutubePlaylistSaved(playlistID);
+  }
+  
 }

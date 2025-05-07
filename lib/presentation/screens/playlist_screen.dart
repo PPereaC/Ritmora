@@ -119,16 +119,27 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                     iconTheme: const IconThemeData(color: Colors.white),
                     leading: IconButton(
                       icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                      onPressed: () {
+                      onPressed: () async {
+
+                        final bool youtubeLocalPlaylist = await ref.read(playlistProvider.notifier).isThisYoutubePlaylistSaved(widget.playlistID);
 
                         if (widget.playlist!.thumbnailUrl.startsWith('https') || widget.playlist!.thumbnailUrl.startsWith('http')) {
                           context.go('/');
                         }
 
+                        // Si la playlist es local se va a la biblioteca
                         if (widget.isLocalPlaylist == '0') {
                           context.go('/library');
-                        } else if (widget.isLocalPlaylist == '1') {
+                        }
+                        // Si es una playlist de Youtube que está guardada localmente
+                        // al ir hacia atrás se va a la biblioteca 
+                        else if (widget.isLocalPlaylist == '1' && youtubeLocalPlaylist) {
                           context.go('/library');
+                        } 
+                        // Si la playlist es de Youtube pero no es local
+                        // se va a Home, ya que será una playlist de las que hay en home
+                        else if (widget.isLocalPlaylist == '1' && youtubeLocalPlaylist == false) {
+                          context.go('/');
                         }
 
                       },
@@ -189,16 +200,26 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                           child: MouseRegion(
                             cursor: SystemMouseCursors.click,
                             child: GestureDetector(
-                              onTap: () {
+                              onTap: () async {
+                                final bool youtubeLocalPlaylist = await ref.read(playlistProvider.notifier).isThisYoutubePlaylistSaved(widget.playlistID);
+
                                 if (widget.playlist!.thumbnailUrl.startsWith('https') || widget.playlist!.thumbnailUrl.startsWith('http')) {
                                   context.go('/');
-                                  return;
                                 }
 
+                                // Si la playlist es local se va a la biblioteca
                                 if (widget.isLocalPlaylist == '0') {
                                   context.go('/library');
-                                } else {
+                                }
+                                // Si es una playlist de Youtube que está guardada localmente
+                                // al ir hacia atrás se va a la biblioteca 
+                                else if (widget.isLocalPlaylist == '1' && youtubeLocalPlaylist) {
                                   context.go('/library');
+                                } 
+                                // Si la playlist es de Youtube pero no es local
+                                // se va a Home, ya que será una playlist de las que hay en home
+                                else if (widget.isLocalPlaylist == '1' && youtubeLocalPlaylist == false) {
+                                  context.go('/');
                                 }
                               },
                               child: Row(

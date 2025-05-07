@@ -494,4 +494,22 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
     );
   }
   
+  @override
+  Future<bool> isThisYoutubePlaylistSaved(String playlistID) async {
+    final db = await _getDB();
+    
+    final List<Map<String, dynamic>> result = await db.query(
+      'youtube_playlists',
+      where: 'playlistId = ?',
+      whereArgs: [playlistID]
+    );
+
+    if (result.isEmpty) {
+      return false;
+    } else {
+      return true;
+    }
+
+  }
+  
 }

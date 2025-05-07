@@ -185,6 +185,10 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
       printERROR('Error al actualizar la carátula de la playlist de Youtube: $e');
     }
   }
+
+  Future<bool> isThisYoutubePlaylistSaved(String playlistID) async {
+    return await _repository.isThisYoutubePlaylistSaved(playlistID);
+  }
     
 }
 
