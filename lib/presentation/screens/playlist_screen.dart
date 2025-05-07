@@ -9,6 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../config/helpers/permissions_helper.dart';
 import '../../config/utils/constants.dart';
@@ -431,45 +434,58 @@ class _MobilePlaylistHeader extends ConsumerWidget {
     final colors = Theme.of(context).colorScheme;
 
     Future<void> updateThumbnail() async {
-      bool isGranted = await PermissionsHelper.storagePermission();
-      if (!isGranted) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Permisos de almacenamiento'),
-            content: const Text('No tienes permisos de almacenamiento. Por favor, actívalos manualmente en la configuración de tu dispositivo.'),
-            actions: [
-              TextButton(
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  bool isGranted = await PermissionsHelper.storagePermission();
-                  if (isGranted) {
-                    final image = await ImagePickerWidget.pickImage(context);
-                    if (image != null) {
-                      if (isLocalPlaylist) {
-                        ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), image.path);
-                      } else {
-                        ref.read(playlistProvider.notifier).updateYoutubePlaylistThumbnail(playlistID, image.path);
-                      }
-                      context.push('/library');
-                    }
-                  }
-                },
-                child: const Text('Aceptar'),
+      String? imagePath;
+      
+      if (Platform.isAndroid || Platform.isIOS) {
+        bool isGranted = await PermissionsHelper.storagePermission();
+        if (!isGranted) {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Permisos requeridos'),
+                content: const Text('Se necesitan permisos de almacenamiento para seleccionar imágenes'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('OK'),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
-      } else {
-        final image = await ImagePickerWidget.pickImage(context);
-        if (image != null) {
-          if (isLocalPlaylist) {
-            ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), image.path);
-          } else {
-            ref.read(playlistProvider.notifier).updateYoutubePlaylistThumbnail(playlistID, image.path);
-          }
-          context.push('/library');
+            );
+          return;
         }
+        imagePath = await ImagePickerWidget.pickImage(context);
+      } else {
+        // Para desktop
+        FilePickerResult? result = await FilePicker.platform.pickFiles(
+          type: FileType.image,
+          allowMultiple: false,
+        );
+        
+        if (result != null && result.files.single.path != null) {
+          final originalPath = result.files.single.path!;
+          final appDir = await getApplicationCacheDirectory();
+          final imagesDir = Directory('${appDir.path}/playlist_images');
+          
+          if (!await imagesDir.exists()) {
+            await imagesDir.create(recursive: true);
+          }
+          
+          final extension = path.extension(originalPath);
+          final uniqueName = '${const Uuid().v4()}$extension';
+          imagePath = '${imagesDir.path}/$uniqueName';
+          
+          await File(originalPath).copy(imagePath);
+        }
+      }
+      
+      if (imagePath != null) {
+        if (isLocalPlaylist) {
+          await ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), imagePath);
+        } else {
+          await ref.read(playlistProvider.notifier).updateYoutubePlaylistThumbnail(playlistID, imagePath);
+        }
+        context.push('/library');
       }
     }
 
@@ -697,58 +713,58 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
     }
 
     Future<void> updateThumbnail() async {
-      if(Platform.isAndroid) {
+      String? imagePath;
+      
+      if (Platform.isAndroid || Platform.isIOS) {
         bool isGranted = await PermissionsHelper.storagePermission();
         if (!isGranted) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Permisos de almacenamiento'),
-              content: const Text('No tienes permisos de almacenamiento. Por favor, actívalos manualmente en la configuración de tu dispositivo.'),
-              actions: [
-                TextButton(
-                  onPressed: () async {
-                    Navigator.of(context).pop();
-                    bool isGranted = await PermissionsHelper.storagePermission();
-                    if (isGranted) {
-                      final image = await ImagePickerWidget.pickImage(context);
-                      if (image != null) {
-                        if (isLocalPlaylist) {
-                          ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), image.path);
-                        } else {
-                          ref.read(playlistProvider.notifier).updateYoutubePlaylistThumbnail(playlistID, image.path);
-                        }
-                        context.push('/library');
-                      }
-                    }
-                  },
-                  child: const Text('Aceptar'),
-                ),
-              ],
-            ),
-          );
-        } else {
-          final image = await ImagePickerWidget.pickImage(context);
-          if (image != null) {
-            ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), image.path);
-            context.push('/library');
-          }
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Permisos requeridos'),
+                content: const Text('Se necesitan permisos de almacenamiento para seleccionar imágenes'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            );
+          return;
         }
+        imagePath = await ImagePickerWidget.pickImage(context);
       } else {
+        // Para desktop
         FilePickerResult? result = await FilePicker.platform.pickFiles(
-          type: FileType.custom,
-          allowedExtensions: ['png', 'jpg', 'jpeg'],
+          type: FileType.image,
           allowMultiple: false,
-          dialogTitle: 'Seleccionar imagen',
         );
+        
         if (result != null && result.files.single.path != null) {
-          if (isLocalPlaylist) {
-            ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), result.files.single.path!);
-          } else {
-            ref.read(playlistProvider.notifier).updateYoutubePlaylistThumbnail(playlistID, result.files.single.path!);
+          final originalPath = result.files.single.path!;
+          final appDir = await getApplicationCacheDirectory();
+          final imagesDir = Directory('${appDir.path}/playlist_images');
+          
+          if (!await imagesDir.exists()) {
+            await imagesDir.create(recursive: true);
           }
-          context.push('/library');
+          
+          final extension = path.extension(originalPath);
+          final uniqueName = '${const Uuid().v4()}$extension';
+          imagePath = '${imagesDir.path}/$uniqueName';
+          
+          await File(originalPath).copy(imagePath);
         }
+      }
+      
+      if (imagePath != null) {
+        if (isLocalPlaylist) {
+          await ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), imagePath);
+        } else {
+          await ref.read(playlistProvider.notifier).updateYoutubePlaylistThumbnail(playlistID, imagePath);
+        }
+        context.push('/library');
       }
     }
 
