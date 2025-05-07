@@ -72,10 +72,6 @@ class YoutubeService {
 
   }
 
-  static String _getHighQualityThumbnail(String videoId) {
-    return 'https://i.ytimg.com/vi/$videoId/maxresdefault.jpg';
-  }
-
   Future<List<YoutubeSong>> getYoutubePlaylistSongs(String playlistUrl) async {
     String playlistId = playlistUrl.split('list=').last;
     

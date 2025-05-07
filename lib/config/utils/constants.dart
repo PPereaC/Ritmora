@@ -2,6 +2,11 @@ const instance = "https://pipedapi-libre.kavin.rocks";
 const defaultPoster = "assets/images/default_poster.jpeg";
 const defaultLoader = "assets/images/loading.gif";
 
+const domain = "https://music.youtube.com/";
+const baseUrl = "${domain}youtubei/v1/";
+const fixedParams = "?prettyPrint=false&alt=json&key=AIzaSyC9XL3ZjWddXya6X74dJoCTL-WEYFDNX30";
+const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
+
 // ignore_for_file: non_constant_identifier_names
 
 final Map<String, String> headers = {

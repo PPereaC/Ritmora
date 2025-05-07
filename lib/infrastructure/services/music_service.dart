@@ -1,47 +1,19 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../config/utils/constants.dart';
 import '../../config/utils/pretty_print.dart';
 import '../../domain/entities/youtube_song.dart';
 
-const domain = "https://music.youtube.com/";
-const baseUrl = "${domain}youtubei/v1/";
-const fixedParams =
-    "?prettyPrint=false&alt=json&key=AIzaSyC9XL3ZjWddXya6X74dJoCTL-WEYFDNX30";
-const userAgent =
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
-
-const single_column_tab = [
-  'contents',
-  'singleColumnBrowseResultsRenderer',
-  'tabs',
-  0,
-  'tabRenderer',
-  'content'
-];
-const two_column_tab = [
-  'contents',
-  'twoColumnBrowseResultsRenderer',
-  'secondaryContents'
-];
-const section_list = ['sectionListRenderer', 'contents'];
-const music_playlist_shelf = ['musicPlaylistShelfRenderer', 'contents'];
-const music_shelf = ['musicShelfRenderer', 'contents'];
-const grid_renderer = ['gridRenderer', 'items'];
 const mrlir = 'musicResponsiveListItemRenderer';
-const title_text = ['title', 'runs', 0, 'text'];
-const navigation_video_id = ['navigationEndpoint', 'watchEndpoint', 'videoId'];
+
 const thumbnails = [
   'thumbnail',
   'musicThumbnailRenderer',
   'thumbnail',
   'thumbnails'
-];
-const continuation_token = [
-  'continuationItemRenderer',
-  'continuationEndpoint',
-  'continuationCommand',
-  'token'
 ];
 
 dynamic _nav(dynamic root, List items, {bool noneIfAbsent = false}) {
@@ -71,7 +43,8 @@ Map<String, dynamic> _getFlexColumnItem(Map<String, dynamic> item, int index) {
           .containsKey('runs')) {
     return {};
   }
-  return item['flexColumns'][index]['musicResponsiveListItemFlexColumnRenderer'];
+  return item['flexColumns'][index]
+      ['musicResponsiveListItemFlexColumnRenderer'];
 }
 
 String? _getItemText(Map<String, dynamic> item, int index) {
@@ -79,7 +52,8 @@ String? _getItemText(Map<String, dynamic> item, int index) {
   return _nav(flexItem, ['text', 'runs', 0, 'text']);
 }
 
-List<Map<String, dynamic>>? _parseSongArtistsNav(Map<String, dynamic> data, int index) {
+List<Map<String, dynamic>>? _parseSongArtistsNav(
+    Map<String, dynamic> data, int index) {
   dynamic flexItem = _getFlexColumnItem(data, index);
   if (flexItem == null || flexItem.isEmpty) {
     return null;
@@ -90,7 +64,9 @@ List<Map<String, dynamic>>? _parseSongArtistsNav(Map<String, dynamic> data, int 
   final artists = <Map<String, dynamic>>[];
   for (int i = 0; i < runs.length; i++) {
     final run = runs[i];
-    if (run['text'] == ', ' || run['text'] == ' & ') continue; // Separadores comunes
+    if (run['text'] == ', ' || run['text'] == ' & ') {
+      continue; // Separadores comunes
+    }
     artists.add({
       'name': run['text'],
       'id': _nav(run, ['navigationEndpoint', 'browseEndpoint', 'browseId']),
@@ -100,16 +76,16 @@ List<Map<String, dynamic>>? _parseSongArtistsNav(Map<String, dynamic> data, int 
 }
 
 Map<String, dynamic> _getFixedColumnItem(Map<String, dynamic> item, int index) {
-    if ((item['fixedColumns']?.length ?? 0) <= index ||
-        !item['fixedColumns'][index]['musicResponsiveListItemFixedColumnRenderer']
-            .containsKey('text')) {
-      return {};
-    }
-    return item['fixedColumns'][index]['musicResponsiveListItemFixedColumnRenderer'];
+  if ((item['fixedColumns']?.length ?? 0) <= index ||
+      !item['fixedColumns'][index]['musicResponsiveListItemFixedColumnRenderer']
+          .containsKey('text')) {
+    return {};
   }
+  return item['fixedColumns'][index]
+      ['musicResponsiveListItemFixedColumnRenderer'];
+}
 
 // --- FIN: Constantes y helpers de navegación ---
-
 
 // --- INICIO: Constantes y helpers de continuación ---
 const _continuation_token_path = [
@@ -131,7 +107,6 @@ String? _getContinuationTokenFromContents(List<dynamic> contents) {
 }
 // --- FIN: Constantes y helpers de continuación ---
 
-
 class MusicService {
   final Dio dio = Dio();
 
@@ -144,39 +119,34 @@ class MusicService {
     'cookie': 'CONSENT=YES+1',
   };
 
-  Map<String, dynamic> _context = {
-    'context': {
-      'client': {
-        "clientName": "WEB_REMIX",
-        "clientVersion": "",
-        "hl": "es",
-      },
-      'user': {}
-    }
-  };
+  final Map<String, dynamic> _context = getBody(2);
 
   Future<void> _init() async {
     final prefs = await SharedPreferences.getInstance();
 
     // Actualiza la versión del cliente dinámicamente
     final date = DateTime.now();
-    _context['context']['client']['clientVersion'] =
-        "1.${date.year}${date.month.toString().padLeft(2, '0')}${date.day.toString().padLeft(2, '0')}.01.00";
+    _context['context']['client']['clientVersion'] = "1.${date.year}${date.month.toString().padLeft(2, '0')}${date.day.toString().padLeft(2, '0')}.01.00";
 
     // Intenta obtener el visitorId de SharedPreferences
     final visitorIdDataString = prefs.getString('visitorId');
     if (visitorIdDataString != null) {
       try {
-        final visitorData = jsonDecode(visitorIdDataString) as Map<String, dynamic>;
-        if (visitorData['id'] != null && visitorData['exp'] != null && !_isExpired(epoch: visitorData['exp'])) {
+        final visitorData =
+            jsonDecode(visitorIdDataString) as Map<String, dynamic>;
+        if (visitorData['id'] != null &&
+            visitorData['exp'] != null &&
+            !_isExpired(epoch: visitorData['exp'])) {
           _headers['X-Goog-Visitor-Id'] = visitorData['id'];
-          await prefs.setString('visitorId', jsonEncode({
-            'id': visitorData['id'],
-            'exp': DateTime.now().millisecondsSinceEpoch ~/ 1000 + 2592000 // Extiende 30 días
-          }));
-          printINFO("Got Visitor ID (${visitorData['id']}) from SharedPreferences");
+          await prefs.setString(
+              'visitorId',
+              jsonEncode({
+                'id': visitorData['id'],
+                'exp': DateTime.now().millisecondsSinceEpoch ~/ 1000 +
+                    2592000 // Extiende 30 días
+              }));
         }
-      } catch(e) {
+      } catch (e) {
         printERROR("Error decoding visitorId from SharedPreferences: $e");
         await prefs.remove('visitorId');
       }
@@ -187,14 +157,15 @@ class MusicService {
       final visitorId = await _generateVisitorId();
       if (visitorId != null) {
         _headers['X-Goog-Visitor-Id'] = visitorId;
-        await prefs.setString('visitorId', jsonEncode({
-          'id': visitorId,
-          'exp': DateTime.now().millisecondsSinceEpoch ~/ 1000 + 2592000
-        }));
+        await prefs.setString(
+            'visitorId',
+            jsonEncode({
+              'id': visitorId,
+              'exp': DateTime.now().millisecondsSinceEpoch ~/ 1000 + 2592000
+            }));
       } else {
         // Usa el valor por defecto si no se pudo generar
-        _headers['X-Goog-Visitor-Id'] =
-            "CgttN24wcmd5UzNSWSi2lvq2BjIKCgJKUBIEGgAgYQ%3D%3D"; // Visitor ID por defecto
+        _headers['X-Goog-Visitor-Id'] = "CgttN24wcmd5UzNSWSi2lvq2BjIKCgJKUBIEGgAgYQ%3D%3D"; // Visitor ID por defecto
       }
     }
   }
@@ -205,8 +176,10 @@ class MusicService {
 
   Future<String?> _generateVisitorId() async {
     try {
-      final response = await dio.get(domain, options: Options(headers: _headers..remove('X-Goog-Visitor-Id')));
-      final reg = RegExp(r'ytcfg\.set\s*\(\s*({.+?})\s*\)\s*;', multiLine: true);
+      final response = await dio.get(domain,
+          options: Options(headers: _headers..remove('X-Goog-Visitor-Id')));
+      final reg =
+          RegExp(r'ytcfg\.set\s*\(\s*({.+?})\s*\)\s*;', multiLine: true);
       final matches = reg.firstMatch(response.data.toString());
       if (matches != null) {
         final ytcfg = json.decode(matches.group(1).toString());
@@ -231,10 +204,12 @@ class MusicService {
         throw Exception('URL de lista de reproducción inválida');
       }
 
-      final playlistData = await _getPlaylistOrAlbumSongs(playlistId: playlistId);
-      
+      final playlistData =
+          await _getPlaylistOrAlbumSongs(playlistId: playlistId);
+
       // El 'tracks' que devuelve _getPlaylistOrAlbumSongs ya debería ser una lista de mapas procesados por _parsePlaylistItems
-      final List<Map<String, dynamic>> tracks = playlistData['tracks']?.cast<Map<String, dynamic>>() ?? [];
+      final List<Map<String, dynamic>> tracks =
+          playlistData['tracks']?.cast<Map<String, dynamic>>() ?? [];
 
       final songs = tracks
           .map<YoutubeSong>((track) => YoutubeSong(
@@ -242,10 +217,16 @@ class MusicService {
                 playlistId: playlistId,
                 title: track['title'] ?? 'Desconocido',
                 author: track['artists']?.isNotEmpty ?? false
-                    ? (track['artists'][0] is Map ? track['artists'][0]['name'] : track['artists'][0].toString()) ?? 'Desconocido'
+                    ? (track['artists'][0] is Map
+                            ? track['artists'][0]['name']
+                            : track['artists'][0].toString()) ??
+                        'Desconocido'
                     : 'Desconocido',
                 thumbnailUrl: track['thumbnails']?.isNotEmpty ?? false
-                    ? (track['thumbnails'].first is Map ? track['thumbnails'].first['url'] : track['thumbnails'].first.toString()) ?? ''
+                    ? (track['thumbnails'].first is Map
+                            ? track['thumbnails'].first['url']
+                            : track['thumbnails'].first.toString()) ??
+                        ''
                     : '',
                 streamUrl: '',
                 endUrl: '/watch?v=${track['videoId']}',
@@ -258,15 +239,12 @@ class MusicService {
     } catch (e) {
       printERROR('Error al obtener canciones de playlist: $e');
       rethrow;
-    } finally {
-
-    }
+    } finally {}
   }
 
-  Future<Map<String, dynamic>> _getPlaylistOrAlbumSongs(
-      {String? playlistId, int limit = 3000}) async {
+  Future<Map<String, dynamic>> _getPlaylistOrAlbumSongs({String? playlistId, int limit = 3000}) async {
     String browseId = playlistId!.startsWith("VL") ? playlistId : "VL$playlistId";
-    
+
     final data = Map<String, dynamic>.from(_context);
     data['browseId'] = browseId;
 
@@ -275,58 +253,108 @@ class MusicService {
     // Verificación de error simple
     if (responseData.containsKey('error')) {
       printERROR('Error en la respuesta de la API: ${responseData['error']}');
-      throw Exception('Error en la respuesta de la API: ${responseData['error']['message']}');
+      throw Exception(
+          'Error en la respuesta de la API: ${responseData['error']['message']}');
     }
-    
-    final Map<String, dynamic>? results =
-        _nav(responseData, ['contents', "singleColumnBrowseResultsRenderer", "tabs", 0, "tabRenderer", "content", 'sectionListRenderer', 'contents', 0, "musicPlaylistShelfRenderer"]) ??
-        _nav(responseData, ["contents", "twoColumnBrowseResultsRenderer", "secondaryContents", "sectionListRenderer", "contents", 0, "musicPlaylistShelfRenderer"]) ??
-        _nav(responseData, ["contents", "twoColumnBrowseResultsRenderer", "tabs", 0, "tabRenderer", "content", "sectionListRenderer", "contents", 0, "musicPlaylistShelfRenderer"]);
 
+    final Map<String, dynamic>? results = _nav(responseData, [
+          'contents',
+          "singleColumnBrowseResultsRenderer",
+          "tabs",
+          0,
+          "tabRenderer",
+          "content",
+          'sectionListRenderer',
+          'contents',
+          0,
+          "musicPlaylistShelfRenderer"
+        ]) ??
+        _nav(responseData, [
+          "contents",
+          "twoColumnBrowseResultsRenderer",
+          "secondaryContents",
+          "sectionListRenderer",
+          "contents",
+          0,
+          "musicPlaylistShelfRenderer"
+        ]) ??
+        _nav(responseData, [
+          "contents",
+          "twoColumnBrowseResultsRenderer",
+          "tabs",
+          0,
+          "tabRenderer",
+          "content",
+          "sectionListRenderer",
+          "contents",
+          0,
+          "musicPlaylistShelfRenderer"
+        ]);
 
     if (results == null) {
-      printERROR('No se encontraron "musicPlaylistShelfRenderer" en la respuesta. JSON (primeros 1000 chars): ${jsonEncode(responseData).substring(0, 1000)}');
+      printERROR(
+          'No se encontraron "musicPlaylistShelfRenderer" en la respuesta. JSON (primeros 1000 chars): ${jsonEncode(responseData).substring(0, 1000)}');
       _logJsonStructure(responseData, depth: 3);
       throw Exception('No se pudo encontrar musicPlaylistShelfRenderer en la respuesta.');
     }
 
-    final Map<String, dynamic> playlistOutput = {'id': results['playlistId'] ?? playlistId};
-    
+    final Map<String, dynamic> playlistOutput = {
+      'id': results['playlistId'] ?? playlistId
+    };
+
     // Información del encabezado de la playlist
     final Map<String, dynamic>? header =
-      _nav(responseData, ['header', "musicDetailHeaderRenderer"]) ??
-      _nav(responseData, ['header', "musicEditablePlaylistDetailHeaderRenderer"]) ??
-      _nav(responseData, ['contents', "twoColumnBrowseResultsRenderer", 'tabs', 0, "tabRenderer", "content", "sectionListRenderer", "contents", 0, "musicResponsiveHeaderRenderer"]);
+        _nav(responseData, ['header', "musicDetailHeaderRenderer"]) ??
+            _nav(responseData,
+                ['header', "musicEditablePlaylistDetailHeaderRenderer"]) ??
+            _nav(responseData, [
+              'contents',
+              "twoColumnBrowseResultsRenderer",
+              'tabs',
+              0,
+              "tabRenderer",
+              "content",
+              "sectionListRenderer",
+              "contents",
+              0,
+              "musicResponsiveHeaderRenderer"
+            ]);
 
     if (header != null) {
       playlistOutput['title'] = _nav(header, ['title', 'runs', 0, 'text']);
-      playlistOutput['thumbnails'] = _nav(header, ['thumbnail', 'musicThumbnailRenderer', 'thumbnail', 'thumbnails']);
+      playlistOutput['thumbnails'] = _nav(header,
+          ['thumbnail', 'musicThumbnailRenderer', 'thumbnail', 'thumbnails']);
     }
-
 
     List<Map<String, dynamic>> tracks = [];
     if (results.containsKey('contents')) {
       tracks = _parsePlaylistItems(results['contents']);
     }
-    
+
     // Manejo de continuaciones
-    String? continuationToken = _getContinuationTokenFromContents(results['contents'] ?? []);
+    String? continuationToken =
+        _getContinuationTokenFromContents(results['contents'] ?? []);
 
     while (continuationToken != null && tracks.length < limit) {
-        final continuationData = Map<String,dynamic>.from(_context);
-        continuationData['continuation'] = continuationToken;
+      final continuationData = Map<String, dynamic>.from(_context);
+      continuationData['continuation'] = continuationToken;
 
-        final continuationResponseData = (await _sendRequest('browse', continuationData, additionalParams: "&continuation=$continuationToken&ctoken=$continuationToken")).data as Map<String,dynamic>;
+      final continuationResponseData = (await _sendRequest(
+              'browse', continuationData,
+              additionalParams:
+                  "&continuation=$continuationToken&ctoken=$continuationToken"))
+          .data as Map<String, dynamic>;
 
-        final List<dynamic>? continuationItems = _nav(continuationResponseData, _continuation_items_path);
+      final List<dynamic>? continuationItems =
+          _nav(continuationResponseData, _continuation_items_path);
 
-        if (continuationItems == null || continuationItems.isEmpty) break;
+      if (continuationItems == null || continuationItems.isEmpty) break;
 
-        final newTracks = _parsePlaylistItems(continuationItems);
-        if (newTracks.isEmpty) break;
+      final newTracks = _parsePlaylistItems(continuationItems);
+      if (newTracks.isEmpty) break;
 
-        tracks.addAll(newTracks);
-        continuationToken = _getContinuationTokenFromContents(continuationItems);
+      tracks.addAll(newTracks);
+      continuationToken = _getContinuationTokenFromContents(continuationItems);
     }
 
     playlistOutput['tracks'] = tracks;
@@ -346,16 +374,48 @@ class MusicService {
 
       if (videoId == null) {
         // Intenta obtener videoId del botón de reproducción si no está en playlistItemData
-         if (_nav(data, ['overlay', 'musicItemThumbnailOverlayRenderer', 'content', 'musicPlayButtonRenderer'], noneIfAbsent: true) != null && 
-            _nav(data, [...['overlay', 'musicItemThumbnailOverlayRenderer', 'content', 'musicPlayButtonRenderer', 'playNavigationEndpoint', 'watchEndpoint', 'videoId']], noneIfAbsent: true) != null ) {
-           videoId = _nav(data, [...['overlay', 'musicItemThumbnailOverlayRenderer', 'content', 'musicPlayButtonRenderer', 'playNavigationEndpoint', 'watchEndpoint', 'videoId']]);
-         }
+        if (_nav(
+                    data,
+                    [
+                      'overlay',
+                      'musicItemThumbnailOverlayRenderer',
+                      'content',
+                      'musicPlayButtonRenderer'
+                    ],
+                    noneIfAbsent: true) !=
+                null &&
+            _nav(
+                    data,
+                    [
+                      ...[
+                        'overlay',
+                        'musicItemThumbnailOverlayRenderer',
+                        'content',
+                        'musicPlayButtonRenderer',
+                        'playNavigationEndpoint',
+                        'watchEndpoint',
+                        'videoId'
+                      ]
+                    ],
+                    noneIfAbsent: true) !=
+                null) {
+          videoId = _nav(data, [
+            ...[
+              'overlay',
+              'musicItemThumbnailOverlayRenderer',
+              'content',
+              'musicPlayButtonRenderer',
+              'playNavigationEndpoint',
+              'watchEndpoint',
+              'videoId'
+            ]
+          ]);
+        }
       }
       // Por ahora, si no se encuentra videoId, se omite.
       if (videoId == null) {
         continue;
       }
-
 
       String? title = _getItemText(data, 0);
       if (title == 'Song deleted') {
@@ -363,24 +423,25 @@ class MusicService {
       }
 
       List<Map<String, dynamic>>? artists = _parseSongArtistsNav(data, 1);
-      
+
       String? duration;
-      if (_nav(data, ['fixedColumns'], noneIfAbsent:true) != null) {
+      if (_nav(data, ['fixedColumns'], noneIfAbsent: true) != null) {
         final fixedItem = _getFixedColumnItem(data, 0);
         if (fixedItem.isNotEmpty) {
-             duration = _nav(fixedItem, ['text', 'simpleText']) ??
-                        _nav(fixedItem, ['text', 'runs', 0, 'text']);
+          duration = _nav(fixedItem, ['text', 'simpleText']) ??
+              _nav(fixedItem, ['text', 'runs', 0, 'text']);
         }
       }
 
       final thumbs = _nav(data, thumbnails) ?? [];
 
       bool isAvailable = true;
-      if (_nav(data, ['musicItemRendererDisplayPolicy'], noneIfAbsent:true) != null) {
+      if (_nav(data, ['musicItemRendererDisplayPolicy'], noneIfAbsent: true) !=
+          null) {
         isAvailable = data['musicItemRendererDisplayPolicy'] !=
             'MUSIC_ITEM_RENDERER_DISPLAY_POLICY_GREY_OUT';
       }
-      
+
       if (isAvailable) {
         songs.add({
           'videoId': videoId,
@@ -394,7 +455,8 @@ class MusicService {
     return songs;
   }
 
-  Future<Response> _sendRequest(String action, Map<dynamic, dynamic> data, {String additionalParams = ''}) async {
+  Future<Response> _sendRequest(String action, Map<dynamic, dynamic> data,
+      {String additionalParams = ''}) async {
     final url = '$baseUrl$action$fixedParams$additionalParams';
     try {
       final response = await dio.post(
@@ -406,7 +468,8 @@ class MusicService {
       if (response.statusCode == 200) {
         return response;
       } else {
-        printERROR('Error en la solicitud: ${response.statusCode} - ${response.data}');
+        printERROR(
+            'Error en la solicitud: ${response.statusCode} - ${response.data}');
         throw DioException(
           requestOptions: response.requestOptions,
           response: response,
@@ -414,24 +477,27 @@ class MusicService {
         );
       }
     } on DioException catch (e) {
-      printERROR('DioException al enviar solicitud a $url: ${e.response?.statusCode} - ${e.response?.data ?? e.message}');
+      printERROR(
+          'DioException al enviar solicitud a $url: ${e.response?.statusCode} - ${e.response?.data ?? e.message}');
       if (e.response?.data != null) {
-         printERROR('DioException response data: ${e.response!.data}');
+        printERROR('DioException response data: ${e.response!.data}');
       }
-      throw Exception('Error en la solicitud: ${e.response?.data ?? e.message}');
+      throw Exception(
+          'Error en la solicitud: ${e.response?.data ?? e.message}');
     } catch (e) {
       printERROR('Error inesperado al enviar solicitud a $url: $e');
       rethrow;
     }
   }
-  
-  void _logJsonStructure(Map<String, dynamic> data, {int depth = 1, String prefix = ''}) {
+
+  void _logJsonStructure(Map<String, dynamic> data,
+      {int depth = 1, String prefix = ''}) {
     if (depth <= 0) {
       return;
     }
     data.forEach((key, value) {
       String typeString = value.runtimeType.toString();
-      if (value == null) { 
+      if (value == null) {
         typeString = "Null";
       }
       printINFO('$prefix$key: $typeString');
@@ -441,13 +507,15 @@ class MusicService {
       } else if (value is List) {
         if (value.isNotEmpty) {
           String itemTypeString = value.first.runtimeType.toString();
-          if (value.first == null) { 
+          if (value.first == null) {
             itemTypeString = "Null";
           }
           printINFO('$prefix  List<$itemTypeString> (size: ${value.length})');
           if (value.first is Map<String, dynamic>) {
-            printINFO('$prefix  [0]: (Estructura del primer elemento de la lista)');
-            _logJsonStructure(value.first as Map<String, dynamic>, depth: depth - 1, prefix: '$prefix    ');
+            printINFO(
+                '$prefix  [0]: (Estructura del primer elemento de la lista)');
+            _logJsonStructure(value.first as Map<String, dynamic>,
+                depth: depth - 1, prefix: '$prefix    ');
           }
         } else {
           printINFO('$prefix  List<dynamic> (empty)');
