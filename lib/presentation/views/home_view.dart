@@ -1,3 +1,4 @@
+import 'package:finmusic/config/utils/background_tasks.dart';
 import 'package:finmusic/presentation/widgets/home/song_horizontal_listview_widget.dart';
 import 'package:finmusic/presentation/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:icons_plus/icons_plus.dart';
 import 'package:marquee/marquee.dart';
 
 import '../../config/utils/responsive.dart';
+import '../providers/playlist/playlist_provider.dart';
 import '../providers/providers.dart';
 
 class HomeView extends ConsumerStatefulWidget {
@@ -24,7 +26,8 @@ class HomeViewState extends ConsumerState<HomeView> {
     // Cargar datos iniciales
     ref.read(trendingSongsProvider.notifier).loadSongs();
     ref.read(quickPicksProvider.notifier).loadSongs();
-    ref.read(homePlaylistsProvider.notifier).  loadSongs();
+    ref.read(homePlaylistsProvider.notifier).loadSongs();
+
   }
 
   @override
@@ -35,6 +38,19 @@ class HomeViewState extends ConsumerState<HomeView> {
     final homePlaylists = ref.watch(homePlaylistsProvider);
 
     bool isDesktop = Responsive.isTabletOrDesktop(context);
+
+    final playlistState = ref.watch(playlistProvider);
+
+    // Playlists are now directly available
+    final playlistLocales = playlistState.playlists;
+    final youtubePlaylists = playlistState.youtubePlaylists;
+
+    // Update expired stream URLs
+    updateExpiredStreamUrls(
+      ref,
+      playlistLocales,
+      youtubePlaylists,
+    );
 
     return Scaffold(
       body: LayoutBuilder(

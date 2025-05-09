@@ -521,4 +521,163 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
 
   }
   
+  @override
+  Future<bool> checkIfSongIsInDB(String songID) async {
+    final db = await _getDB();
+    
+    // Para playlist creadas en la aplicación
+    final List<Map<String, dynamic>> result = await db.query(
+      'playlist_song',
+      where: 'songId = ?',
+      whereArgs: [songID]
+    );
+
+    // Para canciones de las playlists de YouTube
+    final List<Map<String, dynamic>> result2 = await db.query(
+      'youtube_songs',
+      where: 'songId = ?',
+      whereArgs: [songID]
+    );
+
+    if (result.isEmpty && result2.isEmpty) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+  
+  @override
+  Future<Song> getSongFromDB(String songID) async {
+    final db = await _getDB();
+
+    // Para playlist creadas en la aplicación
+    final List<Map<String, dynamic>> result = await db.query(
+      'playlist_song',
+      where: 'songId = ?',
+      whereArgs: [songID]
+    );
+
+    if (result.isNotEmpty) {
+      return Song(
+        title: result[0]['title'],
+        author: result[0]['author'],
+        thumbnailUrl: result[0]['thumbnailUrl'],
+        streamUrl: result[0]['streamUrl'],
+        endUrl: result[0]['endUrl'],
+        songId: result[0]['songId'],
+        duration: result[0]['duration'],
+      );
+    }
+
+    // Para canciones de las playlists de YouTube
+    final List<Map<String, dynamic>> result2 = await db.query(
+      'youtube_songs',
+      where: 'songId = ?',
+      whereArgs: [songID]
+    );
+
+    if (result2.isNotEmpty) {
+      final youtubeSong = YoutubeSong(
+        songId: result2[0]['songId'],
+        playlistId: result2[0]['playlistId'],
+        title: result2[0]['title'],
+        author: result2[0]['author'],
+        thumbnailUrl: result2[0]['thumbnailUrl'],
+        streamUrl: result2[0]['streamUrl'],
+        endUrl: result2[0]['endUrl'],
+        duration: result2[0]['duration'],
+        videoId: result2[0]['videoId'],
+        isVideo: result2[0]['isVideo'],
+        isLiked: result2[0]['isLiked'],
+      );
+
+      // Convertir YoutubeSong a Song
+      final song = Song(
+        title: youtubeSong.title,
+        author: youtubeSong.author,
+        thumbnailUrl: youtubeSong.thumbnailUrl,
+        streamUrl: youtubeSong.streamUrl,
+        endUrl: youtubeSong.endUrl,
+        songId: youtubeSong.songId,
+        duration: youtubeSong.duration,
+        videoId: youtubeSong.videoId,
+        isVideo: youtubeSong.isVideo,
+        isLiked: youtubeSong.isLiked,
+      );
+
+      return song;
+    }
+
+    throw Exception('No se encontró la canción con id $songID');
+
+  }
+  
+  @override
+  Future<void> updateStreamUrl(Song song) async {
+    final db = await _getDB();
+
+    await db.update(
+      'playlist_song',
+      {'streamUrl': song.streamUrl},
+      where: 'songId = ?',
+      whereArgs: [song.songId]
+    );
+
+    await db.update(
+      'youtube_songs',
+      {'streamUrl': song.streamUrl},
+      where: 'songId = ?',
+      whereArgs: [song.songId]
+    );
+
+  }
+  
+  @override
+  Future<List<Song>> getSongsFromLocalPlaylist(String playlistID) async {
+    final db = await _getDB();
+
+    final List<Map<String, dynamic>> songs = await db.query(
+      'playlist_song',
+      where: 'playlistId = ?',
+      whereArgs: [playlistID]
+    );
+
+    return songs.map((song) => Song(
+      title: song['title'],
+      author: song['author'],
+      thumbnailUrl: song['thumbnailUrl'],
+      streamUrl: song['streamUrl'],
+      endUrl: song['endUrl'],
+      songId: song['songId'],
+      duration: song['duration'],
+    )).toList();
+
+  }
+  
+  @override
+  Future<List<YoutubeSong>> getSongsFromYoutubePlaylist(String playlistID) async {
+    final db = await _getDB();
+
+    final List<Map<String, dynamic>> songs = await db.query(
+      'youtube_songs',
+      where: 'playlistId = ?',
+      whereArgs: [playlistID]
+    );
+
+    return songs.map((song) => YoutubeSong(
+      songId: song['songId'],
+      playlistId: song['playlistId'],
+      title: song['title'],
+      author: song['author'],
+      thumbnailUrl: song['thumbnailUrl'],
+      streamUrl: song['streamUrl'],
+      endUrl: song['endUrl'],
+      duration: song['duration'],
+      videoId: song['videoId'],
+      isVideo: song['isVideo'],
+      isLiked: song['isLiked'],
+    )).toList();
+
+  }
+  
 }

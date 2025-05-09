@@ -25,4 +25,10 @@ abstract class PlaylistDatasource {
   Future<void> removeYoutubePlaylist(String youtubePlaylistID);
   Future<bool> isThisYoutubePlaylistSaved(String playlistID);
 
+  Future<Song> getSongFromDB(String songID);
+  Future<void> updateStreamUrl(Song song);
+  Future<bool> checkIfSongIsInDB(String songID);
+  Future<List<Song>> getSongsFromLocalPlaylist(String playlistID);
+  Future<List<YoutubeSong>> getSongsFromYoutubePlaylist(String playlistID);
+
 }

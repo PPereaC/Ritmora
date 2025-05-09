@@ -189,7 +189,41 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
   Future<bool> isThisYoutubePlaylistSaved(String playlistID) async {
     return await _repository.isThisYoutubePlaylistSaved(playlistID);
   }
-    
+
+  Future<void> updateSongStreamUrl(Song song) async {
+    try {
+      await _repository.updateStreamUrl(song);
+    } catch (e) {
+      printERROR('Error al actualizar la URL de la canción: $e');
+    }
+  }
+
+  Future<bool> checkIfSongIsInDB(String songID) async {
+    return await _repository.checkIfSongIsInDB(songID);
+  }
+
+  Future<Song> getSongFromDB(String songID) async {
+    return await _repository.getSongFromDB(songID);
+  }
+
+  Future<List<Song>> getSongsFromLocalPlaylist(int playlistID) async {
+    try {
+      return await _repository.getSongsFromPlaylist(playlistID);
+    } catch (e) {
+      printERROR('Error obteniendo canciones de la playlist local del repositorio: $e');
+      return [];
+    }
+  }
+
+  Future<List<YoutubeSong>> getSongsFromYoutubePlaylist(String playlistID) async {
+    try {
+      return await _repository.getSongsFromYoutubePlaylist(playlistID);
+    } catch (e) {
+      printERROR('Error obteniendo canciones de la playlist de YouTube del repositorio: $e');
+      return [];
+    }
+  }
+
 }
 
 final playlistProvider = StateNotifierProvider<PlaylistNotifier, PlaylistState>(

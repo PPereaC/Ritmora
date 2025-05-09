@@ -14,29 +14,6 @@ class YoutubeService {
   factory YoutubeService() => _instance;
   YoutubeService._internal();
 
-  Future<String?> getCachedStreamUrl(String videoId) async {
-    // Verificar caché primero
-    if (_cache.containsKey(videoId) && _cache[videoId]!.isValid) {
-      printINFO('✅ URL encontrada en caché');
-      return _cache[videoId]!.url;
-    }
-
-    // Timeout de 5 segundos
-    try {
-      final manifest = await yt.videos.streamsClient
-          .getManifest(videoId)
-          .timeout(const Duration(seconds: 5));
-          
-      final url = manifest.audioOnly.withHighestBitrate().url.toString();
-          
-      _cache[videoId] = CachedUrl(url);
-      return url;
-    } catch (e) {
-      printERROR('Error: $e');
-      return null;
-    }
-  }
-
   Future<List<Song>> getPlaylistSongs(String playlistID) async {
     List<Song> songs = [];
     String playlistid = playlistID.substring(2);

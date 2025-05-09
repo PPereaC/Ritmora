@@ -358,38 +358,38 @@ class YoutubeSongsDatasource extends SongsDatasource {
     return playlist;
   }
 
-  Future<List<Song>> _jsonToPlaylistWSongs(Map<String, dynamic> json) async {
-    List<Song> songs = [];
+  // Future<List<Song>> _jsonToPlaylistWSongs(Map<String, dynamic> json) async {
+  //   List<Song> songs = [];
 
-    try {
-      // Navegamos hasta la estructura de la playlist
-      final contents = json['contents']['twoColumnBrowseResultsRenderer']['secondaryContents']['sectionListRenderer']['contents'][0]['musicPlaylistShelfRenderer']['contents'];
-      for (var item in contents) {
-        if (item.containsKey('musicResponsiveListItemRenderer')) {
-          final songJson = item['musicResponsiveListItemRenderer'];
-          final title = songJson['flexColumns'][0]['musicResponsiveListItemFlexColumnRenderer']['text']['runs'][0]['text'];
-          final artist = songJson['flexColumns'][1]['musicResponsiveListItemFlexColumnRenderer']['text']['runs'][0]['text'];
-          final videoId = songJson['overlay']['musicItemThumbnailOverlayRenderer']['content']['musicPlayButtonRenderer']['playNavigationEndpoint']['watchEndpoint']['videoId'];
-          final duration = songJson['fixedColumns'][0]['musicResponsiveListItemFixedColumnRenderer']['text']['runs'][0]['text'];
+  //   try {
+  //     // Navegamos hasta la estructura de la playlist
+  //     final contents = json['contents']['twoColumnBrowseResultsRenderer']['secondaryContents']['sectionListRenderer']['contents'][0]['musicPlaylistShelfRenderer']['contents'];
+  //     for (var item in contents) {
+  //       if (item.containsKey('musicResponsiveListItemRenderer')) {
+  //         final songJson = item['musicResponsiveListItemRenderer'];
+  //         final title = songJson['flexColumns'][0]['musicResponsiveListItemFlexColumnRenderer']['text']['runs'][0]['text'];
+  //         final artist = songJson['flexColumns'][1]['musicResponsiveListItemFlexColumnRenderer']['text']['runs'][0]['text'];
+  //         final videoId = songJson['overlay']['musicItemThumbnailOverlayRenderer']['content']['musicPlayButtonRenderer']['playNavigationEndpoint']['watchEndpoint']['videoId'];
+  //         final duration = songJson['fixedColumns'][0]['musicResponsiveListItemFixedColumnRenderer']['text']['runs'][0]['text'];
 
-          songs.add(
-            Song(
-              title: title,
-              author: artist,
-              thumbnailUrl: _getHighQualityThumbnail(videoId),
-              streamUrl: '',
-              endUrl: '/watch?v=$videoId',
-              songId: videoId,
-              duration: duration,
-            )
-          );
-        }
-      }
-    } catch (e) {
-      printERROR('Error extracting songs from playlist: $e');
-    }
+  //         songs.add(
+  //           Song(
+  //             title: title,
+  //             author: artist,
+  //             thumbnailUrl: _getHighQualityThumbnail(videoId),
+  //             streamUrl: '',
+  //             endUrl: '/watch?v=$videoId',
+  //             songId: videoId,
+  //             duration: duration,
+  //           )
+  //         );
+  //       }
+  //     }
+  //   } catch (e) {
+  //     printERROR('Error extracting songs from playlist: $e');
+  //   }
 
-    return songs;
-  }
+  //   return songs;
+  // }
   
 }

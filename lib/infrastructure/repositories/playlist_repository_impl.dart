@@ -100,4 +100,29 @@ class PlaylistRepositoryImpl extends PlaylistRepository {
     return datasource.isThisYoutubePlaylistSaved(playlistID);
   }
   
+  @override
+  Future<bool> checkIfSongIsInDB(String songID) {
+    return datasource.checkIfSongIsInDB(songID);
+  }
+  
+  @override
+  Future<Song> getSongFromDB(String songID) {
+    return datasource.getSongFromDB(songID);
+  }
+  
+  @override
+  Future<void> updateStreamUrl(Song song) {
+    return datasource.updateStreamUrl(song);
+  }
+  
+  @override
+  Future<List<Song>> getSongsFromLocalPlaylist(String playlistID) {
+    return datasource.getSongsFromLocalPlaylist(playlistID);
+  }
+  
+  @override
+  Future<List<YoutubeSong>> getSongsFromYoutubePlaylist(String playlistID) {
+    return datasource.getSongsFromYoutubePlaylist(playlistID);
+  }
+  
 }
