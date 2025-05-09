@@ -608,7 +608,15 @@ class SqflitePlaylistDatasource extends PlaylistDatasource {
       return song;
     }
 
-    throw Exception('No se encontró la canción con id $songID');
+    return Song(
+      title: 'NOBD',
+      author: 'NOBD',
+      thumbnailUrl: 'NOBD',
+      streamUrl: 'NOBD',
+      endUrl: 'NOBD',
+      songId: songID,
+      duration: ''
+    );
 
   }
   

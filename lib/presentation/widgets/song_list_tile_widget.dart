@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:finmusic/presentation/providers/providers.dart';
-import 'package:finmusic/presentation/widgets/widgets.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +11,7 @@ import '../../config/utils/background_tasks.dart';
 import '../../config/utils/constants.dart';
 import '../../config/utils/responsive.dart';
 import '../../domain/entities/song.dart';
+import '../providers/playlist/playlist_provider.dart';
 
 class SongListTile extends ConsumerWidget {
   final Song song;
@@ -68,22 +68,24 @@ class SongListTile extends ConsumerWidget {
           
           // Obtener URL y reproducir en segundo plano
           try {
-            final url = await getStreamUrlInBackground(song.songId);
-            if (url == null) {
-              CustomSnackbar.show(
-                context,
-                'No es posible reproducir esta canción',
-                Colors.red,
-                Iconsax.warning_2_outline,
-                duration: 3,
-              );
+            final result = await ref.read(playlistProvider.notifier).getSongFromDB(song.songId);
+
+            // Comprobar si la canción está en la base de datos
+            if (result.title == 'NOBD') { // Si no está en la base de datos
+              // De momento si no está se consigue individualmente el stream url y no se guarda de momento
+              // REVISAR: Para guardar también estas canciones
+
+              song.streamUrl = (await getStreamUrlInBackground(song.songId))!;
               ref.read(loadingProvider.notifier).state = false;
-              return;
+              await ref.read(songPlayerProvider).playSong(song);
+            } else {
+              // SI está en la base de datos se pasa directamente el objeto de la canción
+              // para reproducirlo
+
+              ref.read(loadingProvider.notifier).state = false;
+              await ref.read(songPlayerProvider).playSong(result);
             }
             
-            song.streamUrl = url;
-            ref.read(loadingProvider.notifier).state = false;
-            await ref.read(songPlayerProvider).playSong(song);
           } catch (e) {
             ref.read(loadingProvider.notifier).state = false;
             rethrow;

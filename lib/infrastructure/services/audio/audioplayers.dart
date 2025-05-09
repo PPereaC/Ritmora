@@ -104,27 +104,6 @@ class AudioPlayersService extends BasePlayerService {
 
   @override
   Future<void> playSong(Song song) async {
-    if(song.streamUrl.isEmpty) {
-      final streamUrl = await getStreamUrlInBackground(song.songId);
-      if (streamUrl == null || streamUrl.isEmpty) {
-        final songIndex = _queue.indexWhere((s) => s.songId == song.songId);
-        if (songIndex != -1) {
-          _queue.removeAt(songIndex);
-          _queueController.add(_queue);
-        }
-        
-        if (_queue.isNotEmpty) {
-          final nextSong = _queue[0];
-          await playSong(nextSong);
-        } else {
-          await _audioPlayer.stop();
-          _isPlaying = false;
-        }
-        return;
-      }
-      song.streamUrl = streamUrl;
-    }
-
     if (_currentSong != null) {
       _history.add(_currentSong!);
     }
