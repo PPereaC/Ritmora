@@ -157,7 +157,7 @@ class CustomMusicSidebarState extends ConsumerState<CustomMusicSidebar> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'FinMusic',
+              'Ritmora',
               style: GoogleFonts.play().copyWith(
                 color: Colors.white,
                 fontSize: 28,

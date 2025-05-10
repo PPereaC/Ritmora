@@ -1,5 +1,5 @@
-display_name: FinMusic
-package_name: finmusic
+display_name: Ritmora
+package_name: ritmora
 
 version: "0.1.5"
 
@@ -29,7 +29,7 @@ postuninstall_scripts:
   - echo "Lo siento que no te haya gustado."
 
 keywords:
-  - FinMusic
+  - Ritmora
   - Reproductor de música
 
 generic_name: Reproductor de música

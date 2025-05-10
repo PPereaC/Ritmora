@@ -79,7 +79,7 @@ class HomeViewState extends ConsumerState<HomeView> {
                             const Padding(
                               padding: EdgeInsets.only(left: 8),
                               child: Text(
-                                'FinMusic',
+                                'Ritmora',
                                 style: TextStyle(
                                   fontFamily: 'Titulo',
                                   color: Colors.white,

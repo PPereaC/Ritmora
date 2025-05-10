@@ -81,7 +81,7 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                 onPressed: () => context.pop(),
                               ),
                               const Text(
-                                'FinMusic',
+                                'Ritmora',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 25,
