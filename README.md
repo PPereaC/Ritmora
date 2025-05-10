@@ -1,4 +1,4 @@
-# FinMusic
+# Ritmora
 Reproductor multiplataforma de música de YouTube Music sin necesidad de suscripción ni inicio de sesión. Importa, crea y gestiona playlists, y busca cualquier canción o video musical de forma gratuita.
 
 # ✨ Características
@@ -25,7 +25,7 @@ Reproductor multiplataforma de música de YouTube Music sin necesidad de suscrip
 
 # 📜 Disclaimer  
 
-**FinMusic** es un **proyecto personal y educativo**, desarrollado con fines de aprendizaje y experimentación tecnológica.  
+**Ritmora** es un **proyecto personal y educativo**, desarrollado con fines de aprendizaje y experimentación tecnológica.  
 
 ## 📌 Aclaraciones importantes  
 
@@ -51,4 +51,4 @@ _Última actualización: 03-04-2025_
 
 ## 🔗 Descarga
 
-<a href="https://github.com/PPereaC/FinMusic/releases/latest"><img src ="https://github.com/anandnet/Harmony-Music/blob/main/don_github.png" width = "250"></a>
+<a href="https://github.com/PPereaC/Ritmora/releases/latest"><img src ="https://github.com/anandnet/Harmony-Music/blob/main/don_github.png" width = "250"></a>

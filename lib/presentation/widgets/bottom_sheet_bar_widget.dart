@@ -1,8 +1,6 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
 import 'package:animate_do/animate_do.dart';
-import 'package:finmusic/presentation/providers/playlist/playlist_repository_provider.dart';
-import 'package:finmusic/presentation/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +8,8 @@ import 'package:icons_plus/icons_plus.dart';
 
 import '../../config/utils/constants.dart';
 import '../../domain/entities/song.dart';
+import '../providers/playlist/playlist_repository_provider.dart';
+import '../providers/providers.dart';
 
 class BottomSheetBarWidget extends ConsumerWidget {
   final Song song;

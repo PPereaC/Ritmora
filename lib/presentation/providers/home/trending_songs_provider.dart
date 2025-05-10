@@ -1,4 +1,4 @@
-import 'package:finmusic/domain/repositories/songs_repository.dart';
+import 'package:ritmora/domain/repositories/songs_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/song.dart';
 import '../song_repository_provider.dart';

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:finmusic/infrastructure/services/base_player_service.dart';
+import 'package:ritmora/infrastructure/services/base_player_service.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../../config/utils/background_tasks.dart';
 import '../../../domain/entities/song.dart';

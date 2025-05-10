@@ -1,8 +1,8 @@
-import 'package:finmusic/domain/datasources/playlist_datasource.dart';
-import 'package:finmusic/domain/entities/playlist.dart';
-import 'package:finmusic/domain/entities/song.dart';
-import 'package:finmusic/domain/entities/youtube_playlist.dart';
-import 'package:finmusic/domain/entities/youtube_song.dart';
+import 'package:ritmora/domain/datasources/playlist_datasource.dart';
+import 'package:ritmora/domain/entities/playlist.dart';
+import 'package:ritmora/domain/entities/song.dart';
+import 'package:ritmora/domain/entities/youtube_playlist.dart';
+import 'package:ritmora/domain/entities/youtube_song.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

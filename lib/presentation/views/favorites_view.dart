@@ -83,28 +83,3 @@ class FavoritesView extends StatelessWidget {
     );
   }
 }
-
-class _IconButtons extends StatelessWidget {
-
-  final List<Widget> children;
-
-  const _IconButtons({
-    required this.colors,
-    required this.children
-  });
-
-  final ColorScheme colors;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.secondary,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: children,
-      ),
-    );
-  }
-}

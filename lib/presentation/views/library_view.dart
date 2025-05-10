@@ -2,9 +2,9 @@
 
 import 'dart:io';
 
-import 'package:finmusic/config/utils/pretty_print.dart';
-import 'package:finmusic/presentation/providers/playlist/playlist_provider.dart';
-import 'package:finmusic/presentation/widgets/widgets.dart';
+import 'package:ritmora/config/utils/pretty_print.dart';
+import 'package:ritmora/presentation/providers/playlist/playlist_provider.dart';
+import 'package:ritmora/presentation/widgets/widgets.dart';
 import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';

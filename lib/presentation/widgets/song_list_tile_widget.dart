@@ -1,6 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:finmusic/presentation/providers/providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +10,7 @@ import '../../config/utils/constants.dart';
 import '../../config/utils/pretty_print.dart';
 import '../../domain/entities/song.dart';
 import '../providers/playlist/playlist_provider.dart';
+import '../providers/providers.dart';
 import 'widgets.dart';
 
 class SongListTile extends ConsumerStatefulWidget {

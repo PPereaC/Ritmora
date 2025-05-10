@@ -1,6 +1,5 @@
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
-import '../../config/utils/pretty_print.dart';
 import '../../domain/entities/song.dart';
 import '../../domain/entities/youtube_playlist.dart';
 import '../../domain/entities/youtube_song.dart';
@@ -9,7 +8,6 @@ import 'music_service.dart';
 class YoutubeService {
   static final YoutubeService _instance = YoutubeService._internal();
   final YoutubeExplode yt = YoutubeExplode();
-  final Map<String, CachedUrl> _cache = {};
   
   factory YoutubeService() => _instance;
   YoutubeService._internal();
@@ -59,13 +57,4 @@ class YoutubeService {
   }
 
 
-}
-
-class CachedUrl {
-  final String url;
-  final DateTime expiresAt;
-
-  CachedUrl(this.url) : expiresAt = DateTime.now().add(const Duration(hours: 1));
-
-  bool get isValid => DateTime.now().isBefore(expiresAt);
 }

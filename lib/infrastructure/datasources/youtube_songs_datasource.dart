@@ -1,9 +1,9 @@
 // ignore_for_file: unnecessary_null_comparison
 
-import 'package:finmusic/config/utils/pretty_print.dart';
-import 'package:finmusic/domain/datasources/songs_datasource.dart';
-import 'package:finmusic/domain/entities/song.dart';
-import 'package:finmusic/infrastructure/mappers/youtube_search_songs_response.dart';
+import 'package:ritmora/config/utils/pretty_print.dart';
+import 'package:ritmora/domain/datasources/songs_datasource.dart';
+import 'package:ritmora/domain/entities/song.dart';
+import 'package:ritmora/infrastructure/mappers/youtube_search_songs_response.dart';
 import 'package:dio/dio.dart';
 
 import '../../config/utils/constants.dart';

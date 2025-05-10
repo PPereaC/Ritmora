@@ -3,8 +3,8 @@
 import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:finmusic/presentation/providers/playlist/playlist_provider.dart';
-import 'package:finmusic/presentation/providers/providers.dart';
+import 'package:ritmora/presentation/providers/playlist/playlist_provider.dart';
+import 'package:ritmora/presentation/providers/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';

@@ -1,5 +1,5 @@
 // Función para obtener los stream urls de las canciones en segundo plano
-import 'package:finmusic/config/utils/pretty_print.dart';
+import 'package:ritmora/config/utils/pretty_print.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';

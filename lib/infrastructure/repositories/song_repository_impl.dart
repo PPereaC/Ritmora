@@ -1,7 +1,7 @@
-import 'package:finmusic/domain/datasources/songs_datasource.dart';
-import 'package:finmusic/domain/entities/playlist.dart';
-import 'package:finmusic/domain/entities/song.dart';
-import 'package:finmusic/domain/repositories/songs_repository.dart';
+import '../../domain/datasources/songs_datasource.dart';
+import '../../domain/entities/playlist.dart';
+import '../../domain/entities/song.dart';
+import '../../domain/repositories/songs_repository.dart';
 
 class SongRepositoryImpl extends SongsRepository {
 

@@ -1,4 +1,4 @@
-name: FinMusic Linux .deb Package
+name: Ritmora Linux .deb Package
 
 on:
   workflow_dispatch:
@@ -60,30 +60,30 @@ jobs:
           cp -r build/linux/x64/release/bundle/* deb_package/usr/bin/
           
           # Configurar icono (usando tu assets/icon.png)
-          cp assets/icon.png deb_package/usr/share/icons/hicolor/512x512/apps/finmusic.png
+          cp assets/icon.png deb_package/usr/share/icons/hicolor/512x512/apps/ritmora.png
           
           # Crear archivo .desktop
-          cat <<EOF > deb_package/usr/share/applications/finmusic.desktop
+          cat <<EOF > deb_package/usr/share/applications/ritmora.desktop
           [Desktop Entry]
-          Name=FinMusic
+          Name=Ritmora
           Comment=Reproductor de música
-          Exec=/usr/bin/finmusic
-          Icon=finmusic
+          Exec=/usr/bin/ritmora
+          Icon=ritmora
           Terminal=false
           Type=Application
           Categories=Audio;Music;Player;
-          StartupWMClass=finmusic
+          StartupWMClass=ritmora
           EOF
 
       - name: Create .deb package
         run: |
           mkdir -p deb_package/DEBIAN
           cat <<EOF > deb_package/DEBIAN/control
-          Package: finmusic
+          Package: ritmora
           Version: ${{ steps.package-version.outputs.version }}
           Architecture: amd64
           Maintainer: Pablo <pereacampospablo@gmail.com>
-          Description: Reproductor de música FinMusic
+          Description: Reproductor de música Ritmora
           Depends: libgtk-3-0, libgstreamer1.0-0, gstreamer1.0-plugins-base
           EOF
           
@@ -92,22 +92,22 @@ jobs:
           find deb_package/ -type f -exec chmod 644 {} \;
           
           # Dar permisos de ejecución (verifica el nombre exacto del binario)
-          if [ -f "deb_package/usr/bin/finmusic" ]; then
-            chmod +x deb_package/usr/bin/finmusic
+          if [ -f "deb_package/usr/bin/ritmora" ]; then
+            chmod +x deb_package/usr/bin/ritmora
           else
-            echo "El ejecutable finmusic no existe, buscando alternativas..."
+            echo "El ejecutable ritmora no existe, buscando alternativas..."
             EXECUTABLE=$(ls deb_package/usr/bin/ | head -n1)
             chmod +x "deb_package/usr/bin/$EXECUTABLE"
-            mv "deb_package/usr/bin/$EXECUTABLE" "deb_package/usr/bin/finmusic"
-          fi
+            mv "deb_package/usr/bin/$EXECUTABLE" "deb_package/usr/bin/ritmora"
+          fi  
           
           # Construir el paquete .deb
-          dpkg-deb --build deb_package finmusic_${{ steps.package-version.outputs.version }}_amd64.deb
+          dpkg-deb --build deb_package ritmora_${{ steps.package-version.outputs.version }}_amd64.deb
 
       - name: Verify .deb file
         run: |
           ls -la *.deb
-          dpkg -c finmusic_${{ steps.package-version.outputs.version }}_amd64.deb
+          dpkg -c ritmora_${{ steps.package-version.outputs.version }}_amd64.deb
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
@@ -115,7 +115,7 @@ jobs:
           tag_name: v${{ steps.package-version.outputs.version }}
           name: v${{ steps.package-version.outputs.version }}
           body: Linux .deb package
-          files: finmusic_${{ steps.package-version.outputs.version }}_amd64.deb
+          files: ritmora_${{ steps.package-version.outputs.version }}_amd64.deb
           draft: false
           prerelease: false
           token: ${{ secrets.TOKEN }}

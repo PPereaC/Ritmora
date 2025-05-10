@@ -1,7 +1,7 @@
-import 'package:finmusic/config/utils/pretty_print.dart';
+import 'package:ritmora/config/utils/pretty_print.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:finmusic/domain/entities/playlist.dart';
+import 'package:ritmora/domain/entities/playlist.dart';
 
 import '../../../domain/entities/song.dart';
 import '../../../domain/entities/youtube_playlist.dart';
