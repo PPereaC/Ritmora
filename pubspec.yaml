@@ -1,7 +1,7 @@
 name: ritmora
 description: "Reproductor multiplataforma de música de YouTube Music sin necesidad de suscripción ni inicio de sesión."
 publish_to: "none"
-version: 0.1.8
+version: 0.1.9
 
 environment:
   sdk: ^3.5.4
