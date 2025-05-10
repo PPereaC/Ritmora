@@ -67,7 +67,6 @@ Future<void> updateExpiredStreamUrls(WidgetRef ref,List<entitie.Playlist> localP
     for (final song in songs) {
       if (await isStreamUrlExpired(song.streamUrl)) {
         final newStreamUrl = await getStreamUrlInBackground(song.songId);
-        printINFO('Actualizada - ${song.title} - ${song.streamUrl}');
         if (newStreamUrl != null) {
           ref.read(playlistProvider.notifier).updateSongStreamUrl(
             Song(
@@ -83,6 +82,7 @@ Future<void> updateExpiredStreamUrls(WidgetRef ref,List<entitie.Playlist> localP
               isLiked: song.isLiked
             )
           );
+          const Duration(seconds: 1);
         }
       }
     }
