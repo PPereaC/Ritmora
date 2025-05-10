@@ -318,10 +318,9 @@ class CustomMusicSidebarState extends ConsumerState<CustomMusicSidebar> {
   Widget _buildDefaultThumbnail() {
     return Container(
       color: Colors.grey[900],
-      child: const Icon(
-        Iconsax.music_playlist_outline,
-        size: 24,
-        color: Colors.white70,
+      child: Image.asset(
+        defaultPoster,
+        fit: BoxFit.cover,
       ),
     );
   }
