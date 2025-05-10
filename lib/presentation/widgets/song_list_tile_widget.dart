@@ -13,7 +13,7 @@ import '../../domain/entities/song.dart';
 import '../providers/playlist/playlist_provider.dart';
 import 'widgets.dart';
 
-class SongListTile extends ConsumerWidget {
+class SongListTile extends ConsumerStatefulWidget {
   final Song song;
   final Function onSongOptions;
   final bool isPlaylist;
@@ -28,11 +28,19 @@ class SongListTile extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SongListTile> createState() => _SongListTileState();
+}
+
+class _SongListTileState extends ConsumerState<SongListTile> {
+
+  bool _isProcessing = false;
+
+  @override
+  Widget build(BuildContext context) {
     final textStyles = Theme.of(context).textTheme;
 
     return Dismissible(
-      key: Key(song.songId),
+      key: Key(widget.song.songId),
       direction: DismissDirection.startToEnd,
       dismissThresholds: const { DismissDirection.startToEnd: 0.05 },
       background: Container(
@@ -43,19 +51,21 @@ class SongListTile extends ConsumerWidget {
         child: const Icon(Icons.playlist_add, color: Colors.white),
       ),
       confirmDismiss: (direction) async {
-        ref.read(songPlayerProvider).addToQueue(song);
+        ref.read(songPlayerProvider).addToQueue(widget.song);
         return false;
       },
       child: InkWell(
-        // En song_list_tile_widget.dart
         onTap: () async {
-          FocusScope.of(context).unfocus();
-          ref.read(songPlayerProvider).pause();
-          ref.read(loadingProvider.notifier).state = true;
-          
+          if (_isProcessing) return;
+          _isProcessing = true;
+
           try {
+            FocusScope.of(context).unfocus();
+            ref.read(songPlayerProvider).pause();
+            ref.read(loadingProvider.notifier).state = true;
+            
             // Obtener la canción de la base de datos
-            final result = await ref.read(playlistProvider.notifier).getSongFromDB(song.songId);
+            final result = await ref.read(playlistProvider.notifier).getSongFromDB(widget.song.songId);
 
             Song songToPlay = Song(
               title: 'NOSONG',
@@ -63,7 +73,7 @@ class SongListTile extends ConsumerWidget {
               thumbnailUrl: 'NOURL',
               streamUrl: 'NOURL',
               endUrl: 'NOURL',
-              songId: song.songId,
+              songId: widget.song.songId,
               duration: 'NODURATION'
             );
 
@@ -71,47 +81,63 @@ class SongListTile extends ConsumerWidget {
             if (result.title == 'NOBD' || await isStreamUrlExpired(result.streamUrl)) {
               
               // Si no está en la base de datos, intentar obtener URL de stream
-              final streamUrl = await getStreamUrlInBackground(song.songId);
+              final streamUrl = await getStreamUrlInBackground(widget.song.songId);
               
               if (streamUrl == null) {
-                // Manejar error de URL
+                if (!mounted) return;
                 CustomSnackbar.show(
                   context,
                   'No se puede reproducir la canción',
                   Colors.red,
                   Iconsax.warning_2_outline
                 );
+                
+                if (!mounted) return;
                 ref.read(loadingProvider.notifier).state = false;
+                _isProcessing = false;
                 return;
               }
 
               // Crear nueva instancia de canción con URL de stream
               songToPlay = Song(
-                title: song.title,
-                author: song.author,
-                thumbnailUrl: song.thumbnailUrl,
+                title: widget.song.title,
+                author: widget.song.author,
+                thumbnailUrl: widget.song.thumbnailUrl,
                 streamUrl: streamUrl,
-                endUrl: song.endUrl,
-                songId: song.songId,
-                isLiked: song.isLiked,
-                duration: song.duration,
-                videoId: song.videoId,
-                isVideo: song.isVideo,
+                endUrl: widget.song.endUrl,
+                songId: widget.song.songId,
+                isLiked: widget.song.isLiked,
+                duration: widget.song.duration,
+                videoId: widget.song.videoId,
+                isVideo: widget.song.isVideo,
               );
             } else {
               // Usar canción de la base de datos
               songToPlay = result;
             }
 
+            if (!mounted) return;
+
             // Actualizar y reproducir
             ref.read(songPlayerProvider).updateCurrentSong(songToPlay);
             await Future.delayed(const Duration(milliseconds: 500));
+            
+            if (!mounted) return;
             await ref.read(songPlayerProvider).playSong(songToPlay);
             
+            if (!mounted) return;
             ref.read(loadingProvider.notifier).state = false;
+            _isProcessing = false;
           } catch (e) {
+            if (!mounted) return;
+            
             printERROR('Error al reproducir canción: $e');
+            
+            if (!mounted) return;
             ref.read(loadingProvider.notifier).state = false;
+            _isProcessing = false;
+            
+            if (!mounted) return;
             CustomSnackbar.show(
               context,
               'Error al reproducir la canción',
@@ -120,7 +146,7 @@ class SongListTile extends ConsumerWidget {
             );
           }
         },
-        onLongPress: () => onSongOptions(),
+        onLongPress: () => widget.onSongOptions(),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
           child: Row(
@@ -128,17 +154,17 @@ class SongListTile extends ConsumerWidget {
               ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: 50,
-                  maxHeight: isVideo ? 45 : 60,
+                  maxHeight: widget.isVideo ? 45 : 60,
                 ),
                 child: AspectRatio(
-                  aspectRatio: isVideo ? 16/12 : 1,
+                  aspectRatio: widget.isVideo ? 16/12 : 1,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: isPlaylist
+                    child: widget.isPlaylist
                     ? CachedNetworkImage(
-                      key: ValueKey(song.thumbnailUrl),
-                      imageUrl: song.thumbnailUrl,
-                      fit: isVideo ? BoxFit.contain : BoxFit.cover,
+                      key: ValueKey(widget.song.thumbnailUrl),
+                      imageUrl: widget.song.thumbnailUrl,
+                      fit: widget.isVideo ? BoxFit.contain : BoxFit.cover,
                       memCacheWidth: 300,
                       maxWidthDiskCache: 300,
                       useOldImageOnUrlChange: true,
@@ -156,7 +182,7 @@ class SongListTile extends ConsumerWidget {
                         color: Colors.grey[900],
                         child: Image.asset(
                           defaultPoster,
-                          fit: isVideo ? BoxFit.contain : BoxFit.cover,
+                          fit: widget.isVideo ? BoxFit.contain : BoxFit.cover,
                           width: double.infinity,
                           height: double.infinity,
                         )
@@ -165,8 +191,8 @@ class SongListTile extends ConsumerWidget {
                       httpHeaders: const {'Cache-Control': 'max-age=7200'},
                     )
                     : Image.network(
-                      song.thumbnailUrl,
-                      fit: isVideo ? BoxFit.contain : BoxFit.cover,
+                      widget.song.thumbnailUrl,
+                      fit: widget.isVideo ? BoxFit.contain : BoxFit.cover,
                       width: double.infinity,
                       height: double.infinity,
                       loadingBuilder: (context, child, loadingProgress) {
@@ -188,7 +214,7 @@ class SongListTile extends ConsumerWidget {
                           color: Colors.grey[900],
                           child: Image.asset(
                             defaultPoster,
-                            fit: isVideo ? BoxFit.contain : BoxFit.cover,
+                            fit: widget.isVideo ? BoxFit.contain : BoxFit.cover,
                             width: double.infinity,
                             height: double.infinity,
                           )
@@ -207,7 +233,7 @@ class SongListTile extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      song.title,
+                      widget.song.title,
                       style: textStyles.titleMedium!.copyWith(
                         color: Colors.white
                       ),
@@ -215,7 +241,7 @@ class SongListTile extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      song.author,
+                      widget.song.author,
                       style: textStyles.bodyLarge!.copyWith(
                         color: Colors.grey
                       ),
@@ -227,7 +253,7 @@ class SongListTile extends ConsumerWidget {
               ),
 
               InkWell(
-                onTap: () => onSongOptions(),
+                onTap: () => widget.onSongOptions(),
                 child: Padding(
                   padding: const EdgeInsets.only(left: 25),
                   child: Container(
