@@ -235,4 +235,15 @@ class AudioPlayersService extends BasePlayerService {
     _positionController.close();
     _durationController.close();
   }
+
+  @override
+  Future<void> resetPlayer() async {
+    await _audioPlayer.stop();
+    await _audioPlayer.dispose();
+    _queue.clear();
+    _currentSong = null;
+    _isPlaying = false;
+    _history.clear();
+  }
+
 }

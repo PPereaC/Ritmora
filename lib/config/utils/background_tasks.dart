@@ -23,25 +23,24 @@ import '../../presentation/providers/playlist/playlist_provider.dart';
 
 Future<bool> isStreamUrlExpired(String streamUrl) async {
   try {
-    // Extraer el parámetro 'expire' del enlace
-    final Uri uri = Uri.parse(streamUrl);
-    final String? expireParam = uri.queryParameters['expire'];
+    // Usamos RegExp para extraer el parámetro 'expire' de la URL
+    final RegExpMatch? match = RegExp(r".expire=([0-9]+)&").firstMatch(streamUrl);
     
-    if (expireParam == null) {
+    if (match == null) {
       // Si no se encuentra el parámetro 'expire', se considera caducado
       return true;
     }
     
-    // Convertir el parámetro 'expire' a un entero (timestamp Unix)
-    final int expireTimestamp = int.parse(expireParam);
+    // Parseamos el timestamp
+    final int epoch = int.parse(match[1]!);
     
-    // Obtener el timestamp Unix actual
+    // Timestamp actual con un buffer de 30 minutos (1800 segundos)
     final int currentTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     
-    // Comprobar si el tiempo actual ha pasado el tiempo de expiración
-    return currentTimestamp >= expireTimestamp;
+    // Si el tiempo actual es menor que el timestamp de expiración, la URL no ha expirado
+    return currentTimestamp + 1800 >= epoch;
   } catch (e) {
-    // Si hay algún error al analizar la URL o el timestamp, se considera caducado
+    // Si ocurre algún error al analizar la URL, se considera caducada
     printERROR('Error checking stream URL expiration: $e');
     return true;
   }
@@ -68,6 +67,7 @@ Future<void> updateExpiredStreamUrls(WidgetRef ref,List<entitie.Playlist> localP
     for (final song in songs) {
       if (await isStreamUrlExpired(song.streamUrl)) {
         final newStreamUrl = await getStreamUrlInBackground(song.songId);
+        printINFO('Actualizada - ${song.title} - ${song.streamUrl}');
         if (newStreamUrl != null) {
           ref.read(playlistProvider.notifier).updateSongStreamUrl(
             Song(
@@ -95,11 +95,10 @@ Future<String?> fetchStreamUrlInBackground(String songId) async {
     final yt = YoutubeExplode();
     final manifest = await yt.videos.streamsClient
         .getManifest(songId)
-        .timeout(const Duration(seconds: 5));
+        .timeout(const Duration(seconds: 3));
         
     final url = manifest.audioOnly.withHighestBitrate().url.toString();
     
-    yt.close();
     return url;
   } catch (e) {
     printERROR('Error fetching stream URL: $e');

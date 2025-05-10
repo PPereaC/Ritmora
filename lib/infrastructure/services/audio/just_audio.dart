@@ -382,4 +382,15 @@ class JustAudioService extends BasePlayerService {
     _queueController.close();
     _playerStateListener?.cancel();
   }
+
+  @override
+  Future<void> resetPlayer() async {
+    await _justAudioPlayer.stop();
+    await _justAudioPlayer.dispose();
+    _queue.clear();
+    _currentSong = null;
+    _isPlaying = false;
+    _history.clear();
+  }
+
 }

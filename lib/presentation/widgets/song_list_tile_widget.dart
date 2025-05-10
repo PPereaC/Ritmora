@@ -4,14 +4,14 @@ import 'package:finmusic/presentation/providers/providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 
 import '../../config/utils/background_tasks.dart';
 import '../../config/utils/constants.dart';
-import '../../config/utils/responsive.dart';
+import '../../config/utils/pretty_print.dart';
 import '../../domain/entities/song.dart';
 import '../providers/playlist/playlist_provider.dart';
+import 'widgets.dart';
 
 class SongListTile extends ConsumerWidget {
   final Song song;
@@ -31,8 +31,6 @@ class SongListTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final textStyles = Theme.of(context).textTheme;
 
-    bool isDesktop = Responsive.isTabletOrDesktop(context);
-
     return Dismissible(
       key: Key(song.songId),
       direction: DismissDirection.startToEnd,
@@ -49,46 +47,77 @@ class SongListTile extends ConsumerWidget {
         return false;
       },
       child: InkWell(
+        // En song_list_tile_widget.dart
         onTap: () async {
           FocusScope.of(context).unfocus();
-          
-          // Detener reproducción actual
           ref.read(songPlayerProvider).pause();
-
-          // Poner como loading
           ref.read(loadingProvider.notifier).state = true;
           
-          // Actualizar la canción actual antes de obtener la URL
-          ref.read(songPlayerProvider).updateCurrentSong(song);
-          
-          // Navegar al full player
-          if (!isDesktop) {
-            context.push('/full-player');
-          }
-          
-          // Obtener URL y reproducir en segundo plano
           try {
+            // Obtener la canción de la base de datos
             final result = await ref.read(playlistProvider.notifier).getSongFromDB(song.songId);
 
-            // Comprobar si la canción está en la base de datos
-            if (result.title == 'NOBD') { // Si no está en la base de datos
-              // De momento si no está se consigue individualmente el stream url y no se guarda de momento
-              // REVISAR: Para guardar también estas canciones
+            Song songToPlay = Song(
+              title: 'NOSONG',
+              author: 'NOAUTHOR',
+              thumbnailUrl: 'NOURL',
+              streamUrl: 'NOURL',
+              endUrl: 'NOURL',
+              songId: song.songId,
+              duration: 'NODURATION'
+            );
 
-              song.streamUrl = (await getStreamUrlInBackground(song.songId))!;
-              ref.read(loadingProvider.notifier).state = false;
-              await ref.read(songPlayerProvider).playSong(song);
+            // Verificar si la canción existe en la base de datos
+            if (result.title == 'NOBD' || await isStreamUrlExpired(result.streamUrl)) {
+              
+              // Si no está en la base de datos, intentar obtener URL de stream
+              final streamUrl = await getStreamUrlInBackground(song.songId);
+              
+              if (streamUrl == null) {
+                // Manejar error de URL
+                CustomSnackbar.show(
+                  context,
+                  'No se puede reproducir la canción',
+                  Colors.red,
+                  Iconsax.warning_2_outline
+                );
+                ref.read(loadingProvider.notifier).state = false;
+                return;
+              }
+
+              // Crear nueva instancia de canción con URL de stream
+              songToPlay = Song(
+                title: song.title,
+                author: song.author,
+                thumbnailUrl: song.thumbnailUrl,
+                streamUrl: streamUrl,
+                endUrl: song.endUrl,
+                songId: song.songId,
+                isLiked: song.isLiked,
+                duration: song.duration,
+                videoId: song.videoId,
+                isVideo: song.isVideo,
+              );
             } else {
-              // SI está en la base de datos se pasa directamente el objeto de la canción
-              // para reproducirlo
-
-              ref.read(loadingProvider.notifier).state = false;
-              await ref.read(songPlayerProvider).playSong(result);
+              // Usar canción de la base de datos
+              songToPlay = result;
             }
+
+            // Actualizar y reproducir
+            ref.read(songPlayerProvider).updateCurrentSong(songToPlay);
+            await Future.delayed(const Duration(milliseconds: 500));
+            await ref.read(songPlayerProvider).playSong(songToPlay);
             
-          } catch (e) {
             ref.read(loadingProvider.notifier).state = false;
-            rethrow;
+          } catch (e) {
+            printERROR('Error al reproducir canción: $e');
+            ref.read(loadingProvider.notifier).state = false;
+            CustomSnackbar.show(
+              context,
+              'Error al reproducir la canción',
+              Colors.red,
+              Iconsax.warning_2_outline
+            );
           }
         },
         onLongPress: () => onSongOptions(),

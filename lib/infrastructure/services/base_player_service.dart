@@ -14,6 +14,7 @@ abstract class BasePlayerService {
   void removeFromQueue(int index);
   void reorderQueue(int oldIndex, int newIndex);
   void dispose();
+  Future<void> resetPlayer();
 
   // Getters
   Song? get currentSong;
