@@ -16,6 +16,51 @@ const thumbnails = [
   'thumbnails'
 ];
 
+/// Obtiene la thumbnail de un video o canción de YouTube/YouTube Music con la mejor calidad disponible.
+Future<String?> getYouTubeThumbnail(String videoId) async {
+  // Lista de posibles calidades de thumbnail, de mejor a peor
+  final thumbnailQualities = [
+    'maxresdefault',
+    'sddefault',
+    'hqdefault',
+    'mqdefault',
+    'default',
+  ];
+
+  // Base URL para las carátulas de YouTube
+  const baseUrl = 'https://img.youtube.com/vi';
+
+  // Configurar Dio
+  final dio = Dio();
+
+  // Probar cada calidad en orden
+  for (String quality in thumbnailQualities) {
+    final thumbnailUrl = '$baseUrl/$videoId/$quality.jpg';
+    
+    try {
+      // Hacer una petición HEAD para verificar si la imagen existe
+      final response = await dio.head(
+        thumbnailUrl,
+        options: Options(
+          receiveTimeout: const Duration(seconds: 5),
+          sendTimeout: const Duration(seconds: 5),
+        ),
+      );
+
+      // Si la respuesta es 200, la imagen existe y es válida
+      if (response.statusCode == 200) {
+        return thumbnailUrl;
+      }
+    } catch (e) {
+      // Ignorar errores (timeout, 404, etc.) y probar la siguiente calidad
+      continue;
+    }
+  }
+
+  // Si no se encuentra ninguna carátula válida, retornar null
+  return null;
+}
+
 dynamic _nav(dynamic root, List items, {bool noneIfAbsent = false}) {
   try {
     dynamic res = root;
@@ -211,28 +256,24 @@ class MusicService {
       final List<Map<String, dynamic>> tracks =
           playlistData['tracks']?.cast<Map<String, dynamic>>() ?? [];
 
-      final songs = tracks
-          .map<YoutubeSong>((track) => YoutubeSong(
-                songId: track['videoId'] ?? '',
-                playlistId: playlistId,
-                title: track['title'] ?? 'Desconocido',
-                author: track['artists']?.isNotEmpty ?? false
-                    ? (track['artists'][0] is Map
-                            ? track['artists'][0]['name']
-                            : track['artists'][0].toString()) ??
-                        'Desconocido'
-                    : 'Desconocido',
-                thumbnailUrl: track['thumbnails']?.isNotEmpty ?? false
-                    ? (track['thumbnails'].first is Map
-                            ? track['thumbnails'].first['url']
-                            : track['thumbnails'].first.toString()) ??
-                        ''
-                    : '',
-                streamUrl: '',
-                endUrl: '/watch?v=${track['videoId']}',
-                duration: track['length']?.toString() ?? '0',
-              ))
-          .toList();
+      final songs = await Future.wait(tracks.map<Future<YoutubeSong>>((track) async {
+        final thumbnailUrl = await getYouTubeThumbnail(track['videoId']) ?? '';
+        return YoutubeSong(
+          songId: track['videoId'] ?? '',
+          playlistId: playlistId,
+          title: track['title'] ?? 'Desconocido',
+          author: track['artists']?.isNotEmpty ?? false
+              ? (track['artists'][0] is Map
+                      ? track['artists'][0]['name']
+                      : track['artists'][0].toString()) ??
+                  'Desconocido'
+              : 'Desconocido',
+          thumbnailUrl: thumbnailUrl,
+          streamUrl: '',
+          endUrl: '/watch?v=${track['videoId']}',
+          duration: track['length']?.toString() ?? '0',
+        );
+      }));
 
       printINFO('Total canciones obtenidas: ${songs.length}');
       return songs;
