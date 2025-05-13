@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.apolo"
+    namespace = "com.perea.ritmora"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

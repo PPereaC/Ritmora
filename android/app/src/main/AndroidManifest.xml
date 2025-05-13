@@ -52,6 +52,11 @@
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
+        
+        <!-- Configuración de iconos para notificaciones de audio -->
+        <meta-data
+            android:name="com.ryanheise.audioservice.NOTIFICATION_ICON"
+            android:resource="@drawable/ic_notification" />
 
         <receiver android:name="com.ryanheise.audioservice.MediaButtonReceiver"
             android:exported="true" tools:ignore="Instantiatable">

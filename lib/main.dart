@@ -12,12 +12,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await JustAudioBackground.init(
-    androidNotificationChannelId: 'com.example.apolo.channel.audio',
+    androidNotificationChannelId: 'com.perea.ritmora.channel.audio',
     androidNotificationChannelName: 'Reproducción de audio',
     androidNotificationOngoing: true,
     androidShowNotificationBadge: true,
     androidStopForegroundOnPause: true,
-    androidNotificationIcon: 'mipmap/ic_launcher',
+    androidNotificationIcon: 'drawable/ic_notification',
     fastForwardInterval: const Duration(seconds: 10),
     rewindInterval: const Duration(seconds: 10),
   );
