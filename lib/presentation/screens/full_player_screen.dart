@@ -21,14 +21,20 @@ class FullPlayerScreen extends ConsumerStatefulWidget {
   FullPlayerScreenState createState() => FullPlayerScreenState();
 }
 
-class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
+class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> with SingleTickerProviderStateMixin {
+  late final AnimationController _animationController;
   double _dragDistance = 0;
   Duration? _currentDraggingPosition;
   bool _isFavorite = false;
-  
+
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    
     // Programar la actualización del estado de carga después de que se monte el widget
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Escuchar el estado de reproducción y actualizar el estado de carga
@@ -40,6 +46,12 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
         }
       });
     });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -66,24 +78,43 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
 
                   GestureDetector(
                     onVerticalDragStart: (_) {
+                      _animationController.stop();
                       setState(() => _dragDistance = 0);
                     },
                     onVerticalDragUpdate: (details) {
+                      final delta = details.delta.dy;
                       setState(() {
-                        _dragDistance += details.delta.dy;
+                        _dragDistance += delta;
                         if (_dragDistance < 0) _dragDistance = 0;
                       });
                     },
                     onVerticalDragEnd: (details) {
-                      if (_dragDistance > screenHeight / 3) {
-                        context.pop();
+                      final velocity = details.primaryVelocity ?? 0;
+                      if (_dragDistance > screenHeight / 4 || velocity > 1000) {
+                        // Calcular duración basada en la velocidad y distancia restante
+                        final remainingDistance = screenHeight - _dragDistance;
+                        final duration = (remainingDistance / (velocity.abs() + 500)).clamp(0.1, 0.3);
+                        
+                        _animationController.duration = Duration(milliseconds: (duration * 1000).round());
+                        _animationController.forward(from: 0).whenComplete(() {
+                          if (mounted) context.pop();
+                        });
                       } else {
+                        // Regresar a la posición original con animación
                         setState(() => _dragDistance = 0);
                       }
                     },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      transform: Matrix4.translationValues(0, _dragDistance, 0),
+                    child: AnimatedBuilder(
+                      animation: _animationController,
+                      builder: (context, child) {
+                        final value = _animationController.value;
+                        final slideDistance = _dragDistance + (screenHeight - _dragDistance) * value;
+                        
+                        return Transform.translate(
+                          offset: Offset(0, slideDistance),
+                          child: child!,
+                        );
+                      },
                       child: SafeArea(
                         child: Column(
                           children: [
