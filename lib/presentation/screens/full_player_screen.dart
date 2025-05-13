@@ -24,6 +24,22 @@ class FullPlayerScreen extends ConsumerStatefulWidget {
 class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
   double _dragDistance = 0;
   Duration? _currentDraggingPosition;
+  
+  @override
+  void initState() {
+    super.initState();
+    // Programar la actualización del estado de carga después de que se monte el widget
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Escuchar el estado de reproducción y actualizar el estado de carga
+      final playerService = ref.read(songPlayerProvider);
+      playerService.playingStream.listen((isPlaying) {
+        if (isPlaying && mounted) {
+          // Si la canción está reproduciéndose, desactivar el estado de carga
+          ref.read(loadingProvider.notifier).state = false;
+        }
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -133,33 +149,56 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                                           ),
                                         ],
                                       ),
-                                      child: Hero(
-                                        tag: currentSong.songId,
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(20),
-                                          child: Image.network(
-                                            currentSong.thumbnailUrl,
-                                            fit: BoxFit.cover,
-                                            loadingBuilder: (context, child, loadingProgress) {
-                                              if (loadingProgress == null) {
-                                                return FadeIn(child: child);
-                                              }
-                                              return const Center(
-                                                child: CircularProgressIndicator(
-                                                  color: Colors.white,
-                                                  strokeWidth: 2,
+                                       child: Consumer(builder: (context, ref, child) {
+                                        final isLoading = ref.watch(loadingProvider);
+                                        
+                                        return Hero(
+                                          tag: currentSong.songId,
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(20),
+                                            child: Stack(
+                                              fit: StackFit.expand,
+                                              children: [
+                                                // Imagen de la carátula
+                                                Image.network(
+                                                  currentSong.thumbnailUrl,
+                                                  fit: BoxFit.cover,
+                                                  loadingBuilder: (context, child, loadingProgress) {
+                                                    if (loadingProgress == null) {
+                                                      return FadeIn(child: child);
+                                                    }
+                                                    return const Center(
+                                                      child: CircularProgressIndicator(
+                                                        color: Colors.white,
+                                                        strokeWidth: 2,
+                                                      ),
+                                                    );
+                                                  },
+                                                  errorBuilder: (context, error, _) => Container(
+                                                    color: Colors.grey[900],
+                                                    child: Image.asset(
+                                                      defaultPoster,
+                                                      fit: BoxFit.cover,
+                                                    )
+                                                  ),
                                                 ),
-                                              );
-                                            },
-                                            errorBuilder: (context, error, _) => Container(
-                                              color: Colors.grey[900],
-                                              child: Image.asset(
-                                                defaultPoster,
-                                                fit: BoxFit.cover,
-                                              )
+                                                
+                                                // Overlay de carga animado
+                                                if (isLoading)
+                                                  Container(
+                                                    color: Colors.black.withOpacity(0.5),
+                                                    child: Center(
+                                                      child: LoadingIndicator(
+                                                        indicatorType: Indicator.ballPulse,
+                                                        colors: const [Colors.white],
+                                                        strokeWidth: 2,
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ],
                                             ),
                                           ),
-                                        ),
+                                        );}
                                       ),
                                     ),
                                   ),
@@ -176,83 +215,117 @@ class FullPlayerScreenState extends ConsumerState<FullPlayerScreen> {
                             children: [
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                                child: Column(
-                                  children: [
-                                    SizedBox(
-                                      height: 35,
-                                      child: LayoutBuilder(
-                                        builder: (context, constraints) {
-                                          // Crear un TextSpan para medir el ancho del texto
-                                          final textSpan = TextSpan(
-                                            text: currentSong.title,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold,
-                                              letterSpacing: 0.2,
+                                child: Consumer(builder: (context, ref, child) {
+                                  final isLoading = ref.watch(loadingProvider);
+                                  
+                                  return Column(
+                                    children: [
+                                      SizedBox(
+                                        height: 35,
+                                        child: isLoading
+                                          // Mostrar animación de carga para el título
+                                          ? Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey[800]!.withOpacity(0.3),
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              width: 200,
+                                              child: const Center(
+                                                child: Text(
+                                                  "Cargando...",
+                                                  style: TextStyle(
+                                                    color: Colors.white70,
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          // Mostrar título normal cuando no está cargando
+                                          : LayoutBuilder(
+                                              builder: (context, constraints) {
+                                                // Crear un TextSpan para medir el ancho del texto
+                                                final textSpan = TextSpan(
+                                                  text: currentSong.title,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 24,
+                                                    fontWeight: FontWeight.bold,
+                                                    letterSpacing: 0.2,
+                                                  ),
+                                                );
+                                          
+                                                // Usar TextPainter para calcular el ancho del texto
+                                                final textPainter = TextPainter(
+                                                  text: textSpan,
+                                                  maxLines: 1,
+                                                  textDirection: TextDirection.ltr,
+                                                )..layout(maxWidth: constraints.maxWidth);
+                                          
+                                                // Verificar si el texto excede el ancho disponible
+                                                final isOverflow = textPainter.didExceedMaxLines;
+                                          
+                                                if (isOverflow) {
+                                                  // Si excede, usar Marquee
+                                                  return Marquee(
+                                                    text: currentSong.title,
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 24,
+                                                      fontWeight: FontWeight.bold,
+                                                      letterSpacing: 0.2,
+                                                    ),
+                                                    scrollAxis: Axis.horizontal,
+                                                    blankSpace: 20.0,
+                                                    velocity: 30.0,
+                                                    pauseAfterRound: const Duration(seconds: 3),
+                                                    startPadding: 10.0,
+                                                    accelerationDuration: const Duration(seconds: 1),
+                                                    accelerationCurve: Curves.linear,
+                                                    decelerationDuration: const Duration(milliseconds: 500),
+                                                    decelerationCurve: Curves.easeOut,
+                                                  );
+                                                } else {
+                                                  // Si no, mostrar texto estático
+                                                  return Text(
+                                                    currentSong.title,
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 24,
+                                                      fontWeight: FontWeight.bold,
+                                                      letterSpacing: 0.2,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  );
+                                                }
+                                              },
                                             ),
-                                          );
-                                    
-                                          // Usar TextPainter para calcular el ancho del texto
-                                          final textPainter = TextPainter(
-                                            text: textSpan,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      // Mostrar animación de carga para el artista o el nombre del artista
+                                      isLoading
+                                        ? Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey[800]!.withOpacity(0.3),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            width: 150,
+                                            height: 20,
+                                          )
+                                        : Text(
+                                            currentSong.author,
+                                            style: TextStyle(
+                                              color: Colors.grey[400],
+                                              fontSize: 18,
+                                              letterSpacing: 0.1,
+                                            ),
+                                            textAlign: TextAlign.center,
                                             maxLines: 1,
-                                            textDirection: TextDirection.ltr,
-                                          )..layout(maxWidth: constraints.maxWidth);
-                                    
-                                          // Verificar si el texto excede el ancho disponible
-                                          final isOverflow = textPainter.didExceedMaxLines;
-                                    
-                                          if (isOverflow) {
-                                            // Si excede, usar Marquee
-                                            return Marquee(
-                                              text: currentSong.title,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 24,
-                                                fontWeight: FontWeight.bold,
-                                                letterSpacing: 0.2,
-                                              ),
-                                              scrollAxis: Axis.horizontal,
-                                              blankSpace: 20.0,
-                                              velocity: 30.0,
-                                              pauseAfterRound: const Duration(seconds: 3),
-                                              startPadding: 10.0,
-                                              accelerationDuration: const Duration(seconds: 1),
-                                              accelerationCurve: Curves.linear,
-                                              decelerationDuration: const Duration(milliseconds: 500),
-                                              decelerationCurve: Curves.easeOut,
-                                            );
-                                          } else {
-                                            // Si no, mostrar texto estático
-                                            return Text(
-                                              currentSong.title,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 24,
-                                                fontWeight: FontWeight.bold,
-                                                letterSpacing: 0.2,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            );
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      currentSong.author,
-                                      style: TextStyle(
-                                        color: Colors.grey[400],
-                                        fontSize: 18,
-                                        letterSpacing: 0.1,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 1,
-                                    ),
-                                  ],
-                                ),
+                                          ),
+                                    ],
+                                  );
+                                }),
                               ),
 
                               SizedBox(height: screenHeight * 0.01),

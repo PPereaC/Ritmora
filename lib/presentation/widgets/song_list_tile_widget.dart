@@ -3,11 +3,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:icons_plus/icons_plus.dart';
 
 import '../../config/utils/background_tasks.dart';
 import '../../config/utils/constants.dart';
 import '../../config/utils/pretty_print.dart';
+import '../../config/utils/responsive.dart';
 import '../../domain/entities/song.dart';
 import '../providers/playlist/playlist_provider.dart';
 import '../providers/providers.dart';
@@ -38,6 +40,8 @@ class _SongListTileState extends ConsumerState<SongListTile> {
   @override
   Widget build(BuildContext context) {
     final textStyles = Theme.of(context).textTheme;
+
+    final isDesktop = Responsive.isTabletOrDesktop(context);
 
     return Dismissible(
       key: Key(widget.song.songId),
@@ -117,16 +121,24 @@ class _SongListTileState extends ConsumerState<SongListTile> {
             }
 
             if (!mounted) return;
-
-            // Actualizar y reproducir
-            ref.read(songPlayerProvider).updateCurrentSong(songToPlay);
-            await Future.delayed(const Duration(milliseconds: 500));
             
+            // Actualizar la canción actual
+            ref.read(songPlayerProvider).updateCurrentSong(songToPlay);
+            
+            // Navegar al full player primero (en dispositivos móviles)
+            if (!mounted) return;
+            if (!isDesktop) {
+              context.push('/full-player');
+            }
+            
+            // Reproducir la canción
             if (!mounted) return;
             await ref.read(songPlayerProvider).playSong(songToPlay);
             
+            // Desactivar el estado de carga después de que la canción haya comenzado a reproducirse
             if (!mounted) return;
             ref.read(loadingProvider.notifier).state = false;
+            
             _isProcessing = false;
           } catch (e) {
             if (!mounted) return;
