@@ -398,179 +398,173 @@ class _MobilePlayerControlState extends ConsumerState<_MobilePlayerControl> {
     final backgroundColor = ref.watch(songColorProvider);
     final playerService = ref.watch(songPlayerProvider);
 
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(10),
-        topRight: Radius.circular(10),
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor,
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: backgroundColor,
-        ),
-        child: Material(
-          color: Colors.transparent,
-          elevation: 0,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: () => context.push('/full-player'),
-            onLongPress: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => Theme(
-                  data: Theme.of(context).copyWith(
-                    colorScheme: widget.colors,
-                  ),
-                  child: const QueueBottomSheetBar(),
+      child: Material(
+        color: Colors.transparent,
+        elevation: 0,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () => context.push('/full-player'),
+          onLongPress: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => Theme(
+                data: Theme.of(context).copyWith(
+                  colorScheme: widget.colors,
                 ),
-              );
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Barra de progreso minimalista
-                StreamBuilder<Duration>(
-                  stream: playerService.positionStream,
-                  builder: (context, snapshot) {
-                    final position = snapshot.data ?? Duration.zero;
-                    return StreamBuilder<Duration?>(
-                      stream: playerService.durationStream,
-                      builder: (context, snapshot) {
-                        final duration = snapshot.data ?? Duration.zero;
-                        return Container(
-                          height: 2,
-                          child: Stack(
-                            children: [
-                              // Fondo de la barra
-                              Container(
-                                color: Colors.white.withOpacity(0.1),
-                              ),
-                              // Progreso
-                              FractionallySizedBox(
-                                widthFactor: duration.inSeconds > 0
-                                    ? position.inSeconds / duration.inSeconds
-                                    : 0,
-                                child: Container(
-                                  color: Colors.white.withOpacity(0.5),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-
-                // Contenido principal
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
-                  child: Row(
-                    children: [
-                      // Thumbnail
-                      Hero(
-                        tag: 'current-song-thumbnail',
-                        child: Container(
-                          width: 45,
-                          height: 45,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 4,
-                                spreadRadius: 1,
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
-                            child: Image.network(
-                              widget.currentSong.thumbnailUrl,
-                              fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress.cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                        : null,
-                                    strokeWidth: 2,
-                                  ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: Colors.grey[900],
-                                  child: const Icon(
-                                    Icons.music_note,
-                                    color: Colors.white30,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 12),
-
-                      // Información de la canción
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
+                child: const QueueBottomSheetBar(),
+              ),
+            );
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Barra de progreso minimalista
+              StreamBuilder<Duration>(
+                stream: playerService.positionStream,
+                builder: (context, snapshot) {
+                  final position = snapshot.data ?? Duration.zero;
+                  return StreamBuilder<Duration?>(
+                    stream: playerService.durationStream,
+                    builder: (context, snapshot) {
+                      final duration = snapshot.data ?? Duration.zero;
+                      return Container(
+                        height: 2,
+                        child: Stack(
                           children: [
-                            Text(
-                              widget.currentSong.title,
-                              style: widget.textStyles.titleMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            // Fondo de la barra
+                            Container(
+                              color: Colors.white.withOpacity(0.1),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              widget.currentSong.author,
-                              style: widget.textStyles.bodyMedium?.copyWith(
-                                color: Colors.white.withOpacity(0.85),
-                                fontSize: 12,
+                            // Progreso
+                            FractionallySizedBox(
+                              widthFactor: duration.inSeconds > 0
+                                  ? position.inSeconds / duration.inSeconds
+                                  : 0,
+                              child: Container(
+                                color: Colors.white.withOpacity(0.5),
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
-                      ),
-
-                      // Botón Play/Pause
-                      StreamBuilder<bool>(
-                        stream: playerService.playingStream,
-                        builder: (context, snapshot) {
-                          final isCurrentlyPlaying = snapshot.data ?? false;
-                          return IconButton(
-                            onPressed: () => playerService.togglePlay(),
-                            icon: Icon(
-                              isCurrentlyPlaying 
-                                  ? Icons.pause_rounded 
-                                  : Icons.play_arrow_rounded,
-                              color: Colors.white,
-                              size: 32,
+                      );
+                    },
+                  );
+                },
+              ),
+    
+              // Contenido principal
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
+                child: Row(
+                  children: [
+                    // Thumbnail
+                    Hero(
+                      tag: 'current-song-thumbnail',
+                      child: Container(
+                        width: 45,
+                        height: 45,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 4,
+                              spreadRadius: 1,
                             ),
-                            padding: EdgeInsets.zero,
-                            splashRadius: 24,
-                          );
-                        },
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Image.network(
+                            widget.currentSong.thumbnailUrl,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                  strokeWidth: 2,
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[900],
+                                child: const Icon(
+                                  Icons.music_note,
+                                  color: Colors.white30,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+    
+                    const SizedBox(width: 12),
+    
+                    // Información de la canción
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            widget.currentSong.title,
+                            style: widget.textStyles.titleMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            widget.currentSong.author,
+                            style: widget.textStyles.bodyMedium?.copyWith(
+                              color: Colors.white.withOpacity(0.85),
+                              fontSize: 12,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+    
+                    // Botón Play/Pause
+                    StreamBuilder<bool>(
+                      stream: playerService.playingStream,
+                      builder: (context, snapshot) {
+                        final isCurrentlyPlaying = snapshot.data ?? false;
+                        return IconButton(
+                          onPressed: () => playerService.togglePlay(),
+                          icon: Icon(
+                            isCurrentlyPlaying 
+                                ? Icons.pause_rounded 
+                                : Icons.play_arrow_rounded,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                          padding: EdgeInsets.zero,
+                          splashRadius: 24,
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
