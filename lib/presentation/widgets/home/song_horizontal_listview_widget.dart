@@ -44,7 +44,7 @@ class _SongHorizontalListviewState extends State<SongHorizontalListview> {
                 // Padding específico según la posición
                 return Padding(
                   padding: EdgeInsets.only(
-                    left: index == 0 ? 10 : 8,
+                    left: index == 0 ? 0 : 8,
                     right: index == widget.songs.length - 1 ? 10 : 0,
                   ),
                   child: FadeInRight(

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../config/data/nav_bar_items.dart';
+import '../providers/providers.dart';
 
 class Navbar extends ConsumerStatefulWidget {
   const Navbar({super.key});
@@ -14,12 +15,8 @@ class Navbar extends ConsumerStatefulWidget {
 }
 
 class BottomNavBarState extends ConsumerState<Navbar> {
-  int selectedIndex = 0;
-
   void onItemTapped(int index) async {
-    setState(() {
-      selectedIndex = index;
-    });
+    ref.read(navbarIndexProvider.notifier).state = index;
 
     switch (index) {
       case 0:
@@ -56,7 +53,7 @@ class BottomNavBarState extends ConsumerState<Navbar> {
             children: List.generate(
               bottomNavItems.length,
               (index) {
-                final isSelected = selectedIndex == index;
+                final isSelected = ref.watch(navbarIndexProvider) == index;
                 return Expanded(
                   child: InkWell(
                     onTap: () => onItemTapped(index),
