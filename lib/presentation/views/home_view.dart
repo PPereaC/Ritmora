@@ -48,6 +48,7 @@ class HomeViewState extends ConsumerState<HomeView> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     final isDesktop = Responsive.isTabletOrDesktop(context);
+    final isMobile = Responsive.isMobile(context);
 
     // Update expired stream URLs
     updateExpiredStreamUrls(
@@ -62,37 +63,39 @@ class HomeViewState extends ConsumerState<HomeView> {
         physics: const BouncingScrollPhysics(),
         slivers: [
           // App Bar simplificado
-          SliverAppBar(
-            pinned: true,
-            backgroundColor: Colors.black,
-            elevation: 0,
-            titleSpacing: 16,
-            title: const Text(
-              'Ritmora',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.4,
-                color: Colors.white,
-              ),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () {},
-                color: Colors.white,
-                iconSize: 22,
-              ),
-              const SizedBox(width: 8),
-            ],
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(1),
-              child: Container(
-                height: 0.5,
-                color: Colors.white.withOpacity(0.06),
-              ),
-            ),
-          ),
+          isMobile
+              ? SliverAppBar(
+                  pinned: true,
+                  backgroundColor: Colors.black,
+                  elevation: 0,
+                  titleSpacing: 16,
+                  title: const Text(
+                    'Ritmora',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.4,
+                      color: Colors.white,
+                    ),
+                  ),
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.settings),
+                      onPressed: () {},
+                      color: Colors.white,
+                      iconSize: 22,
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  bottom: PreferredSize(
+                    preferredSize: const Size.fromHeight(1),
+                    child: Container(
+                      height: 0.5,
+                      color: Colors.white.withOpacity(0.06),
+                    ),
+                  ),
+                )
+              : const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
           // Contenido Principal
           SliverToBoxAdapter(
@@ -343,6 +346,10 @@ class HomeViewState extends ConsumerState<HomeView> {
                                             child: Image.network(
                                               entry.value[0].thumbnailUrl,
                                               fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                return const Icon(Icons.error);
+                                              },
                                             ),
                                           ),
                                         ),
