@@ -32,7 +32,9 @@ class RootScreenState extends ConsumerState<RootScreen> {
     final isMobile = Responsive.isMobile(context);
     final playerService = ref.watch(songPlayerProvider);
     final navbarHeight = isMobile ? kBottomNavigationBarHeight : 0;
-    const playerHeight = 70.0;
+    final playerHeight = isMobile ? 75.0 : 70.0;
+
+    final isDesktop = Responsive.isTabletOrDesktop(context);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -62,8 +64,9 @@ class RootScreenState extends ConsumerState<RootScreen> {
                     Expanded(
                       child: Padding(
                         padding: EdgeInsets.only(
-                          bottom: playerService.currentSong != null ? playerHeight + (isMobile ? navbarHeight : 0) : 0
-                        ),
+                            bottom: playerService.currentSong != null
+                                ? playerHeight + (isMobile ? navbarHeight : 0)
+                                : 0),
                         child: widget.navigationShell,
                       ),
                     ),
@@ -83,22 +86,48 @@ class RootScreenState extends ConsumerState<RootScreen> {
               builder: (context, songSnapshot) {
                 final currentSong = songSnapshot.data;
                 if (currentSong == null) return const SizedBox.shrink();
-                
-                return Container(
-                  height: playerHeight,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.9),
-                  ),
-                  child: PlayerControlWidget(
-                    currentSong: currentSong,
-                    playerService: playerService,
-                    isPlaying: playerService.isPlaying,
-                    onPlayPause: () => playerService.togglePlay(),
-                    onQueueButtonPressed: () => setState(() {
-                      _isQueuePanelVisible = true;
-                    }),
-                    onNextSong: () => playerService.playNext(),
-                    onPreviousSong: () => playerService.playPrevious(),
+
+                return Padding(
+                  padding: EdgeInsets.only(bottom: isDesktop ? 0 : 30),
+                  child: SizedBox(
+                    height: playerHeight,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: 8,
+                        right: 8,
+                        bottom: isMobile ? (navbarHeight > 0 ? 8 : 0) : 0,
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        elevation: 8,
+                        borderRadius: BorderRadius.circular(14),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: Container(
+                            height: playerHeight,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.92),
+                              border: const Border(
+                                top: BorderSide(
+                                    color: Colors.white24, width: 0.5),
+                              ),
+                            ),
+                            child: PlayerControlWidget(
+                              currentSong: currentSong,
+                              playerService: playerService,
+                              isPlaying: playerService.isPlaying,
+                              onPlayPause: () => playerService.togglePlay(),
+                              onQueueButtonPressed: () => setState(() {
+                                _isQueuePanelVisible = true;
+                              }),
+                              onNextSong: () => playerService.playNext(),
+                              onPreviousSong: () =>
+                                  playerService.playPrevious(),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 );
               },

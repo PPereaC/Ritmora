@@ -29,12 +29,11 @@ class PlaylistScreen extends ConsumerStatefulWidget {
   final String isLocalPlaylist;
   final Playlist? playlist;
 
-  const PlaylistScreen({
-    super.key,
-    required this.playlistID,
-    required this.isLocalPlaylist,
-    this.playlist
-  });
+  const PlaylistScreen(
+      {super.key,
+      required this.playlistID,
+      required this.isLocalPlaylist,
+      this.playlist});
 
   @override
   ConsumerState<PlaylistScreen> createState() => _PlaylistScreenState();
@@ -50,7 +49,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
     _scrollController.addListener(_onScroll);
   }
 
-  @override 
+  @override
   void dispose() {
     _scrollController.dispose();
     _opacity.dispose();
@@ -69,23 +68,30 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
     try {
       if (widget.isLocalPlaylist == '0') {
         // Para playlists locales
-        return await ref.read(playlistProvider.notifier).getSongsFromPlaylist(int.parse(playlistID));
+        return await ref
+            .read(playlistProvider.notifier)
+            .getSongsFromPlaylist(int.parse(playlistID));
       } else {
         // Para playlists de YouTube
-        final localSongs = await ref.read(playlistProvider.notifier).getYoutubeSongsFromPlaylist(playlistID);
-        
+        final localSongs = await ref
+            .read(playlistProvider.notifier)
+            .getYoutubeSongsFromPlaylist(playlistID);
+
         if (localSongs.isNotEmpty) {
           printINFO('Usando canciones guardadas localmente');
           return localSongs;
         }
-  
+
         // Si no hay canciones locales, obtener de YouTube y guardarlas
         printINFO('Obteniendo canciones de YouTube');
-        final youtubeSongs = await YoutubeService().getYoutubePlaylistSongs('https://www.youtube.com/playlist?list=$playlistID');
-        
+        final youtubeSongs = await YoutubeService().getYoutubePlaylistSongs(
+            'https://www.youtube.com/playlist?list=$playlistID');
+
         // Guardar las canciones localmente
-        await ref.read(playlistProvider.notifier).addSongsToYoutubePlaylist(playlistID, youtubeSongs);
-        
+        await ref
+            .read(playlistProvider.notifier)
+            .addSongsToYoutubePlaylist(playlistID, youtubeSongs);
+
         return youtubeSongs;
       }
     } catch (e) {
@@ -96,7 +102,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     // bool isLocalPlaylist = widget.isLocalPlaylist == '0';
     final bool isTabletOrDesktop = Responsive.isTabletOrDesktop(context);
     final textStyle = Theme.of(context).textTheme;
@@ -123,10 +128,12 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                     leading: IconButton(
                       icon: const Icon(Icons.arrow_back_ios_new_rounded),
                       onPressed: () async {
+                        final bool youtubeLocalPlaylist = await ref
+                            .read(playlistProvider.notifier)
+                            .isThisYoutubePlaylistSaved(widget.playlistID);
 
-                        final bool youtubeLocalPlaylist = await ref.read(playlistProvider.notifier).isThisYoutubePlaylistSaved(widget.playlistID);
-
-                        if (widget.playlist!.thumbnailUrl.startsWith('https') || widget.playlist!.thumbnailUrl.startsWith('http')) {
+                        if (widget.playlist!.thumbnailUrl.startsWith('https') ||
+                            widget.playlist!.thumbnailUrl.startsWith('http')) {
                           context.go('/');
                         }
 
@@ -135,16 +142,17 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                           context.go('/library');
                         }
                         // Si es una playlist de Youtube que está guardada localmente
-                        // al ir hacia atrás se va a la biblioteca 
-                        else if (widget.isLocalPlaylist == '1' && youtubeLocalPlaylist) {
+                        // al ir hacia atrás se va a la biblioteca
+                        else if (widget.isLocalPlaylist == '1' &&
+                            youtubeLocalPlaylist) {
                           context.go('/library');
-                        } 
+                        }
                         // Si la playlist es de Youtube pero no es local
                         // se va a Home, ya que será una playlist de las que hay en home
-                        else if (widget.isLocalPlaylist == '1' && youtubeLocalPlaylist == false) {
+                        else if (widget.isLocalPlaylist == '1' &&
+                            youtubeLocalPlaylist == false) {
                           context.go('/');
                         }
-
                       },
                     ),
                     actions: [
@@ -153,7 +161,8 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                         child: Row(
                           children: [
                             IconButton(
-                              icon: const Icon(Iconsax.setting_2_outline, color: Colors.white),
+                              icon: const Icon(Iconsax.setting_2_outline,
+                                  color: Colors.white),
                               onPressed: () {
                                 // Acción de más opciones
                               },
@@ -174,21 +183,23 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
               child: CircularProgressIndicator(),
             );
           }
-          
+
           if (snapshot.hasError) {
             return Center(
-              child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.white)),
+              child: Text('Error: ${snapshot.error}',
+                  style: const TextStyle(color: Colors.white)),
             );
           }
-          
+
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(
-              child: Text('No hay canciones en esta playlist', style: TextStyle(color: Colors.white)),
+              child: Text('No hay canciones en esta playlist',
+                  style: TextStyle(color: Colors.white)),
             );
           }
-          
+
           final songs = snapshot.data!;
-          
+
           return CustomScrollView(
             controller: _scrollController,
             slivers: [
@@ -204,9 +215,15 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                             cursor: SystemMouseCursors.click,
                             child: GestureDetector(
                               onTap: () async {
-                                final bool youtubeLocalPlaylist = await ref.read(playlistProvider.notifier).isThisYoutubePlaylistSaved(widget.playlistID);
+                                final bool youtubeLocalPlaylist = await ref
+                                    .read(playlistProvider.notifier)
+                                    .isThisYoutubePlaylistSaved(
+                                        widget.playlistID);
 
-                                if (widget.playlist!.thumbnailUrl.startsWith('https') || widget.playlist!.thumbnailUrl.startsWith('http')) {
+                                if (widget.playlist!.thumbnailUrl
+                                        .startsWith('https') ||
+                                    widget.playlist!.thumbnailUrl
+                                        .startsWith('http')) {
                                   context.go('/');
                                 }
 
@@ -215,33 +232,30 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                                   context.go('/library');
                                 }
                                 // Si es una playlist de Youtube que está guardada localmente
-                                // al ir hacia atrás se va a la biblioteca 
-                                else if (widget.isLocalPlaylist == '1' && youtubeLocalPlaylist) {
+                                // al ir hacia atrás se va a la biblioteca
+                                else if (widget.isLocalPlaylist == '1' &&
+                                    youtubeLocalPlaylist) {
                                   context.go('/library');
-                                } 
+                                }
                                 // Si la playlist es de Youtube pero no es local
                                 // se va a Home, ya que será una playlist de las que hay en home
-                                else if (widget.isLocalPlaylist == '1' && youtubeLocalPlaylist == false) {
+                                else if (widget.isLocalPlaylist == '1' &&
+                                    youtubeLocalPlaylist == false) {
                                   context.go('/');
                                 }
                               },
                               child: Row(
                                 children: [
-                              
                                   // Icono de retroceso
-                                  const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-                              
+                                  const Icon(Icons.arrow_back_ios_new_rounded,
+                                      color: Colors.white),
+
                                   const SizedBox(width: 5),
-                              
+
                                   // Texto de retroceso
-                                  Text(
-                                    'Atrás',
-                                    style: textStyle.titleLarge?.copyWith(
-                                      color: Colors.white,
-                                      fontSize: 22
-                                    )
-                                  )
-                              
+                                  Text('Atrás',
+                                      style: textStyle.titleLarge?.copyWith(
+                                          color: Colors.white, fontSize: 22))
                                 ],
                               ),
                             ),
@@ -254,18 +268,22 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                             thumbnail: widget.playlist?.thumbnailUrl ?? '',
                             playlistID: widget.playlistID,
                             isLocalPlaylist: widget.isLocalPlaylist == '0',
-                            songs: songs.map((song) => widget.isLocalPlaylist == '0' ? (song as Song) : Song(
-                              title: (song as YoutubeSong).title,
-                              author: song.author,
-                              thumbnailUrl: song.thumbnailUrl,
-                              streamUrl: song.streamUrl,
-                              endUrl: song.endUrl,
-                              songId: song.songId,
-                              duration: song.duration,
-                              videoId: song.videoId,
-                              isVideo: song.isVideo,
-                              isLiked: song.isLiked,
-                            )).toList(),
+                            songs: songs
+                                .map((song) => widget.isLocalPlaylist == '0'
+                                    ? (song as Song)
+                                    : Song(
+                                        title: (song as YoutubeSong).title,
+                                        author: song.author,
+                                        thumbnailUrl: song.thumbnailUrl,
+                                        streamUrl: song.streamUrl,
+                                        endUrl: song.endUrl,
+                                        songId: song.songId,
+                                        duration: song.duration,
+                                        videoId: song.videoId,
+                                        isVideo: song.isVideo,
+                                        isLiked: song.isLiked,
+                                      ))
+                                .toList(),
                             owner: widget.playlist!.author,
                           )
                         : _MobilePlaylistHeader(
@@ -273,18 +291,22 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
                             thumbnail: widget.playlist?.thumbnailUrl ?? '',
                             playlistID: widget.playlistID,
                             isLocalPlaylist: widget.isLocalPlaylist == '0',
-                            songs: songs.map((song) => widget.isLocalPlaylist == '0' ? (song as Song) : Song(
-                              title: (song as YoutubeSong).title,
-                              author: song.author,
-                              thumbnailUrl: song.thumbnailUrl,
-                              streamUrl: song.streamUrl,
-                              endUrl: song.endUrl,
-                              songId: song.songId,
-                              duration: song.duration,
-                              videoId: song.videoId,
-                              isVideo: song.isVideo,
-                              isLiked: song.isLiked,
-                            )).toList(),
+                            songs: songs
+                                .map((song) => widget.isLocalPlaylist == '0'
+                                    ? (song as Song)
+                                    : Song(
+                                        title: (song as YoutubeSong).title,
+                                        author: song.author,
+                                        thumbnailUrl: song.thumbnailUrl,
+                                        streamUrl: song.streamUrl,
+                                        endUrl: song.endUrl,
+                                        songId: song.songId,
+                                        duration: song.duration,
+                                        videoId: song.videoId,
+                                        isVideo: song.isVideo,
+                                        isLiked: song.isLiked,
+                                      ))
+                                .toList(),
                           ),
                   ],
                 ),
@@ -304,7 +326,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen> {
 class _PlaylistSongsList extends StatefulWidget {
   final String isLocalPlaylist;
   final List<dynamic> songs;
-  
+
   const _PlaylistSongsList({
     required this.songs,
     required this.isLocalPlaylist,
@@ -321,44 +343,47 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
   Widget build(BuildContext context) {
     final textStyle = Theme.of(context).textTheme;
     final isLocal = widget.isLocalPlaylist == '0';
+    final bool isMobile = Responsive.isMobile(context);
+    // Leave enough room for the bottom player (and navbar on mobile)
+    final double bottomPadding = isMobile ? 50.0 : 110.0;
 
     return SliverPadding(
-      padding: const EdgeInsets.only(bottom: 5),
+      padding: EdgeInsets.only(bottom: bottomPadding),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
-            final songIndex = _showReversed
-              ? (widget.songs.length - 1 - index) 
-              : index;
+            final songIndex =
+                _showReversed ? (widget.songs.length - 1 - index) : index;
 
             final currentSong = widget.songs[songIndex];
-            final song = isLocal ? currentSong : Song(
-              title: currentSong.title,
-              author: currentSong.author,
-              thumbnailUrl: currentSong.thumbnailUrl,
-              streamUrl: currentSong.streamUrl,
-              endUrl: currentSong.endUrl,
-              songId: currentSong.songId,
-              duration: currentSong.duration,
-              videoId: currentSong.videoId,
-              isVideo: currentSong.isVideo,
-              isLiked: currentSong.isLiked,
-            );
+            final song = isLocal
+                ? currentSong
+                : Song(
+                    title: currentSong.title,
+                    author: currentSong.author,
+                    thumbnailUrl: currentSong.thumbnailUrl,
+                    streamUrl: currentSong.streamUrl,
+                    endUrl: currentSong.endUrl,
+                    songId: currentSong.songId,
+                    duration: currentSong.duration,
+                    videoId: currentSong.videoId,
+                    isVideo: currentSong.isVideo,
+                    isLiked: currentSong.isLiked,
+                  );
 
             return Column(
               children: [
                 const SizedBox(height: 8.0),
-
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Row(
                     children: [
-                      if (index == 0) 
+                      if (index == 0)
                         IconButton(
                           icon: Icon(
-                            _showReversed 
-                              ? Icons.arrow_downward
-                              : Icons.arrow_upward,
+                            _showReversed
+                                ? Icons.arrow_downward
+                                : Icons.arrow_upward,
                             color: Colors.white,
                           ),
                           onPressed: () {
@@ -367,26 +392,22 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
                             });
                           },
                         ),
-                  
-                      if (index == 0) 
+                      if (index == 0)
                         Text(
                           'Posición',
-                          style: textStyle.bodyLarge!.copyWith(
-                            color: Colors.white
-                          ),
+                          style: textStyle.bodyLarge!
+                              .copyWith(color: Colors.white),
                         ),
-                  
                       const Spacer(),
-                  
                       if (index == 0)
                         IconButton(
-                          icon: const Icon(MingCute.search_line, size: 22, color: Colors.white),
+                          icon: const Icon(MingCute.search_line,
+                              size: 22, color: Colors.white),
                           onPressed: () {},
                         ),
-                    ],  
+                    ],
                   ),
                 ),
-                
                 SongListTile(
                   song: song,
                   onSongOptions: () {
@@ -400,7 +421,8 @@ class _PlaylistSongsListState extends State<_PlaylistSongsList> {
                     );
                   },
                   isPlaylist: isLocal,
-                  isVideo: song.author.contains('Video') || song.author.contains('Episode'),
+                  isVideo: song.author.contains('Video') ||
+                      song.author.contains('Episode'),
                 ),
               ],
             );
@@ -421,7 +443,7 @@ class _MobilePlaylistHeader extends ConsumerWidget {
   List<Song> songs;
 
   _MobilePlaylistHeader({
-    required this.title, 
+    required this.title,
     required this.thumbnail,
     required this.playlistID,
     required this.isLocalPlaylist,
@@ -435,23 +457,24 @@ class _MobilePlaylistHeader extends ConsumerWidget {
 
     Future<void> updateThumbnail() async {
       String? imagePath;
-      
+
       if (Platform.isAndroid || Platform.isIOS) {
         bool isGranted = await PermissionsHelper.storagePermission();
         if (!isGranted) {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Permisos requeridos'),
-                content: const Text('Se necesitan permisos de almacenamiento para seleccionar imágenes'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('OK'),
-                  ),
-                ],
-              ),
-            );
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Permisos requeridos'),
+              content: const Text(
+                  'Se necesitan permisos de almacenamiento para seleccionar imágenes'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
           return;
         }
         imagePath = await ImagePickerWidget.pickImage(context);
@@ -461,29 +484,33 @@ class _MobilePlaylistHeader extends ConsumerWidget {
           type: FileType.image,
           allowMultiple: false,
         );
-        
+
         if (result != null && result.files.single.path != null) {
           final originalPath = result.files.single.path!;
           final appDir = await getApplicationCacheDirectory();
           final imagesDir = Directory('${appDir.path}/playlist_images');
-          
+
           if (!await imagesDir.exists()) {
             await imagesDir.create(recursive: true);
           }
-          
+
           final extension = path.extension(originalPath);
           final uniqueName = '${const Uuid().v4()}$extension';
           imagePath = '${imagesDir.path}/$uniqueName';
-          
+
           await File(originalPath).copy(imagePath);
         }
       }
-      
+
       if (imagePath != null) {
         if (isLocalPlaylist) {
-          await ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), imagePath);
+          await ref
+              .read(playlistProvider.notifier)
+              .updatePlaylistThumbnail(int.parse(playlistID), imagePath);
         } else {
-          await ref.read(playlistProvider.notifier).updateYoutubePlaylistThumbnail(playlistID, imagePath);
+          await ref
+              .read(playlistProvider.notifier)
+              .updateYoutubePlaylistThumbnail(playlistID, imagePath);
         }
         context.push('/library');
       }
@@ -504,7 +531,8 @@ class _MobilePlaylistHeader extends ConsumerWidget {
                     builder: (context) => Container(
                       decoration: BoxDecoration(
                         color: colors.surface,
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(20)),
                       ),
                       child: SafeArea(
                         child: Column(
@@ -520,24 +548,24 @@ class _MobilePlaylistHeader extends ConsumerWidget {
                               ),
                             ),
                             ListTile(
-                              leading: const Icon(Iconsax.edit_outline, size: 28, color: Colors.white),
+                              leading: const Icon(Iconsax.edit_outline,
+                                  size: 28, color: Colors.white),
                               title: Text(
                                 'Cambiar nombre',
-                                style: textStyle.titleLarge!.copyWith(
-                                  color: Colors.white
-                                ),
+                                style: textStyle.titleLarge!
+                                    .copyWith(color: Colors.white),
                               ),
                               onTap: () {
                                 context.pop();
                               },
                             ),
                             ListTile(
-                              leading: const Icon(Iconsax.gallery_edit_outline, size: 28, color: Colors.white),
+                              leading: const Icon(Iconsax.gallery_edit_outline,
+                                  size: 28, color: Colors.white),
                               title: Text(
                                 'Cambiar imagen',
-                                style: textStyle.titleLarge!.copyWith(
-                                  color: Colors.white
-                                ),
+                                style: textStyle.titleLarge!
+                                    .copyWith(color: Colors.white),
                               ),
                               onTap: () {
                                 context.pop();
@@ -551,33 +579,36 @@ class _MobilePlaylistHeader extends ConsumerWidget {
                   );
                 },
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  child: Center( 
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  child: Center(
                     child: SizedBox(
                       width: 260,
                       height: 260,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(20.0),
                         child: Image(
-                          image: (thumbnail.startsWith('http://') || thumbnail.startsWith('https://'))
-                            ? NetworkImage(thumbnail)
-                            : (thumbnail.startsWith('assets/')
-                                ? AssetImage(thumbnail)
-                                : FileImage(File(thumbnail)) as ImageProvider),
+                          image: (thumbnail.startsWith('http://') ||
+                                  thumbnail.startsWith('https://'))
+                              ? NetworkImage(thumbnail)
+                              : (thumbnail.startsWith('assets/')
+                                  ? AssetImage(thumbnail)
+                                  : FileImage(File(thumbnail))
+                                      as ImageProvider),
                           height: 260,
                           width: 260,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            height: 260,
-                            width: 260,
-                            color: Colors.grey[900],
-                            child: Image.asset(
-                              defaultPoster,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
-                            )
-                          ),
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                                  height: 260,
+                                  width: 260,
+                                  color: Colors.grey[900],
+                                  child: Image.asset(
+                                    defaultPoster,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                  )),
                         ),
                       ),
                     ),
@@ -598,9 +629,9 @@ class _MobilePlaylistHeader extends ConsumerWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Botones de control
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -610,9 +641,9 @@ class _MobilePlaylistHeader extends ConsumerWidget {
                 icon: Icons.play_arrow_rounded,
                 onPressed: () {},
               ),
-          
+
               const SizedBox(width: 8),
-          
+
               // Reproducir en modo aleatorio
               _ControlButton(
                 icon: MingCute.shuffle_2_line,
@@ -622,9 +653,9 @@ class _MobilePlaylistHeader extends ConsumerWidget {
                   playerProvider.playSong(songs.first);
                 },
               ),
-          
+
               const SizedBox(width: 8),
-          
+
               // Marcar como favorita
               _ControlButton(
                 icon: MingCute.heart_line,
@@ -632,9 +663,9 @@ class _MobilePlaylistHeader extends ConsumerWidget {
                   // TODO: Implementar marcar playlist como favorita
                 },
               ),
-          
+
               const SizedBox(width: 8),
-          
+
               // Recargar playlist y todas sus canciones (sincronizar)
               _ControlButton(
                 icon: MingCute.refresh_1_line,
@@ -660,7 +691,7 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
   final String owner;
 
   _TabletDesktopPlaylistHeader({
-    required this.title, 
+    required this.title,
     required this.thumbnail,
     required this.playlistID,
     required this.isLocalPlaylist,
@@ -670,10 +701,9 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     int _durationStringToSeconds(String duration) {
       final parts = duration.split(':');
-      
+
       if (parts.length == 2) {
         // Formato mm:ss
         final minutes = int.parse(parts[0]);
@@ -686,7 +716,7 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
         final seconds = int.parse(parts[2]);
         return hours * 3600 + minutes * 60 + seconds;
       }
-      
+
       return 0; // En caso de formato desconocido
     }
 
@@ -694,7 +724,7 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
     String _formatDuration(int totalSeconds) {
       final hours = totalSeconds ~/ 3600;
       final minutes = (totalSeconds % 3600) ~/ 60;
-      
+
       if (hours > 0) {
         return '$hours h $minutes min aproximadamente';
       } else {
@@ -704,33 +734,34 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
 
     String getTotalPlaylistDuration() {
       int totalSeconds = 0;
-      
+
       for (final song in songs) {
         totalSeconds += _durationStringToSeconds(song.duration);
       }
-      
+
       return _formatDuration(totalSeconds);
     }
 
     Future<void> updateThumbnail() async {
       String? imagePath;
-      
+
       if (Platform.isAndroid || Platform.isIOS) {
         bool isGranted = await PermissionsHelper.storagePermission();
         if (!isGranted) {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Permisos requeridos'),
-                content: const Text('Se necesitan permisos de almacenamiento para seleccionar imágenes'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('OK'),
-                  ),
-                ],
-              ),
-            );
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Permisos requeridos'),
+              content: const Text(
+                  'Se necesitan permisos de almacenamiento para seleccionar imágenes'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
           return;
         }
         imagePath = await ImagePickerWidget.pickImage(context);
@@ -740,29 +771,33 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
           type: FileType.image,
           allowMultiple: false,
         );
-        
+
         if (result != null && result.files.single.path != null) {
           final originalPath = result.files.single.path!;
           final appDir = await getApplicationCacheDirectory();
           final imagesDir = Directory('${appDir.path}/playlist_images');
-          
+
           if (!await imagesDir.exists()) {
             await imagesDir.create(recursive: true);
           }
-          
+
           final extension = path.extension(originalPath);
           final uniqueName = '${const Uuid().v4()}$extension';
           imagePath = '${imagesDir.path}/$uniqueName';
-          
+
           await File(originalPath).copy(imagePath);
         }
       }
-      
+
       if (imagePath != null) {
         if (isLocalPlaylist) {
-          await ref.read(playlistProvider.notifier).updatePlaylistThumbnail(int.parse(playlistID), imagePath);
+          await ref
+              .read(playlistProvider.notifier)
+              .updatePlaylistThumbnail(int.parse(playlistID), imagePath);
         } else {
-          await ref.read(playlistProvider.notifier).updateYoutubePlaylistThumbnail(playlistID, imagePath);
+          await ref
+              .read(playlistProvider.notifier)
+              .updateYoutubePlaylistThumbnail(playlistID, imagePath);
         }
         context.push('/library');
       }
@@ -788,7 +823,8 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20.0),
                       child: Image(
-                        image: (thumbnail.startsWith('http://') || thumbnail.startsWith('https://'))
+                        image: (thumbnail.startsWith('http://') ||
+                                thumbnail.startsWith('https://'))
                             ? NetworkImage(thumbnail)
                             : (thumbnail.startsWith('assets/')
                                 ? AssetImage(thumbnail)
@@ -797,16 +833,15 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                         width: 260,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
-                          height: 260,
-                          width: 260,
-                          color: Colors.grey[900],
-                          child: Image.asset(
-                            defaultPoster,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                          )
-                        ),
+                            height: 260,
+                            width: 260,
+                            color: Colors.grey[900],
+                            child: Image.asset(
+                              defaultPoster,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                            )),
                       ),
                     ),
                   ),
@@ -823,9 +858,9 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                       icon: Icons.play_arrow_rounded,
                       onPressed: () {},
                     ),
-                
+
                     const SizedBox(width: 8),
-                
+
                     // Reproducir en modo aleatorio
                     _ControlButton(
                       icon: MingCute.shuffle_2_line,
@@ -835,9 +870,9 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                         playerProvider.playSong(songs.first);
                       },
                     ),
-                
+
                     const SizedBox(width: 8),
-                
+
                     // Marcar como favorita
                     _ControlButton(
                       icon: MingCute.heart_line,
@@ -845,9 +880,9 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                         // TODO: Implementar marcar playlist como favorita
                       },
                     ),
-                
+
                     const SizedBox(width: 8),
-                
+
                     // Recargar playlist y todas sus canciones (sincronizar)
                     _ControlButton(
                       icon: MingCute.refresh_1_line,
@@ -858,12 +893,9 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                   ],
                 ),
               ),
-
             ],
           ),
-      
           const SizedBox(height: 16.0),
-      
           Expanded(
             child: SizedBox(
               height: 180,
@@ -877,9 +909,7 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.only(left: 16, top: 10),
                         child: Text(
-                          isLocalPlaylist
-                            ? 'Lista Local'
-                            : 'Lista de Youtube',
+                          isLocalPlaylist ? 'Lista Local' : 'Lista de Youtube',
                           style: TextStyle(
                             fontSize: 20.0,
                             fontWeight: FontWeight.bold,
@@ -887,21 +917,18 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                           ),
                         ),
                       ),
-                  
                       Padding(
-                        padding: const EdgeInsets.only(right: 40, left: 10),
-                        child: AutoSizeText(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 55,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold
-                          ),
-                          minFontSize: 18,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        )
-                      ),
+                          padding: const EdgeInsets.only(right: 40, left: 10),
+                          child: AutoSizeText(
+                            title,
+                            style: const TextStyle(
+                                fontSize: 55,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                            minFontSize: 18,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          )),
                     ],
                   ),
 
@@ -911,59 +938,36 @@ class _TabletDesktopPlaylistHeader extends ConsumerWidget {
                     child: Row(
                       children: [
                         // Icono
-                        const Icon(
-                          MingCute.user_1_line,
-                          size: 28
-                        ),
+                        const Icon(MingCute.user_1_line, size: 28),
 
                         const SizedBox(width: 8),
 
                         // Propietario de la playlist
-                        Text(
-                          owner.isEmpty ? 'Youtube' : owner,
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey[200]
-                          )
-                        ),
+                        Text(owner.isEmpty ? 'Youtube' : owner,
+                            style: TextStyle(
+                                fontSize: 18, color: Colors.grey[200])),
 
                         const SizedBox(width: 2),
 
-                        Text(
-                          ' 🔹 ',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey[200]
-                          )
-                        ),
+                        Text(' 🔹 ',
+                            style: TextStyle(
+                                fontSize: 18, color: Colors.grey[200])),
 
                         // Canciones en total
-                        Text(
-                          '${songs.length} canciones',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey[200]
-                          )
-                        ),
+                        Text('${songs.length} canciones',
+                            style: TextStyle(
+                                fontSize: 18, color: Colors.grey[200])),
 
                         const SizedBox(width: 2),
 
-                        Text(
-                          ' 🔹 ',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey[200]
-                          )
-                        ),
+                        Text(' 🔹 ',
+                            style: TextStyle(
+                                fontSize: 18, color: Colors.grey[200])),
 
                         // Duración en total de la playlist
-                        Text(
-                          getTotalPlaylistDuration(),
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey[200]
-                          )
-                        )
+                        Text(getTotalPlaylistDuration(),
+                            style: TextStyle(
+                                fontSize: 18, color: Colors.grey[200]))
                       ],
                     ),
                   )
@@ -1013,4 +1017,3 @@ class _ControlButton extends StatelessWidget {
     );
   }
 }
-

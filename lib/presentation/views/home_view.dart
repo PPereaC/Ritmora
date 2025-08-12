@@ -47,6 +47,8 @@ class HomeViewState extends ConsumerState<HomeView> {
 
     final screenWidth = MediaQuery.of(context).size.width;
 
+    final isDesktop = Responsive.isTabletOrDesktop(context);
+
     // Update expired stream URLs
     updateExpiredStreamUrls(
       ref,
@@ -149,8 +151,8 @@ class HomeViewState extends ConsumerState<HomeView> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16, vertical: isDesktop ? 16 : 10),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
