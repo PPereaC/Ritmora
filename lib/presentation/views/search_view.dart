@@ -32,60 +32,66 @@ class SearchViewState extends ConsumerState<SearchView> {
     _searchTimer = Timer(const Duration(milliseconds: 500), () {
       if (value.isNotEmpty) {
         final filter = ref.read(searchFilterProvider);
-        ref.read(searchSongsProvider.notifier).searchSongsByQuery(value, filter: filter);
+        ref
+            .read(searchSongsProvider.notifier)
+            .searchSongsByQuery(value, filter: filter);
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-
     bool isDesktop = Responsive.isTabletOrDesktop(context);
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Column(
-        children: [
-
-          !isDesktop 
-          ? const SizedBox(height: 40)
-          : const SizedBox(height: 20),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextField(
-              controller: _searchController,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: 'Buscar canciones o videos',
-                hintStyle: const TextStyle(color: Colors.white),
-                prefixIcon: const Icon(Iconsax.search_normal_outline, color: Colors.white),
-                suffixIcon: _searchController.text.isNotEmpty 
-                  ? IconButton(
-                      icon: const Icon(Iconsax.close_square_outline, color: Colors.white),
-                      onPressed: () {
-                        _searchController.clear();
-                        ref.read(searchSongsProvider.notifier).clearResults();
-                      },
-                    )
-                  : null,
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.3),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide.none,
+      body: Padding(
+        padding: const EdgeInsets.only(top: 20),
+        child: Column(
+          children: [
+            !isDesktop
+                ? const SizedBox(height: 40)
+                : const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                controller: _searchController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Buscar canciones o videos',
+                  hintStyle: const TextStyle(color: Colors.white),
+                  prefixIcon: const Icon(Iconsax.search_normal_outline,
+                      color: Colors.white),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Iconsax.close_square_outline,
+                              color: Colors.white),
+                          onPressed: () {
+                            _searchController.clear();
+                            ref
+                                .read(searchSongsProvider.notifier)
+                                .clearResults();
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.3),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
+                onChanged: _onSearchChanged,
               ),
-              onChanged: _onSearchChanged,
             ),
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: SearchResultsContent(
-              searchController: _searchController,
+            const SizedBox(height: 16),
+            Expanded(
+              child: SearchResultsContent(
+                searchController: _searchController,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
