@@ -46,7 +46,7 @@ class SearchViewState extends ConsumerState<SearchView> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Padding(
-        padding: EdgeInsets.only(top: isDesktop ? 0 : 40),
+        padding: EdgeInsets.only(top: isDesktop ? 0 : 10),
         child: Column(
           children: [
             !isDesktop
