@@ -43,7 +43,7 @@ class _LibraryViewState extends ConsumerState<LibraryView>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     Future.microtask(() => _loadPlaylists());
     _loadViewMode();
   }
@@ -391,20 +391,17 @@ class _LibraryViewState extends ConsumerState<LibraryView>
             // Chips de categorías + toggle de vista (lista/grid)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Align(
-                alignment: Alignment.center,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: double.infinity,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: _chipsBar(colors),
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      _chipsBar(colors),
-                      const Spacer(),
-                      _viewToggle(colors),
-                    ],
-                  ),
-                ),
+                  const SizedBox(width: 12),
+                  _viewToggle(colors),
+                ],
               ),
             ),
 
@@ -416,6 +413,7 @@ class _LibraryViewState extends ConsumerState<LibraryView>
                   _buildPlaylistsView(),
                   _buildAlbumsView(),
                   _buildArtistsView(),
+                  _buildFavoritesView(),
                 ],
               ),
             ),
@@ -433,103 +431,97 @@ class _LibraryViewState extends ConsumerState<LibraryView>
       }
     }
 
-    const chipStyle = TextStyle(
-      color: Colors.white,
-      fontSize: 13,
-      fontWeight: FontWeight.w600,
-    );
-    return Wrap(
-      spacing: 8,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        ChoiceChip(
-          label: const Text('Playlists'),
-          labelStyle: chipStyle,
+        _categoryIconButton(
+          icon: Iconsax.music_playlist_outline,
+          selectedIcon: Iconsax.music_playlist_bold,
           selected: selected == 0,
-          onSelected: (_) => select(0),
-          selectedColor: Colors.white.withOpacity(0.14),
-          backgroundColor: Colors.white.withOpacity(0.06),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
-            side: BorderSide(color: Colors.white.withOpacity(0.10)),
-          ),
+          onTap: () => select(0),
         ),
-        ChoiceChip(
-          label: const Text('Álbumes'),
-          labelStyle: chipStyle,
+        const SizedBox(width: 8),
+        _categoryIconButton(
+          icon: Iconsax.music_square_outline,
+          selectedIcon: Iconsax.music_square_bold,
           selected: selected == 1,
-          onSelected: (_) => select(1),
-          selectedColor: Colors.white.withOpacity(0.14),
-          backgroundColor: Colors.white.withOpacity(0.06),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
-            side: BorderSide(color: Colors.white.withOpacity(0.10)),
-          ),
+          onTap: () => select(1),
         ),
-        ChoiceChip(
-          label: const Text('Artistas'),
-          labelStyle: chipStyle,
+        const SizedBox(width: 8),
+        _categoryIconButton(
+          icon: Iconsax.microphone_outline,
+          selectedIcon: Iconsax.microphone_bold,
           selected: selected == 2,
-          onSelected: (_) => select(2),
-          selectedColor: Colors.white.withOpacity(0.14),
-          backgroundColor: Colors.white.withOpacity(0.06),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
-            side: BorderSide(color: Colors.white.withOpacity(0.10)),
-          ),
+          onTap: () => select(2),
+        ),
+        const SizedBox(width: 8),
+        _categoryIconButton(
+          icon: Iconsax.heart_outline,
+          selectedIcon: Iconsax.heart_bold,
+          selected: selected == 3,
+          onTap: () => select(3),
         ),
       ],
     );
   }
 
-  Widget _viewToggle(ColorScheme colors) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.10), width: 1),
-      ),
-      child: Row(
-        children: [
-          _toggleButton(
-            icon: Iconsax.row_vertical_outline,
-            selected: !_isGridMode,
-            onTap: () async {
-              if (_isGridMode) {
-                setState(() => _isGridMode = false);
-                await _saveViewMode();
-              }
-            },
+  Widget _categoryIconButton({
+    required IconData icon,
+    required IconData selectedIcon,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: selected
+              ? Colors.white.withOpacity(0.14)
+              : Colors.white.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.10),
           ),
-          _toggleButton(
-            icon: Iconsax.element_4_outline,
-            selected: _isGridMode,
-            onTap: () async {
-              if (!_isGridMode) {
-                setState(() => _isGridMode = true);
-                await _saveViewMode();
-              }
-            },
-          ),
-        ],
+        ),
+        child: Icon(
+          selected ? selectedIcon : icon,
+          color: Colors.white,
+          size: 20,
+        ),
       ),
     );
   }
 
-  Widget _toggleButton(
-      {required IconData icon,
-      required bool selected,
-      required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected ? Colors.white.withOpacity(0.14) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+  Widget _viewToggle(ColorScheme colors) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _categoryIconButton(
+          icon: Iconsax.row_vertical_outline,
+          selectedIcon: Iconsax.row_vertical_bold,
+          selected: !_isGridMode,
+          onTap: () async {
+            if (_isGridMode) {
+              setState(() => _isGridMode = false);
+              await _saveViewMode();
+            }
+          },
         ),
-        child: Icon(icon, color: Colors.white, size: 18),
-      ),
+        const SizedBox(width: 8),
+        _categoryIconButton(
+          icon: Iconsax.element_4_outline,
+          selectedIcon: Iconsax.element_4_bold,
+          selected: _isGridMode,
+          onTap: () async {
+            if (!_isGridMode) {
+              setState(() => _isGridMode = true);
+              await _saveViewMode();
+            }
+          },
+        ),
+      ],
     );
   }
 
@@ -747,5 +739,17 @@ class _LibraryViewState extends ConsumerState<LibraryView>
 
   Widget _buildArtistsView() {
     return Container(); // TODO: Implementación futura
+  }
+
+  Widget _buildFavoritesView() {
+    return const Center(
+      child: Text(
+        'Favoritos - Próximamente',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+        ),
+      ),
+    );
   }
 }
