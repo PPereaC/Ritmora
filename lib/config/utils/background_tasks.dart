@@ -1,4 +1,5 @@
 // Función para obtener los stream urls de las canciones en segundo plano
+import 'dart:isolate';
 import 'package:ritmora/config/utils/pretty_print.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -50,6 +51,10 @@ Future<void> updateExpiredStreamUrls(
     WidgetRef ref,
     List<entitie.Playlist> localPlaylists,
     List<YoutubePlaylist> youtubePlaylists) async {
+  final expiredSongIds = <String>[];
+  final songMap = <String, Song>{};
+  
+  // Recolectar todas las canciones con URLs expiradas
   // Playlist locales
   for (final playlist in localPlaylists) {
     final songs = await ref
@@ -57,10 +62,8 @@ Future<void> updateExpiredStreamUrls(
         .getSongsFromLocalPlaylist(playlist.id);
     for (final song in songs) {
       if (await isStreamUrlExpired(song.streamUrl)) {
-        final newStreamUrl = await getStreamUrlInBackground(song.songId);
-        if (newStreamUrl != null) {
-          ref.read(playlistProvider.notifier).updateSongStreamUrl(song);
-        }
+        expiredSongIds.add(song.songId);
+        songMap[song.songId] = song;
       }
     }
   }
@@ -72,52 +75,119 @@ Future<void> updateExpiredStreamUrls(
         .getSongsFromYoutubePlaylist(playlist.playlistId);
     for (final song in songs) {
       if (await isStreamUrlExpired(song.streamUrl)) {
-        final newStreamUrl = await getStreamUrlInBackground(song.songId);
-        if (newStreamUrl != null) {
-          ref.read(playlistProvider.notifier).updateSongStreamUrl(Song(
-              title: song.title,
-              author: song.author,
-              thumbnailUrl: song.thumbnailUrl,
-              streamUrl: newStreamUrl,
-              endUrl: song.endUrl,
-              songId: song.songId,
-              duration: song.duration,
-              videoId: song.videoId,
-              isVideo: song.isVideo,
-              isLiked: song.isLiked));
-          const Duration(seconds: 1);
-        }
+        expiredSongIds.add(song.songId);
+        // Convertir YoutubeSong a Song
+        songMap[song.songId] = Song(
+            title: song.title,
+            author: song.author,
+            thumbnailUrl: song.thumbnailUrl,
+            streamUrl: song.streamUrl,
+            endUrl: song.endUrl,
+            songId: song.songId,
+            duration: song.duration,
+            videoId: song.videoId,
+            isVideo: song.isVideo,
+            isLiked: song.isLiked);
       }
+    }
+  }
+  
+  // Si no hay canciones expiradas, salir
+  if (expiredSongIds.isEmpty) return;
+  
+  // Obtener todas las nuevas URLs en paralelo (optimizado)
+  final newStreamUrls = await getMultipleStreamUrls(expiredSongIds);
+  
+  // Actualizar las canciones con las nuevas URLs
+  for (final songId in expiredSongIds) {
+    final song = songMap[songId];
+    final newUrl = newStreamUrls[songId];
+    if (song != null && newUrl != null && newUrl.isNotEmpty) {
+      ref.read(playlistProvider.notifier).updateSongStreamUrl(Song(
+          title: song.title,
+          author: song.author,
+          thumbnailUrl: song.thumbnailUrl,
+          streamUrl: newUrl,
+          endUrl: song.endUrl,
+          songId: song.songId,
+          duration: song.duration,
+          videoId: song.videoId,
+          isVideo: song.isVideo,
+          isLiked: song.isLiked));
     }
   }
 }
 
-Future<String?> getStreamUrlInBackground(String songId) async {
+// Función que se ejecuta en el isolate (solo para batch processing)
+Future<String?> _fetchStreamUrlIsolate(String songId) async {
+  YoutubeExplode? yt;
   try {
-    final yt = YoutubeExplode();
-
-    // 1. Obtenemos el manifiesto del video
-    var manifest = await yt.videos.streamsClient.getManifest(songId);
-
-    // 2. Verificamos que hay streams de audio disponibles
+    yt = YoutubeExplode();
+    final manifest = await yt.videos.streamsClient.getManifest(songId);
+    
     if (manifest.audioOnly.isEmpty) {
-      printERROR('No hay streams de audio disponibles para: $songId');
-      yt.close();
       return null;
     }
+    
+    final streamInfo = manifest.audioOnly.withHighestBitrate();
+    return streamInfo.url.toString();
+  } catch (e) {
+    return null;
+  } finally {
+    yt?.close();
+  }
+}
 
-    // 3. Obtenemos la URL del stream de solo audio con mejor calidad
-    var streamInfo = manifest.audioOnly.withHighestBitrate();
-
-    // 4. Obtenemos la URL real (¡es temporal!)
-    var streamUrl = streamInfo.url;
-
-    // 5. Cerramos YoutubeExplode
-    yt.close();
-
-    return streamUrl.toString();
+// Función principal - ejecución directa (más confiable para casos individuales)
+Future<String?> getStreamUrlInBackground(String songId) async {
+  YoutubeExplode? yt;
+  try {
+    yt = YoutubeExplode();
+    final manifest = await yt.videos.streamsClient.getManifest(songId);
+    
+    if (manifest.audioOnly.isEmpty) {
+      printERROR('No hay streams de audio disponibles para: $songId');
+      return null;
+    }
+    
+    final streamInfo = manifest.audioOnly.withHighestBitrate();
+    return streamInfo.url.toString();
   } catch (e) {
     printERROR('Error obteniendo URL del stream: $e');
     return null;
+  } finally {
+    yt?.close();
   }
+}
+
+// Función optimizada para obtener múltiples URLs en paralelo (con isolates)
+Future<Map<String, String>> getMultipleStreamUrls(List<String> songIds) async {
+  final results = <String, String>{};
+  
+  // Procesar en lotes de 5 para no sobrecargar
+  const batchSize = 5;
+  for (var i = 0; i < songIds.length; i += batchSize) {
+    final batch = songIds.skip(i).take(batchSize).toList();
+    
+    // Ejecutar solicitudes en paralelo con isolates
+    final futures = batch.map((songId) async {
+      try {
+        final url = await Isolate.run(() => _fetchStreamUrlIsolate(songId));
+        return MapEntry(songId, url ?? '');
+      } catch (e) {
+        printERROR('Error en isolate para $songId: $e');
+        return MapEntry(songId, '');
+      }
+    });
+    
+    final batchResults = await Future.wait(futures);
+    
+    for (final entry in batchResults) {
+      if (entry.value.isNotEmpty) {
+        results[entry.key] = entry.value;
+      }
+    }
+  }
+  
+  return results;
 }

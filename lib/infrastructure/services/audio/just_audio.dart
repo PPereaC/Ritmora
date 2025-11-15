@@ -236,18 +236,35 @@ class JustAudioService extends BasePlayerService {
     }
   }
 
-  // Añadir una lista de canciones a la cola
+  // Añadir una lista de canciones a la cola (optimizado con batch processing)
   Future<void> addSongsToQueue(List<Song> songs) async {
-    for (var song in songs) {
-      if (!_queue.contains(song)) {
-        if(song.streamUrl.isEmpty) {
-          final streamUrl = await getStreamUrlInBackground(song.songId);
-          if (streamUrl == null || streamUrl.isEmpty) {
-            continue; // Saltar a la siguiente si no hay una URL válida
-          }
-          song.streamUrl = streamUrl;
+    // Filtrar canciones que ya están en la cola
+    final songsToAdd = songs.where((song) => !_queue.any((s) => s.songId == song.songId)).toList();
+    
+    if (songsToAdd.isEmpty) return;
+    
+    // Identificar canciones sin URL
+    final songsWithoutUrl = songsToAdd.where((song) => song.streamUrl.isEmpty).toList();
+    
+    // Obtener todas las URLs en paralelo si hay canciones sin URL
+    if (songsWithoutUrl.isNotEmpty) {
+      final songIds = songsWithoutUrl.map((s) => s.songId).toList();
+      final streamUrls = await getMultipleStreamUrls(songIds);
+      
+      // Asignar URLs a las canciones
+      for (var song in songsWithoutUrl) {
+        final url = streamUrls[song.songId];
+        if (url != null && url.isNotEmpty) {
+          song.streamUrl = url;
         }
-        
+      }
+    }
+    
+    // Añadir solo las canciones que tienen URL válida
+    for (var song in songsToAdd) {
+      if (song.streamUrl.isEmpty) continue;
+      
+      try {
         _queue.add(song);
         
         await _playlist.add(
@@ -262,6 +279,13 @@ class JustAudioService extends BasePlayerService {
             ),
           ),
         );
+      } catch (e) {
+        printERROR('Error añadiendo canción ${song.title} a la cola: $e');
+        // Remover de la cola si hubo error
+        final index = _queue.indexWhere((s) => s.songId == song.songId);
+        if (index != -1) {
+          _queue.removeAt(index);
+        }
       }
     }
     
