@@ -47,7 +47,6 @@ class HomeViewState extends ConsumerState<HomeView> {
 
     final screenWidth = MediaQuery.of(context).size.width;
 
-    final isDesktop = Responsive.isTabletOrDesktop(context);
     final isMobile = Responsive.isMobile(context);
 
     // Update expired stream URLs
@@ -121,92 +120,6 @@ class HomeViewState extends ConsumerState<HomeView> {
                   SizedBox(
                     height: 230,
                     child: SongGridHorizontalListview(songs: quickPicks),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Sección descubre nueva música (estilo glass + gradiente)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Stack(
-                      children: [
-                        Container(
-                          height: 72,
-                          width: double.infinity,
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Color(0xFF1B2A4A),
-                                Color(0xFF281B4A),
-                              ],
-                            ),
-                          ),
-                        ),
-                        BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-                          child: Container(
-                            height: 72,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.05),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 16, vertical: isDesktop ? 16 : 10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    height: 40,
-                                    width: 40,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.12),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(Icons.explore,
-                                        color: Colors.white),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    'Descubre música',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 20,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  ref.read(navbarIndexProvider.notifier).state =
-                                      1;
-                                  context.go('/search');
-                                },
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 10),
-                                  backgroundColor:
-                                      Colors.white.withOpacity(0.08),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(24)),
-                                ),
-                                child: const Text('Explorar'),
-                              )
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
 
                   const SizedBox(height: 16),
