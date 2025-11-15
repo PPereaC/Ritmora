@@ -1,6 +1,5 @@
 // Función para obtener los stream urls de las canciones en segundo plano
 import 'package:ritmora/config/utils/pretty_print.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import '../../domain/entities/playlist.dart' as entitie;
@@ -24,19 +23,20 @@ import '../../presentation/providers/playlist/playlist_provider.dart';
 Future<bool> isStreamUrlExpired(String streamUrl) async {
   try {
     // Usamos RegExp para extraer el parámetro 'expire' de la URL
-    final RegExpMatch? match = RegExp(r".expire=([0-9]+)&").firstMatch(streamUrl);
-    
+    final RegExpMatch? match =
+        RegExp(r".expire=([0-9]+)&").firstMatch(streamUrl);
+
     if (match == null) {
       // Si no se encuentra el parámetro 'expire', se considera caducado
       return true;
     }
-    
+
     // Parseamos el timestamp
     final int epoch = int.parse(match[1]!);
-    
+
     // Timestamp actual con un buffer de 30 minutos (1800 segundos)
     final int currentTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    
+
     // Si el tiempo actual es menor que el timestamp de expiración, la URL no ha expirado
     return currentTimestamp + 1800 >= epoch;
   } catch (e) {
@@ -46,11 +46,15 @@ Future<bool> isStreamUrlExpired(String streamUrl) async {
   }
 }
 
-Future<void> updateExpiredStreamUrls(WidgetRef ref,List<entitie.Playlist> localPlaylists, List<YoutubePlaylist> youtubePlaylists) async {
-  
+Future<void> updateExpiredStreamUrls(
+    WidgetRef ref,
+    List<entitie.Playlist> localPlaylists,
+    List<YoutubePlaylist> youtubePlaylists) async {
   // Playlist locales
   for (final playlist in localPlaylists) {
-    final songs = await ref.read(playlistProvider.notifier).getSongsFromLocalPlaylist(playlist.id);
+    final songs = await ref
+        .read(playlistProvider.notifier)
+        .getSongsFromLocalPlaylist(playlist.id);
     for (final song in songs) {
       if (await isStreamUrlExpired(song.streamUrl)) {
         final newStreamUrl = await getStreamUrlInBackground(song.songId);
@@ -63,13 +67,14 @@ Future<void> updateExpiredStreamUrls(WidgetRef ref,List<entitie.Playlist> localP
 
   // Playlist de YouTube
   for (final playlist in youtubePlaylists) {
-    final songs = await ref.read(playlistProvider.notifier).getSongsFromYoutubePlaylist(playlist.playlistId);
+    final songs = await ref
+        .read(playlistProvider.notifier)
+        .getSongsFromYoutubePlaylist(playlist.playlistId);
     for (final song in songs) {
       if (await isStreamUrlExpired(song.streamUrl)) {
         final newStreamUrl = await getStreamUrlInBackground(song.songId);
         if (newStreamUrl != null) {
-          ref.read(playlistProvider.notifier).updateSongStreamUrl(
-            Song(
+          ref.read(playlistProvider.notifier).updateSongStreamUrl(Song(
               title: song.title,
               author: song.author,
               thumbnailUrl: song.thumbnailUrl,
@@ -79,39 +84,40 @@ Future<void> updateExpiredStreamUrls(WidgetRef ref,List<entitie.Playlist> localP
               duration: song.duration,
               videoId: song.videoId,
               isVideo: song.isVideo,
-              isLiked: song.isLiked
-            )
-          );
+              isLiked: song.isLiked));
           const Duration(seconds: 1);
         }
       }
     }
   }
-
-}
-
-Future<String?> fetchStreamUrlInBackground(String songId) async {
-  try {
-    final yt = YoutubeExplode();
-    final manifest = await yt.videos.streamsClient
-        .getManifest(songId)
-        .timeout(const Duration(seconds: 3));
-        
-    final url = manifest.audioOnly.withHighestBitrate().url.toString();
-    
-    return url;
-  } catch (e) {
-    printERROR('Error fetching stream URL: $e');
-    return null;
-  }
 }
 
 Future<String?> getStreamUrlInBackground(String songId) async {
   try {
-    // Usamos compute para ejecutar la función en un isolate separado
-    return await compute(fetchStreamUrlInBackground, songId);
+    final yt = YoutubeExplode();
+
+    // 1. Obtenemos el manifiesto del video
+    var manifest = await yt.videos.streamsClient.getManifest(songId);
+
+    // 2. Verificamos que hay streams de audio disponibles
+    if (manifest.audioOnly.isEmpty) {
+      printERROR('No hay streams de audio disponibles para: $songId');
+      yt.close();
+      return null;
+    }
+
+    // 3. Obtenemos la URL del stream de solo audio con mejor calidad
+    var streamInfo = manifest.audioOnly.withHighestBitrate();
+
+    // 4. Obtenemos la URL real (¡es temporal!)
+    var streamUrl = streamInfo.url;
+
+    // 5. Cerramos YoutubeExplode
+    yt.close();
+
+    return streamUrl.toString();
   } catch (e) {
-    printERROR('Background URL fetch error: $e');
+    printERROR('Error obteniendo URL del stream: $e');
     return null;
   }
 }
